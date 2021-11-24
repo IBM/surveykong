@@ -26,7 +26,6 @@ urlpatterns = [
 	url(r'^iframe/embedtest/$', iframe_embed_test, name='iframe_embed_test'),
 	url(r'^iframe/admin_debugbox/(?P<uid>[\w-]+)/$', survey_iframe_admin_debug_box, name='survey_iframe_admin_debug_box'),
 	url(r'^releasenotes/$', release_notes, name='release_notes'),
-	url(r'^testdragdrop/(?P<uid>[\w-]+)/$', testdragdrop, name='testdragdrop'),
 	
 	
 	## APIs.

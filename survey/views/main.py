@@ -374,37 +374,3 @@ def custom_500(request):
 		
 	return render(request, '500.html', {}, status=500)
 	
-
-
-
-##
-##	/survey/display/<id>/
-##
-@login_exempt
-def testdragdrop(request, uid):
-	'''
-	Standalone survey version.
-	'''
-	campaign = get_object_or_404(Campaign, uid=uid)
-	campaignStats = campaign.getStatsForUser(request)
-	
-	context = {
-		'campaign': campaign,
-		'campaignStats': campaignStats,
-		'currentView': 'standalone',
-	}
-	
-	# Template chooser.
-	if campaignStats['activeCampaign'] or request.GET.get('force', '') == 'y':
-		template = 'survey/testdragdrop.html'
-	else:
-		template = 'survey/survey_no_display.html'
-		
-	responseText = render_to_string(template, context=context, request=request)
-	responseText = responseText.replace('{projectname}', campaign.project.getDisplayName())
-	response = HttpResponse(responseText)
-	
-	helpers.clearPageMessage(request)
-	return response	
-	
-	

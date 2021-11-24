@@ -204,7 +204,7 @@
 				$el.closest('.custom-fieldset').find('input').val('');
 			}
 		}
-		BH.customRemoveItem = customRemoveItem;
+		OM.customRemoveItem = customRemoveItem;
 	
 	
 		function customAddItem (el) {
@@ -221,12 +221,12 @@
 			
 			idNum++;				
 		}
-		BH.customAddItem = customAddItem;
+		OM.customAddItem = customAddItem;
 		
 		
 		// Extend common drop function
-		BH.drop = (function (evt) {
-			var origDrop = BH.drop;
+		OM.drop = (function (evt) {
+			var origDrop = OM.drop;
 			
 			return function() {
 				var result = origDrop.apply(this, arguments);

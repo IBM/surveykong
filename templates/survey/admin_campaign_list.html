@@ -52,7 +52,7 @@
 						},
 						success: function () {
 							if (evt.currentTarget.dataset.callback) {
-								BH[evt.currentTarget.dataset.callback](evt);
+								OM[evt.currentTarget.dataset.callback](evt);
 							}
 						},
 					})
@@ -64,7 +64,7 @@
 			function responsesToZero (evt) {
 				$(evt.target).closest('td').find('.custom-response-count').html('0');
 			}
-			BH.responsesToZero = responsesToZero
+			OM.responsesToZero = responsesToZero
 		
 		
 			$(function () {

@@ -1,6 +1,6 @@
 {% load static %}
 <script>
-	window.BH = {
+	window.SK = {
 		'urls': {
 			'cdnPath': '{{ CDN_FILES_URL }}',
 		}
