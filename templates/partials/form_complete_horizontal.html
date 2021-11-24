@@ -1,0 +1,28 @@
+{# form posts to same URL displaying it. #}
+<form class="w-100 mb4" action="" method="post">
+	{% include 'partials/form_error_messages.html' with form=form %}
+
+	{% csrf_token %}
+	
+	{% for field in form.visible_fields %}
+		{% include 'partials/form_field_horizontal.html' with field=field %}
+	{% endfor %}
+
+	<button class="mt4 w4 mr4-ns dib-ns db {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }} ">Save</button>
+
+	{% if form.hidden_fields %}
+		<div class="b mt5 mb3">Read-only fields</div>
+		
+		<style>
+			.custom-readonly-fields .custom-form-horizontal-label + * {
+				cursor: not-allowed;
+			}
+		</style>
+		<div class="custom-readonly-fields mb5">
+			{% for field in form.hidden_fields %}
+				{% include 'partials/form_field_horizontal_readonly.html' with field=field %}
+			{% endfor %}
+		</div>
+	{% endif %}
+
+</form>

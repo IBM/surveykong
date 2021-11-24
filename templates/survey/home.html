@@ -1,0 +1,68 @@
+{% extends "page_template.html" %}
+
+{% load static %}
+
+{% block browserTitle %}{{ block.super}} Home {% endblock %}
+
+{% block leadspace %}{% endblock %}
+
+{% block extraFiles %}
+
+	
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+	
+		<div class="flex-l">
+			<div class="w-33-l mr4-l">
+				<div class="b mb4">Latest campaigns</div>
+				
+				{% for campaign in latestCampaigns %}
+					<div class="pa3 bg-near-white mb4">
+						<div><span class="b"><a class="{{ templateHelpers.classes.link }}" href="{% url 'survey:admin_campaign_list' %}?filter={{ campaign.uid|truncatechars:8 }}">{{ campaign.project.name }} - {{ campaign.survey.name }}</a></div>
+						<div class="flex mt2">
+							<div><a class="{{ templateHelpers.classes.link }}" href="{% url 'survey:campaign_responses_list' %}?uid={{ campaign.uid }}" target="_blank">Responses</a><span class="gray f6 ml1">({{ campaign.response_count }})</span></div>
+							{% if campaign.response_campaign.count > 0 %}<div class="ml3-ns"><strong>Last</strong>: {{ campaign.latest_response_date }}</div>{% endif %}
+							
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+			
+			<div class="w-33-l mr4-l">
+				<div class="b mb4">Most active campaigns</div>
+				
+				{% for campaign in mostActiveCampaigns %}
+					<div class="pa3 bg-near-white mb4">
+						<div><span class="b"><a class="{{ templateHelpers.classes.link }}" href="{% url 'survey:admin_campaign_list' %}?filter={{ campaign.uid|truncatechars:8 }}" target="_blank">{{ campaign.project.name }} - {{ campaign.survey.name }}</a></div>
+						<div class="flex mt2">
+							<div><a class="{{ templateHelpers.classes.link }}" href="{% url 'survey:campaign_responses_list' %}?uid={{ campaign.uid }}" target="_blank">Responses</a><span class="gray f6 ml1">({{ campaign.response_count }})</span></div>
+							<div class="ml3-ns"><strong>Last</strong>: {{ campaign.latest_response_date }}</div>
+							
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+			
+			<div class="w-33-l">
+				<div class="b mb4">Most recent responses</div>
+				
+				{% for response in mostRecentResponses %}
+					<div class="pa3 bg-near-white mb4">
+						<div><span class="b"><a class="{{ templateHelpers.classes.link }}" href="{% url 'survey:admin_campaign_list' %}?filter={{ response.campaign.uid|truncatechars:8 }}" target="_blank">{{ response.campaign.project.name }} - {{ response.campaign.survey.name }}</a></div>
+						<div class="flex mt2">
+							<div><a class="{{ templateHelpers.classes.link }}" href="{% url 'survey:campaign_responses_list' %}?uid={{ response.campaign.uid }}" target="_blank">Responses</a><span class="gray f6 ml1">({{ response.campaign.response_campaign.count }})</span></div>
+							<div class="ml3-ns"><strong>Last</strong>: {{ response.created_at }}</div>
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+			
+		</div>
+	
+	</div>
+
+{% endblock %}

@@ -1,0 +1,19 @@
+.custom-survey-page {
+	transition: all 0s;
+	transform: translate3d(0,101%,0);
+	opacity: 0;
+	height: 0;
+	overflow: hidden;
+}
+.custom-showing {
+	display: block;
+	transition: opacity .5s .3s ease-in, transform .5s ease-out;
+	opacity: 1;
+	transform: translate3d(0,0,0);
+	height: auto;
+	z-index: 2;
+}
+
+.surveykong-overlay-close:before {
+	content: "\2715";
+}

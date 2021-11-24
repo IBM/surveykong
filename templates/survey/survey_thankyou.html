@@ -1,0 +1,44 @@
+{% load common_templatetags %}
+{% load static %}
+{% getTemplateHelpers as templateHelpers %}
+
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<meta charset="UTF-8">
+		<link href="{% static 'shared/img/favicon.ico' %}" rel="icon"/>
+		<meta name="author" content="Michael Santelia">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="robots" content="noindex,nofollow">
+		<meta name="description" content="">
+		<meta name="keywords" content="">
+		<meta name="geo.country" content="WW">
+		<meta name="dcterms.date" content="2021-06-01">
+		
+
+		<title>{% block browserTitle %}SurveyKong - Thank you {% endblock %}</title>
+
+		{% include 'partials/base_design_css_files.inc' %}
+	</head>
+
+	<body class="plex">
+		{% bannerNotification %}
+		
+		{% if debug and DATABASE_HOST != 'localhost' %}
+			<div class="bg-dark-red white b h3 flex items-center justify-center">You are using the PRODUCTION database!</div>
+		{% endif %}
+		
+		<main role="main" aria-label="SurveyKong content">
+			<div class="{{ templateHelpers.classes.grid }} custom-leadspace bg-light-green pv3">
+				<h1 class="lh-title f3 fw5 mt0 mb0 w-70">Thank you</h1>
+			</div>
+			
+			<div class="{{ templateHelpers.classes.grid }} mv4">
+				<div>Your response was submitted successfully.</div>
+			</div>
+		</main>
+
+	</body>
+	
+</html>
+

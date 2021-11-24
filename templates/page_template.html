@@ -1,0 +1,183 @@
+{% load common_templatetags %}
+{% load static %}
+{% getTemplateHelpers as templateHelpers %}
+
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<meta charset="UTF-8">
+		<link href="{% static 'shared/img/favicon.ico' %}" rel="icon"/>
+		<meta name="author" content="Michael Santelia">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="robots" content="noindex,nofollow">
+		<meta name="description" content="Use SurveyKong to drive your tools forward by using our survey tool to capture the voices and opinions of the people who matter most to you.">
+		<meta name="keywords" content="questionnaire, survey, NPS, UMUX Lite, feedback">
+		<meta name="geo.country" content="WW">
+		<meta name="dcterms.date" content="2021-06-01">
+		
+
+		<title>{% block browserTitle %}SurveyKong - {% endblock %}</title>
+
+		{% include 'partials/base_design_css_files.inc' %}
+		
+		{% include 'partials/base_design_js_files.inc' %}
+		
+		{% block extraFiles %} {% endblock %}
+
+	</head>
+
+	<body class="plex">
+		{% bannerNotification %}
+		
+		{% if debug and DATABASE_HOST != 'localhost' %}
+			<div class="bg-dark-red white b h3 flex items-center justify-center">You are using the PRODUCTION database!</div>
+		{% endif %}
+		
+		<main role="main" aria-label="SurveyKong content">
+			{% block header %}
+				<nav class="bg-light-green pr3">
+					<div class="flex custom-menunav">
+						<a href="{% url 'survey:home' %}" class="b ph4 {{ templateHelpers.classes.menunavLink }}" style="width:160px;">SurveyKong</a>
+						<div class="w3 relative" style="background: url({% static 'shared/img/logo.svg' %}) -2px 50% / 40px no-repeat;width:36px;">&nbsp;</div>
+						{% if request.user.is_superuser %}
+							<a href="{% url 'admin:index' %}" class="{{ templateHelpers.classes.menunavLink }} ml3">Django admin</a>
+						{% endif %}
+						<a class="{{ templateHelpers.classes.menunavLink }} flex items-center" href="https://github.com/ibm/surveykong/" target="_blank"><span class="mr1">Submit a request</span>{{ templateHelpers.html.icons.github|safe }}</a>
+					</div>
+				</nav>
+			{% endblock %}
+
+			<div class="flex-ns">
+				<div class="w-100 bg-dark-chocolate pv3 f6" style="flex: 0 0 160px;">
+					{% if leftNavHighlight == 'dashboard' %}
+						<div class="{{ templateHelpers.classes.leftnavText }}">Dashboard</div>
+					{% else %}
+						<a class="{{ templateHelpers.classes.leftnavLink }}" href="{% url 'survey:home' %}">Dashboard</a>
+					{% endif %}
+					
+					<div class="bt mh3 b--gray mv3"></div>
+					
+					{% if leftNavHighlight == 'domains' %}
+						<div class="{{ templateHelpers.classes.leftnavText }}">Domains</div>
+					{% else %}
+						<a class="{{ templateHelpers.classes.leftnavLink }}" href="{% url 'survey:admin_domain_list' %}">Domains</a>
+					{% endif %}
+				
+					{% if leftNavHighlight == 'projects' %}
+						<div class="{{ templateHelpers.classes.leftnavText }}">Projects</div>
+					{% else %}
+						<a class="{{ templateHelpers.classes.leftnavLink }}" href="{% url 'survey:admin_project_list' %}">Projects</a>
+					{% endif %}
+					
+					{% if leftNavHighlight == 'campaigns' %}
+						<div class="{{ templateHelpers.classes.leftnavText }}">Campaigns</div>
+					{% else %}
+						<a class="{{ templateHelpers.classes.leftnavLink }}" href="{% url 'survey:admin_campaign_list' %}">Campaigns</a>
+					{% endif %}
+					
+					{% if leftNavHighlight == 'responses' %}
+						<div class="{{ templateHelpers.classes.leftnavText }}">Responses</div>
+					{% else %}
+						<a class="{{ templateHelpers.classes.leftnavLink }}" href="{% url 'survey:campaign_responses_list' %}">Responses</a>
+					{% endif %}					
+				
+					<div class="bt mh3 b--gray mv3"></div>
+					
+					{% if leftNavHighlight == 'survey builders' %}
+						<div class="{{ templateHelpers.classes.leftnavText }}">Survey builder</div>
+					{% else %}
+						<a class="{{ templateHelpers.classes.leftnavLink }}" href="{% url 'survey:admin_surveybuilder_list' %}">Survey builder</a>
+					{% endif %}
+					
+					{% if leftNavHighlight == 'questions' %}
+						<div class="{{ templateHelpers.classes.leftnavText }}">Questions</div>
+					{% else %}
+						<a class="{{ templateHelpers.classes.leftnavLink }}" href="{% url 'survey:admin_question_list' %}">Questions</a>
+					{% endif %}
+					
+					{% if leftNavHighlight == 'survey invites' %}
+						<div class="{{ templateHelpers.classes.leftnavText }}">Invites</div>
+					{% else %}
+						<a class="{{ templateHelpers.classes.leftnavLink }}" href="{% url 'survey:admin_surveyinvite_list' %}">Invites</a>
+					{% endif %}
+					
+					{% if leftNavHighlight == 'survey thankyous' %}
+						<div class="{{ templateHelpers.classes.leftnavText }}">Thankyous</div>
+					{% else %}
+						<a class="{{ templateHelpers.classes.leftnavLink }}" href="{% url 'survey:admin_surveythankyou_list' %}">Thankyous</a>
+					{% endif %}
+					
+					{% if leftNavHighlight == 'buttons' %}
+						<div class="{{ templateHelpers.classes.leftnavText }}">Buttons</div>
+					{% else %}
+						<a class="{{ templateHelpers.classes.leftnavLink }}" href="{% url 'survey:admin_button_list' %}">Buttons</a>
+					{% endif %}
+					
+					{% if leftNavHighlight == 'languages' %}
+						<div class="{{ templateHelpers.classes.leftnavText }}">Languages</div>
+					{% else %}
+						<a class="{{ templateHelpers.classes.leftnavLink }}" href="{% url 'survey:admin_language_list' %}">Languages</a>
+					{% endif %}
+					<a class="{{ templateHelpers.classes.leftnavLink }}" href="{% url 'survey:admin_home' %}">more...</a>
+				
+					
+					<div class="bt mh3 b--gray mv3"></div>
+					
+					{% if request.user.hasAdminAccess %}
+						{% if leftNavHighlight == 'admin' %}
+							<div class="{{ templateHelpers.classes.leftnavText }}">Admin center</div>
+						{% else %}
+							<a class="{{ templateHelpers.classes.leftnavLink }}" href="{% url 'survey:admin_home' %}">Admin center</a>
+						{% endif %}
+					{% endif %}
+					
+					{% if leftNavHighlight == 'releasenotes' %}
+						<div class="{{ templateHelpers.classes.leftnavText }}">Release notes</div>
+					{% else %}
+						<a class="{{ templateHelpers.classes.leftnavLink }}" href="{% url 'survey:release_notes' %}">Release notes</a>
+					{% endif %}
+					
+				</div>
+				
+				<div class="w-100 overflow-hidden">
+					{% block leadspace %}
+						<div class="{{ templateHelpers.classes.grid }} pt4">
+							{% block breadcrumbs %}
+								{% if breadcrumbs %}
+									<div class="f6 mb3">
+										{% for link in breadcrumbs %}<a class="{{ templateHelpers.classes.link }} mr2" href="{{ link.url }}">{{ link.text|safe }}</a><span class="mr2">/</span>{% endfor %}
+									</div>
+								{% endif %}
+							{% endblock %}
+							<h1 class="lh-title f4 fw6 mv0 pv0 mw7">{% block pageTitle %}Missing page title{% endblock %}</h1>
+							{% block pageSubtitle %}{% endblock %}
+						</div>
+					{% endblock %}		
+		
+					{% if request.session.pageMessage %}
+						<div class="mt4 mb3 fw5 {{ templateHelpers.classes.grid }} {{ request.session.pageMessage.class }}">{{ request.session.pageMessage.text|safe }}</div>
+					{% endif %}
+		
+					{% block content %} {% endblock %}
+				</div>
+			</div>
+
+		</main>
+
+		<div class="common-modal" id="custom-help-modal" aria-hidden="true">
+			<div class="fixed flex justify-center items-center bg-black-60 top-0 right-0 bottom-0 left-0" tabindex="-1" data-micromodal-close>
+				<div class="w-90 mw6 bg-white pa4" role="dialog" aria-modal="true" aria-labelledby="modal-{{ modalNum }}-title" >
+					<header class="mb3 flex items-center justify-between">
+						<div class="b f4">Whatcha need?</div>
+						<button class="mt0 common-modal-close pointer h2 ba br2 ph3 border-box b--blue blue bg-white hover-bg-blue hover-white" aria-label="Close modal" data-micromodal-close></button>
+					</header>
+					
+					<div class="mb0-ns mb3"><a class="{{ templateHelpers.classes.hasIcon }} animate" href="https://github.com/ibm/surveykong/">{{ templateHelpers.html.icons.chevronForward|safe }}I've got a bug / feature request / feedback for you</a></div>
+					
+				</div>
+			</div>
+		</div>
+		
+
+	</body>
+</html>

@@ -1,0 +1,148 @@
+{% extends adminTemplate %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}Admin - Add a new {{ modelMeta.verbose_name }}{% endblock %}
+
+{% block pageTitle %} Add a new {{ modelMeta.verbose_name }} {% endblock %}
+
+{% block pageSubtitle %} {% endblock %}
+
+{% block extraFiles %}
+
+	<script>
+		
+		(function ($) {
+			var button, buttonInPlace;
+			
+			function doPreview () {
+				button.innerText = document.querySelector('#id_text').value;
+				button.style.backgroundColor = document.querySelector('#id_background_color').value;
+				button.style.color = generateAccessibleTextColor(document.querySelector('#id_background_color').value);
+				
+				buttonInPlace.innerText = document.querySelector('#id_text').value;
+				buttonInPlace.style.backgroundColor = document.querySelector('#id_background_color').value;
+				buttonInPlace.style.color = generateAccessibleTextColor(document.querySelector('#id_background_color').value);
+			}
+			
+			
+			function generateAccessibleTextColor (hexcolor){
+				// Remove the leading "#" in case we get it passed to us in the hex color.
+				hexcolor = hexcolor.substr(0,1) === "#" ? hexcolor.substr(1) : hexcolor ;
+				var r = parseInt(hexcolor.substr(0,2),16),
+					g = parseInt(hexcolor.substr(2,2),16),
+					b = parseInt(hexcolor.substr(4,2),16),
+					yiq = ((r*299) + (g*587) + (b*114)) / 1000;
+			
+				return (yiq >= 128) ? "#000" : "#fff";
+			}
+			
+			
+			function moveButton () {
+				var styles,
+					pos = document.getElementById('id_position').value,
+					offset = parseInt(document.getElementById('id_offset').value);
+				
+				switch (pos) {
+					case 'top':
+						styles = 'top:0;bottom:auto;';
+						if (offset < 50) {
+							styles += 'right:auto;left:'+offset+'%;transform:none;'
+						}
+						else if (offset === 50) {
+							styles += 'right:auto;left:'+offset+'%;transform:translate3d(-50%,0,0);'
+						}
+						else {
+							styles += 'right:'+ (100-offset)+'%;left:auto;transform:none;'
+						}
+						break;
+						
+					case 'bottom':
+						styles = 'top:auto;bottom:0;';
+						if (offset < 50) {
+							styles += 'right:auto;left:'+offset+'%;transform:none;'
+						}
+						else if (offset === 50) {
+							styles += 'right:auto;left:'+offset+'%;transform:translate3d(-50%,0,0);'
+						}
+						else {
+							styles += 'right:'+ (100-offset)+'%;left:auto;transform:none;'
+						}
+						break;
+				
+					case 'left':
+						styles = 'right:auto;bottom:auto;left:0;transform-origin:top left;';
+						if (offset < 50) {
+							styles += 'top:'+offset+'%;transform:rotate(-90deg) translate3d(-100%,0,0);'
+						}
+						else if (offset === 50) {
+							styles += 'top:'+offset+'%;transform:rotate(-90deg) translate3d(-50%,0,0);'
+						}
+						else {
+							styles += 'top:'+offset+'%;transform:rotate(-90deg);'
+						}
+						break;
+						
+					case 'right':
+						styles = 'right:0;bottom:auto;left:auto;transform-origin:top right;';
+						if (offset < 50) {
+							styles += 'top:'+offset+'%;transform:rotate(90deg) translate3d(100%,0,0);'
+						}
+						else if (offset === 50) {
+							styles += 'top:'+offset+'%;transform:rotate(90deg) translate3d(50%,0,0);'
+						}
+						else {
+							styles += 'top:'+offset+'%;transform:rotate(90deg);'
+						}
+						break;
+				}
+				
+				buttonInPlace.style.cssText += styles;
+			}
+			
+			
+			function setupPreviewPosition () {
+				$('#id_position').on('change', moveButton);
+				document.getElementById('id_offset').addEventListener('input', moveButton);
+			}
+			
+			
+			$(function () { 
+				button = document.querySelector('#custom-preview-button');
+				buttonInPlace = document.querySelector('#custom-button-in-place');
+				document.querySelectorAll('#id_text, #id_background_color').forEach(function(item) {
+					item.addEventListener('input', doPreview);
+				});
+				doPreview();
+				setupPreviewPosition();
+				moveButton();
+			});
+			
+		})(jQuery);
+	
+	</script>
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4 flex-ns">
+		
+		<div class="w-50-ns w-100">
+			{% include 'partials/form_complete_horizontal.html' with form=form %}
+				
+			{% block deleteButton %}{% endblock %}
+		</div>
+		
+		<div class="w-40-ns w-100 pl5-ns">
+			<div class="b">Preview</div>
+			<div class="mt3"><button id="custom-preview-button" class="{{ templateHelpers.classes.surveyTriggerButton }}"></button></div>
+			
+			<div class="mt3"><button id="custom-button-in-place" class="fixed {{ templateHelpers.classes.surveyTriggerButton }}"></button></div>
+		</div>
+				
+	</div>
+		
+{% endblock %}
+

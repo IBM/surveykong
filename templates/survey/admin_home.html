@@ -1,0 +1,91 @@
+{% extends "page_template.html" %}
+
+{% load static %}
+
+
+{% block browserTitle %}{{ block.super}} Admin center{% endblock %}
+
+{% block pageTitle %} Admin center{% endblock %}
+
+{% block extraFiles %}
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		
+		<div class="mb3 b">Frequently used</div>
+		
+		<div class="flex flex-wrap">
+			{% url 'survey:admin_campaign_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Campaigns' totalNum=counts.campaigns description='Settings for a project + survey' %}
+
+			{% url 'survey:campaign_responses_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Responses' totalNum=counts.campaigns description='Duh' %}
+
+			{% url 'survey:admin_surveybuilder_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Survey builder' totalNum=counts.surveys description='Create and edit surveys' %}
+		</div>
+		
+		<div class="mb3 b">Popular</div>
+			
+		<div class="flex flex-wrap">
+			{% url 'survey:admin_adminaccess' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Admin access' totalNum=counts.admins description='Manage who has full access' %}
+			
+			{% url 'survey:admin_button_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Buttons' totalNum=counts.buttons description='Buttons trigger surveys' %}
+			
+			{% url 'survey:admin_campaign_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Campaigns' totalNum=counts.campaigns description='Settings for a project + survey' %}
+			
+			{% url 'survey:admin_surveyinvite_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Campaign intercept invites' totalNum=counts.surveyInvites description='Intercept invite messages' %}
+			
+			{% url 'survey:admin_surveythankyou_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Campaign thankyous' totalNum=counts.surveyThankyous description='Campaigns can have custom thankyou messages' %}
+			
+			{% url 'survey:admin_domain_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Domains' totalNum=counts.domains description='Domains contain projects' %}
+			
+			{% url 'survey:admin_language_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Languages' totalNum=counts.languages description='Every survey has a language' %}
+			
+			{% url 'survey:admin_project_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Projects' totalNum=counts.projects description='Projects have campaigns' %}
+
+			{% url 'survey:campaign_responses_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Responses' totalNum=counts.campaigns description='Duh' %}
+			
+			{% url 'survey:admin_question_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Questions' totalNum=counts.questions description='Manage all questions' %}
+			
+			{% url 'survey:admin_surveybuilder_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Survey builder' totalNum=counts.surveys description='Create and edit surveys' %}
+			
+		</div>
+		
+		<div class="mb3 b">Superfluous/Extraneous</div>
+		
+		<div class="flex flex-wrap">
+			{% url 'survey:admin_survey_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Surveys' totalNum=counts.surveys description='Surveys are reusable forms' %}
+			
+			{% url 'survey:admin_page_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Survey pages' totalNum=counts.pages description='Reorder survey pages' %}
+	
+			{% url 'survey:admin_questionorder_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Question orders' totalNum=counts.questionOrders description='Manage the question orders table' %}
+			
+			{% url 'survey:admin_releasenote_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Release notes' totalNum=counts.releaseNotes description='Dev notes about each release' %}
+			
+			
+		</div>
+	
+		
+	</div>
+	
+{% endblock %}

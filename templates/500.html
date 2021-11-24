@@ -1,0 +1,18 @@
+{% extends "survey/survey_standalone_template.html" %}
+
+{% block browserTitle %}{{ block.super}} Error 500{% endblock %}
+
+{% block pageTitle %} Woops, now you've done it{% endblock  %}
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} custom-leadspace bg-light-green pv3">
+		<h1 class="lh-title f3 fw5 mt0 mb0 w-70">Error 500: Woops, now you've done it</h1>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mb4 mt4">
+        <p class="lh-copy">Uh oh! A 500 error just occurred. Something on this page caused a boo-boo and it can't be rendered. 
+            <br>Don't worry, the admins have just been notified.</p>
+	</div>
+	
+{% endblock %}

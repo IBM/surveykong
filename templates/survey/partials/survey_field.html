@@ -1,0 +1,113 @@
+<div id="q_{{ question.short_name }}_container" class="mb4 pb3 w-100" {% if question.parent_question %}data-parent-question="{{ question.parent_question.short_name }}" data-parent-answer="{{ question.parent_answer }}" data-parent-answer-action="{{ question.parent_answer_action }}"{% endif %}>
+	{% if question.type == 'message' %}
+		<div class="lh-copy mw7">{{ question.message_text|safe }}</div>
+	
+	{% else %}
+		<div class="mw6">
+			<label for="id_{{ question.short_name }}" class="db lh-copy b mb2 pb1 {% if question.required %}bo-field-required{% endif %}">{% if campaign.survey.survey_type == 'vote' and question.question_text_past_tense %}{{ question.question_text_past_tense|safe }}{% else %}{{ question.question_text|safe }}{% endif %}</label>
+		
+			{% if question.type == 'radio' %}
+				<fieldset class="db bw0 pa0 ma0">
+					{% if question.layout == 'horizontal' %}
+						<div class="flex justify-between tc label-under f6">
+							{% for answer in question.answers %}
+								<div class="bo-checkboxradio f6">
+									<input type="radio" name="{{ question.short_name }}" id="id_{{ question.short_name }}_{{ forloop.counter}}" value="{{ answer.0 }}" {% if question.required %}required{% endif %}>
+									<label for="id_{{ question.short_name }}_{{ forloop.counter}}"><span class="db mt1">{{ answer.1 }}</span></label>
+								</div>
+							{% endfor %}
+						</div>
+						{% if question.anchor_text_beginning or question.anchor_text_end %}
+							<div class="mt2 flex justify-between fw4 f6 gray">
+								<div>{{ question.anchor_text_beginning }}</div>
+								<div>{{ question.anchor_text_end }}</div>
+							</div>
+						{% endif %}
+					{% else %}
+						{% for answer in question.answers %}
+							<div class="{% if not forloop.last %}mb2 {% endif %}bo-checkboxradio f6">
+								<input type="radio" name="{{ question.short_name }}" id="id_{{ question.short_name }}_{{ forloop.counter}}" value="{{ answer.0 }}" {% if question.required %}required{% endif %}>
+								<label for="id_{{ question.short_name }}_{{ forloop.counter}}">{{ answer.1 }}</label>
+							</div>
+						{% endfor %}
+					{% endif %}
+				</fieldset>
+			
+			{% elif question.type == 'stars' %}
+				<div class="cf">
+					<fieldset class="cf custom-rating db bw0 pa0 ma0">
+						<input type="radio" id="id_{{ question.short_name }}_5" name="{{ question.short_name }}" value="5" {% if question.required %}required{% endif %}><label for="id_{{ question.short_name }}_5" title="5">5 stars</label>
+						<input type="radio" id="id_{{ question.short_name }}_4" name="{{ question.short_name }}" value="4" {% if question.required %}required{% endif %}><label for="id_{{ question.short_name }}_4" title="4">4 stars</label>
+						<input type="radio" id="id_{{ question.short_name }}_3" name="{{ question.short_name }}" value="3" {% if question.required %}required{% endif %}><label for="id_{{ question.short_name }}_3" title="3">3 stars</label>
+						<input type="radio" id="id_{{ question.short_name }}_2" name="{{ question.short_name }}" value="2" {% if question.required %}required{% endif %}><label for="id_{{ question.short_name }}_2" title="2">2 stars</label>
+						<input type="radio" id="id_{{ question.short_name }}_1" name="{{ question.short_name }}" value="1" {% if question.required %}required{% endif %}><label for="id_{{ question.short_name }}_1" title="1">1 star</label>
+					</fieldset>					
+				</div>
+			
+			{% elif question.type == 'checkbox' %}
+				<fieldset class="db bw0 pa0 ma0 checkbox-group {% if question.required %}custom-required{% endif %}">
+					{% if question.layout == 'horizontal' %}
+						<div class="flex justify-between tc label-under f6">
+							{% for answer in question.answers %}
+								<div class="bo-checkboxradio f6">
+									<input type="checkbox" name="{{ question.short_name }}[]" id="id_{{ question.short_name }}_{{ forloop.counter}}" value="{{ answer.0 }}">
+									<label for="id_{{ question.short_name }}_{{ forloop.counter}}"><span class="db mt1">{{ answer.1 }}</span></label>
+								</div>
+							{% endfor %}
+							{% if question.anchor_text_beginning or question.anchor_text_end %}
+							<div class="mt2 flex justify-between fw4 f6 gray">
+								<div>{{ question.anchor_text_beginning }}</div>
+								<div>{{ question.anchor_text_end }}</div>
+							</div>
+						{% endif %}
+						</div>
+					{% else %}
+						{% for answer in question.answers %}
+							<div class="{% if not forloop.last %}mb2 {% endif %}bo-checkboxradio f6">
+								<input type="checkbox" name="{{ question.short_name }}[]" id="id_{{ question.short_name }}_{{ forloop.counter}}" value="{{ answer.0 }}">
+								<label for="id_{{ question.short_name }}_{{ forloop.counter}}">{{ answer.1 }}</label>
+							</div>
+						{% endfor %}
+					{% endif %}
+				</fieldset>
+		
+			{% elif question.type == 'select' or question.type == 'selectmultiple' %}
+				<div>
+					<select id="id_{{ question.short_name }}" name="{{ question.short_name }}{% if question.type == 'selectmultiple' %}[]{% endif %}" {% if question.type == 'selectmultiple' %}multiple{% endif %} data-placeholder="Select" {% if question.required %}required{% endif %}>
+						<option value=""></option>
+					{% for answer in question.answers %}
+						<option value="{{ answer.0 }}">{{ answer.1 }}</option>
+					{% endfor %}
+					</select>
+				</div>
+			
+			{% elif question.type == 'number' %}
+				<div><input id="id_{{ question.short_name }}" type="number" value="" name="{{ question.short_name }}" placeholder="{{ question.placeholder_text|default:'e.g. &nbsp;4' }}" {% if question.required %}required{% endif %}></div>
+			
+			{% elif question.type == 'email' %}
+				<div><input id="id_{{ question.short_name }}" type="email" value="" name="{{ question.short_name }}" placeholder="{{ question.placeholder_text|default:'e.g. &nbsp;user@domain.com' }}" {% if question.required %}required{% endif %}></div>
+			
+			{% elif question.type == 'hidden' %}
+				<input type="hidden" value="{{ question.default_answer }}" name="{{ question.short_name }}">
+			
+			{% elif question.type == 'url' %}
+				<div><input id="id_{{ question.short_name }}" type="url" value="" name="{{ question.short_name }}" placeholder="{{ question.placeholder_text|default:'e.g. &nbsp;https://somedomain.com/some/page/' }}" {% if question.required %}required{% endif %}></div>
+			
+			{% elif question.type == 'date' %}
+				<div><input id="id_{{ question.short_name }}" type="date" value="" name="{{ question.short_name }}" {% if question.required %}required{% endif %}></div>
+			
+			{% elif question.type == 'textinput' %}
+				<div><input id="id_{{ question.short_name }}" type="text" value="" name="{{ question.short_name }}" {% if question.required %}required{% endif %} {% if question.character_limit %}maxlength="{{ question.character_limit }}"{% endif %} placeholder="{{ question.placeholder_text|default:'' }}">
+					{% if question.character_limit %}<div class="mt2 gray f6">{{ question.character_limit }} character limit</div>{% endif %}
+				</div>
+			
+			{% elif question.type == 'textarea' %}
+				<div><textarea id="id_{{ question.short_name }}" name="{{ question.short_name }}" class="bo-common-autotextarea" rows="4" {% if question.required %}required{% endif %} {% if question.character_limit %}maxlength="{{ question.character_limit }}"{% endif %}></textarea>
+					{% if question.character_limit %}<div class="mt1 gray f6">{{ question.character_limit }} character limit</div>{% endif %}
+				</div>
+				
+			{% endif %}
+		</div>		
+	{% endif %}
+</div>
+

@@ -1,0 +1,68 @@
+
+<style>
+	.custom-signin-form input {
+		padding: 8px;
+		width: 100%;
+	}
+	
+	.custom-signin-form input:focus {
+	}
+	
+	.custom-signin-form #custom-auth-btn-wait {
+		display: none;
+	}
+	.custom-signin-form.authenticating #custom-auth-btn-wait {
+		display: flex;
+	}
+	.custom-signin-form.authenticating #custom-auth-signin-btn {
+		display: none;
+	}
+	
+</style>
+
+<script>
+	(function ($) {
+		$(function () {
+			$(".custom-signin-form").on("submit", function () {
+				this.classList.add("authenticating");
+			});
+		});
+	})(jQuery);  
+	
+</script>
+
+
+
+
+<form class="custom-signin-form mb5" action="{% url 'survey:signin' %}" method="post">
+	<!-- CSRF -->
+	{% csrf_token %}
+	
+	{# If we should take them somewhere other than default page after signing in. #}
+	{% if request.GET.next %}
+		<input type='hidden' name='next' value='{{ request.GET.next }}'>
+	{% elif request.POST.next %}
+		<input type='hidden' name='next' value='{{ request.POST.next }}'>
+	{% endif %}
+	
+	<p class="mb2">
+		<label for="id_username" class="mb2 db b">w3 intranet ID</label>
+		{{ form.username }}
+	</p>
+	<p>
+		<label for="id_password" class="mb2 db b">Password</label>
+		{{ form.password }}
+	</p>
+	
+
+	<br>
+	<div>
+		<button id="custom-auth-signin-btn" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }}" type="submit">Sign in</button>
+		<div id="custom-auth-btn-wait" class="flex items-center">
+			<button id="custom-btn-wait" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.disabledButton }}" style="cursor: not-allowed;" disabled>Sign in</button>
+			<div class="{{ templateHelpers.classes.spinner }} ml3 bw2 w2 h2 dib"></div><div class="dib ml2 f6">Authenticating</div>
+		</div>
+	</div>
+   
+</form>
+

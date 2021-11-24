@@ -1,0 +1,11 @@
+
+<div id="{{field.name }}-row" class="flex-ns items-center mb3">
+	<div class="pr3-ns mb1 mb0-ns {{ labelWidthClass|default:'custom-form-horizontal-label' }}">{{ field.label_tag }} {% if field.help_text %}<span style="top:4px;" class="hint--top-right hint--large relative db small tinyicon normal linkcolor" aria-label="{{ field.help_text|safe }}">{{ templateHelpers.html.icons.info|safe }}</span>{% endif %}</div>
+	<div class="mw6 w-100">{{ field }}</div>
+</div>
+{% if field.errors %}
+	<div class="flex mb3">
+		<div class="pr3-ns {{ labelWidthClass|default:'custom-form-horizontal-label' }}"></div>
+		<div class="dark-red">↑ {{ field.errors.as_text }}</div>
+	</div>
+{% endif %}

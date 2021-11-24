@@ -1,0 +1,49 @@
+{% extends "survey/page_template.html" %}
+{% load static %}
+
+
+{% block browserTitle %} {{ block.super}} Release notes {% endblock %}
+
+{% block metaDescription %} CIO User Research - Release notes {% endblock %}
+
+{% block pageTitle %} Release notes {% endblock %}
+
+{% block pageSubtitle %} {% endblock %}
+
+{% block extraFiles %}
+
+	<style>
+		
+		/* Editors can put html links in text, so this makes them act like our link class */
+		.custom-link-underline a:focus,
+		.custom-link-underline a:hover {
+			color: var(--blue);
+			text-decoration: underline;
+		}
+		
+	</style>
+	
+{% endblock %}
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} pt4">
+		<div class="mb4 flex-ns items-center justify-between">
+			<div class="">Developer notes pertaining to each release of the site</div>
+			{% if request.user.is_superuser %}
+				<div class=""><a class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenPriButton }}" href="{% url 'survey:admin_releasenote_add' %}">Add new release note</a></div>
+			{% endif %}
+		</div>
+		
+		{% for item in releaseNotes %}
+			<div class="lh-copy bt b--moon-gray pv3">
+				<div class="b mbq">{{ item.release_number }}</div>
+				<div class="gray mb1 f6">{{ item.date }}</div>
+				<div class="custom-link-underline lh-copy mw7">{{ item.notes|safe }}</div>
+			</div>
+		{% endfor %}
+	
+	</div>
+
+{% endblock %}
+

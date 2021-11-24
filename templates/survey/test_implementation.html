@@ -1,0 +1,58 @@
+{% load common_templatetags %}
+{% load static %}
+{% getTemplateHelpers as templateHelpers %}
+
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<meta charset="UTF-8">
+		<link href="{% static 'shared/img/favicon.ico' %}" rel="icon"/>
+		<meta name="author" content="Michael Santelia">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="robots" content="noindex,nofollow">
+		<meta name="description" content="Use SurveyKong to drive your tools forward by using our survey tool to capture the voices and opinions of the people who matter most to you.">
+		<meta name="keywords" content="questionnaire, survey, NPS, UMUX Lite, feedback">
+		<meta name="geo.country" content="WW">
+		<meta name="dcterms.date" content="2021-06-01">
+		
+
+		<title>{% block browserTitle %}SurveyKong - {% endblock %}</title>
+
+		<style>#djDebug{display:none}</style>
+		
+		<script src="/survey/config/{{ request.GET.puid }}.js"></script>
+	</head>
+
+	<body class="plex">
+		
+		<main style="max-width: 64rem; padding: 3rem;font-family:Arial;font-size:20px;margin:auto" role="main" aria-label="SurveyKong content">
+			
+			<p>This is a page with nothing on it, to test the intercept and button functionality and styling.</p>
+			
+			<p>Leverage agile frameworks to provide a robust synopsis for high level overviews. Iterative approaches to corporate strategy foster collaborative thinking to further the overall value proposition. Organically grow the holistic world view of disruptive innovation via workplace diversity and empowerment.</p>
+			
+			<p>
+			
+			Bring to the table win-win survival strategies to ensure proactive domination. At the end of the day, going forward, a new normal that has evolved from generation X is on the runway heading towards a streamlined cloud solution. User generated content in real-time will have multiple touchpoints for offshoring.
+			</p>
+			
+			<p>
+				
+			Capitalize on low hanging fruit to identify a ballpark value added activity to beta test. Override the digital divide with additional clickthroughs from DevOps. Nanotechnology immersion along the information highway will close the loop on focusing solely on the bottom line.
+			</p>
+			
+			<p>Podcasting operational change management inside of workflows to establish a framework. Taking seamless key performance indicators offline to maximise the long tail. Keeping your eye on the ball while performing a deep dive on the start-up mentality to derive convergence on cross-platform integration.
+			</p>
+			<p>
+				Collaboratively administrate empowered markets via plug-and-play networks. Dynamically procrastinate B2C users after installed base benefits. Dramatically visualize customer directed convergence without revolutionary ROI.
+			</p>
+			<p>Efficiently unleash cross-media information without cross-media value. Quickly maximize timely deliverables for real-time schemas. Dramatically maintain clicks-and-mortar solutions without functional solutions.
+			</p>
+			<p>
+			Completely synergize resource taxing relationships via premier niche markets. Professionally cultivate one-to-one customer service with robust ideas. Dynamically innovate resource-leveling customer service for state of the art customer service.
+			</p>
+		</main>
+		
+
+	</body>
+</html>

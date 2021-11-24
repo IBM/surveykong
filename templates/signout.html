@@ -1,0 +1,15 @@
+{% extends "page_template.html" %}
+
+{% block statsFile %} {% endblock %}
+
+{% block browserTitle %}{{ block.super }} Signed out {% endblock  %}
+
+{% block pageTitle %} Signed out {% endblock  %}
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+    	<p>You have been signed out successfully.</p>
+    </div>
+
+{% endblock %}

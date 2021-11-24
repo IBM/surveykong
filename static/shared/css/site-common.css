@@ -1,0 +1,187 @@
+/************************************************************************************************
+	Site-wide shared style vars and base setups for ALL apps. 
+	
+	"common-" prefix denotes it's a site-wide style defined here.
+************************************************************************************************/
+
+/*
+Patterns:
+	light-gray for white text on dark background.
+	gray for de-emphasized text 'gray' text on white.
+	mid-gray barely lighter than text color.
+*/
+
+:root {
+	--sitecolor: var(--yellow);
+}
+
+
+a, 
+.linkcolor {
+	color: var(--link-color);
+}
+
+.bg-dark-chocolate {
+	background-color: #302400;
+}
+
+.hover .icon:focus,
+.hover .icon:hover {
+	fill: var(--dark-blue);
+}
+
+/* Reverse BO default. w3ds is light default, hover/focus dark **/
+.bo-checkboxradio input:checked + label::before {
+	background: var(--link-color);
+	border-color: var(--link-color);
+}
+.bo-checkboxradio input:checked:focus + label::before, 
+.bo-checkboxradio input:checked:hover + label::before {
+	background: var(--dark-blue);
+	border-color: var(--dark-blue);
+}
+
+/* Radio has "after" as the main blue color to change. Opposite of checkbox. */
+.bo-checkboxradio input[type="radio"]:checked + label::after {
+	background: var(--link-color);
+	border-color: var(--link-color);
+}
+.bo-checkboxradio input[type="radio"]:checked:focus + label::after, 
+.bo-checkboxradio input[type="radio"]:checked:hover + label::after {
+	background: var(--dark-blue);
+	border-color: var(--dark-blue);
+}
+
+.hover-b--dark-red:hover {
+	border-color: var(--dark-red);
+}
+
+
+
+.label-under .bo-checkboxradio label::before {
+	margin-right: 0;
+}
+
+/* Matches animates all color changes together */
+.custom-animate-all,
+.custom-animate-all::before,
+.custom-animate-all::after {
+	transition: all .5s var(--animation-curve) !important;
+}
+
+.custom-form-horizontal-label {
+	width: 12rem;
+}
+
+/* Larger default non-styled ones */
+input[type="checkbox"], input[type="radio"] {
+	height: 20px;
+	width: 20px;
+}
+
+input:not([type=checkbox]),
+input:not([type=radio]),
+textarea,
+select {
+	border-radius: .25rem;
+}
+
+
+.dt-buttons button {
+	border-radius: .25rem;
+}
+
+.select2 .select2-selection {
+	border-radius: .25rem;
+}
+
+
+
+.custom-rating {
+	float:left;
+}
+
+/* :not(:checked) is a filter, so that browsers that don’t support :checked don’t 
+   follow these rules. Every browser that supports :checked also supports :not(), so
+   it doesn’t make the test unnecessarily selective */
+.custom-rating:not(:checked) > input {
+	position:absolute;
+	/*visibility: hidden;*/
+	top:-9999px;
+	clip:rect(0,0,0,0);
+}
+
+.custom-rating:not(:checked) > label {
+	float:right;
+	width:1em;
+	padding:0 .3rem;
+	overflow:hidden;
+	white-space:nowrap;
+	cursor:pointer;
+	font-size:200%;
+	line-height:1.2;
+	color:#ddd;
+}
+
+.custom-rating:not(:checked) > label:before {
+	content: '☆ ';
+}
+
+.custom-rating > input:checked ~ label:before {
+	content: '★ ';
+	color: var(--yellow);
+}
+
+.custom-rating:not(:checked) > label:hover,
+.custom-rating:not(:checked) > label:hover ~ label {
+	content: '★ ';
+	color: var(--yellow);
+}
+
+.custom-rating > input:focus + label {
+	outline: 1px solid var(--link-color);
+}
+
+.custom-rating > input:checked + label:hover,
+.custom-rating > input:checked + label:hover ~ label,
+.custom-rating > input:checked ~ label:hover,
+.custom-rating > input:checked ~ label:hover ~ label,
+.custom-rating > label:hover ~ input:checked ~ label {
+	content: '★ ';
+	color: var(--gold);
+}
+
+.custom-rating > label:active {
+	position:relative;
+	top:2px;
+	left:2px;
+}
+
+
+.custom-drop-con {
+	min-height: 1.5rem;
+}
+
+.custom-droppable {
+	border: 8px solid transparent;
+	height: 3rem;
+	border-left: none;
+	border-right: none;
+}
+.custom-droppable::before {
+	border: 16px solid var(--light-green);
+	display: block;
+	content: '';
+}
+.custom-dragging {
+	border: 2px solid red;
+}
+
+.dn {
+	display: none;
+}
+
+/* Match select2 width so no jumping on select2 destroy->init */
+select {
+	height: 43px;
+}

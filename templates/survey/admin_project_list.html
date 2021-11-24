@@ -1,0 +1,92 @@
+{% extends "survey/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Projects {% endblock %}
+
+{% block pageTitle %} Projects {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	
+	<script>
+	
+		(function ($) {
+			
+			function doFilter () {
+				var filterText = '{{ request.GET.filter }}';
+				if (filterText.length > 0) {
+					$('.dataTables_filter').find('input').val(filterText).trigger('input');
+				}	
+			}
+			
+			function populateScriptTag () {
+				$('table').on('dblclick', 'td', function (evt) {
+					var v = evt.target.innerText,
+						templ = '<scr'+'ipt async src="https://REPLACE_ME.com/survey/config/uid.js"></scr'+'ipt>';
+					document.getElementById('custom-embed-script').value = templ.replace('uid',v);
+				});
+				
+				document.getElementById('custom-embed-script').addEventListener('click', function (evt) {
+					evt.target.select();
+				})
+			}
+			
+			$(doFilter);
+			$(populateScriptTag);
+		
+		})(jQuery);
+		
+	</script>
+	
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<div class="pb0">Edit an item below or <a class="{{ templateHelpers.classes.hasIcon }} animate" href="{% url 'survey:admin_project_add' %}"><span class="mr1">add a new project</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a></div>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		
+		<div class="mb3">
+			<div class="mb2">Double-click any UID below to populate the script tag and provide it to the project team</div>
+			<div class="w-100 mw7"><input id="custom-embed-script" type="text" readonly value='<script async src="https://REPLACE_ME.com/survey/config/uid.js"></script>'></div>
+		</div>
+		
+		
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-order='[[1,"asc"]]' data-width="100%">
+			<thead>
+				<tr>
+					<th class="tl">UID</th>
+					<th class="tl">Name</th>
+					<th class="tl">Alt display name</th>
+					<th class="tl">Domain</th>
+					<th class="tl">Campaigns</th>
+					<th class="tl">Responses</th>
+					<th class="tl">Active</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for item in listItems %}
+					<tr>
+						<td class="custom-uid">{{ item.uid }}</td>
+						<td class=""><a href="{% url 'survey:admin_project_edit' id=item.id %}" class="{{ templateHelpers.classes.link }}">{{ item.name }}</a></td>
+						<td class="">{{ item.display_name }}</td>
+						<td class=""><a href="{% url 'survey:admin_domain_list' %}?filter={{ item.domain.name }}" class="{{ templateHelpers.classes.link }}">{{ item.domain.name }}</a></td>
+						<td class="tr">{% if item.campaign_project.count > 0 %}<a href="{% url 'survey:admin_campaign_list' %}?filter={{ item.name }}" class="{{ templateHelpers.classes.link }} pl4">{{ item.campaign_project.count }}</a>{% else %}0{% endif %}</td>
+						<td class="tr">{{ item.responseCount }}</td>
+						<td class="tc f6 mw3">{% if item.active %}✅{% endif %}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

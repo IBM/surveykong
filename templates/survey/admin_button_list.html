@@ -1,0 +1,82 @@
+{% extends "survey/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Buttons {% endblock %}
+
+{% block pageTitle %} Buttons {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	
+	<script>
+	
+		(function ($) {
+			
+			function doFilter () {
+				var filterText = '{{ request.GET.filter }}';
+				if (filterText.length > 0) {
+					$('.dataTables_filter').find('input').val(filterText).trigger('input');
+				}	
+			}
+			
+			$(doFilter);
+		
+		
+		})(jQuery);
+		
+	</script>
+	
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<div class="pb0">Edit an item below or <a class="{{ templateHelpers.classes.hasIcon }} animate" href="{% url 'survey:admin_button_add' %}"><span class="mr1">add a new button</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a></div>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4 mw8">
+		
+		<!-- <div class="flex items-center mb4">
+			<div>Filter project name:</div>
+			<div class="ml3-ns"><input type="text" class="mw5"></div>
+		</div> -->
+		
+		
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-paging="false" data-width="100%">
+			<thead>
+				<tr>
+					<th class="tl">Name</th>
+					<th class="tl">Text</th>
+					<th class="tl">Position</th>
+					<th class="tl">Offset</th>
+					<th class="tl">Background</th>
+					<th class="tl">Text (auto)</th>
+					<th class="tl">Surveys</th>
+					<th class="tl">Campaigns</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for item in listItems %}
+					<tr class="hover-bg-light-green">
+						<td class=""><a href="{% url 'survey:admin_button_edit' id=item.id %}" class="{{ templateHelpers.classes.link }}">{{ item.name }}</a></td>
+						<td class="">{{ item.text }}</td>
+						<td class="">{{ item.position }}</td>
+						<td class="">{{ item.offset }}%</td>
+						<td class=""><code>{{ item.background_color }}</code> <span class="h1 w1 ml2 dib ba b--near-black" style="background-color:{{ item.background_color }};transform:translate3d(0,2px,0);"></span></td>
+						<td class=""><code>{{ item.text_color }}</code> <span class="h1 w1 ml2 dib ba b--near-black" style="background-color:{{ item.text_color }};transform:translate3d(0,2px,0);"></span></td>
+						<td class="tr">{{ item.surveyCount }}</td>
+						<td class="tr">{{ item.campaignCount }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

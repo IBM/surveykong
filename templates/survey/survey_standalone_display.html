@@ -1,0 +1,74 @@
+{% extends "survey/survey_standalone_template.html" %}
+
+{% load common_templatetags %}
+{% getTemplateHelpers as templateHelpers %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} custom-leadspace bg-light-green pv3">
+		<div class="flex justify-between items-center">
+			<h1 class="lh-title f3 fw5 mt0 mb0 w-70">{{ campaign.survey.title }}</h1>
+			<div class="mt1">SurveyKong</div>
+		</div>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		{% if request.user.hasAdminAccess %}
+			{% include 'survey/partials/survey_debug_box.html' %}
+		{% endif %}
+		
+		<div id="custom-content" class="mb4 mw7">
+			<form id="custom-survey-form" action="{% url 'survey:api_submit_response' %}" method="post">
+				<input type="hidden" name="display_type" value="standalone">
+						
+				<div id="custom-form-error-message" class="dn mb4 red b"></div>
+						
+				{% csrf_token %}
+				<input type="hidden" name="cuid" value="{{ campaign.uid }}">
+				<input type="hidden" name="url" id="custom-url" value="">
+				<input type="hidden" name="cc" id="custom-cc" value="">
+				<script>
+					document.getElementById('custom-url').value = window.location;
+					jQuery.getScript('https://api.www.s81c.com/webmaster/dbip/?callback=setcc');
+					window.setcc = function (d) {document.getElementById('custom-cc').value=d.country}
+				</script>
+				
+				{% for page in campaign.survey.page_survey.all %}
+					<div class="custom-survey-page {% if forloop.counter == 1 %}custom-showing{% endif %}" data-page="{{ forloop.counter }}">
+						<div class="mb4">
+							{% for questionOrder in page.question_order_page.all %}
+								{% include 'survey/partials/survey_field.html' with question=questionOrder.question %}
+							{% endfor %}
+						</div>
+					</div>
+				{% endfor %}
+				
+				<div id="custom-survey-buttons">
+					<div class="bo-fadein mw6 flex items-center justify-between">
+						<div id="custom-previous-button">
+							<a href="#" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }}">Previous</a>
+						</div>
+						
+						<div id="custom-next-button">
+							<a href="#" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }}">Next</a>
+						</div>
+							
+						<div id="custom-submit-button" class="dn">
+							<div class="flex">
+								<div id="custom-processing" class="flex items-center mr3" style="display:none;">
+									<div class="{{ templateHelpers.classes.spinner }} bw2 w2 h2 dib"></div>
+									<div id="custom-processing-msg" class="dib ml2 f6">Processing</div>
+								</div>
+								<button class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenPriButton }}">Submit</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+			</form>
+		</div>
+		
+	</div>
+	
+{% endblock content %}

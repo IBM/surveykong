@@ -1,0 +1,21 @@
+{% extends "survey/survey_standalone_template.html" %}
+
+{% load common_templatetags %}
+{% getTemplateHelpers as templateHelpers %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} custom-leadspace bg-light-green pv3">
+		<div class="flex justify-between items-center">
+			<h1 class="lh-title f3 fw5 mv0 w-70">{{ campaign.survey.title }}</h1>
+			<div class="mt1">SurveyKong</div>
+		</div>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		{% include 'survey/partials/survey_debug_box.html' %}
+		<div class="lh-copy mw7">{{ campaignStats.campaignMessage|safe }}</div>
+	</div>
+
+{% endblock %}

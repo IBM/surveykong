@@ -1,0 +1,19 @@
+
+<div id="drag_{{ answerNumber }}" draggable="true" data-dragtype="question" ondragstart="BH.drag(event)" class="custom-fieldset">
+	
+	<div class="custom-drop-con" data-droptype="question" id="dropcon_{{ answerNumber }}" ondrop="BH.drop(event);BH.customSetFieldNames();" ondragenter="BH.dragEnter(event)" ondragleave="BH.dragLeave(event)" ondragover="BH.allowDrop(event)"></div>
+	
+	<div class="w-100 mw7 flex items-center">
+		<div style="flex: 0 0 24px" class="mr3 linkcolor">{{ templateHelpers.html.icons.dragVertical|safe }}</div>
+		
+		<div class="w-100 flex items-center">
+			<input name="answers_label" type="text" value="{{ answer.1 }}">
+			<input class="ml1" name="answers_value" type="text" value="{{ answer.0 }}">
+		</div>
+		
+		<div class="ml3 flex items-center">
+			<span class="mr3 db hint hint--top-left" style="top:-2px;" aria-label="Add an answer after this one"><a class="dib f2 relative green hover-dark-green" href="#" onclick="BH.customAddItem(this);return false;">+</a></span>
+			<a href="#" onclick="BH.customRemoveItem(this);return false;"><span class="red b f4">❌</span></a>
+		</div>
+	</div>
+</div>

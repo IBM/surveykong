@@ -1,0 +1,87 @@
+{% extends "survey/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Questions {% endblock %}
+
+{% block pageTitle %} Questions {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	
+	<script>
+	
+		(function ($) {
+			
+			function doFilter () {
+				var filterText = '{{ request.GET.filter }}';
+				if (filterText.length > 0) {
+					$('.dataTables_filter').find('input').val(filterText).trigger('input');
+				}	
+			}
+			
+			$(doFilter);
+		
+		
+		})(jQuery);
+		
+	</script>
+	
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<div class="pb0">Edit an item below or <a class="{{ templateHelpers.classes.hasIcon }} animate" href="{% url 'survey:admin_question_add' %}"><span class="mr1">add a new question</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a></div>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		
+		<div class="flex items-center mb4">
+			<div>Filter by survey:</div>
+			<div class="ml3-ns">
+				<select name="survey" data-width="resolve" onchange="window.location.search='survey='+this.value;">
+					<option value="">Select one</option>
+					{% for survey in surveys %}
+						<option value="{{ survey.id }}" {% if request.GET.survey == survey.id|stringformat:"i" %}selected{% endif %}>{{ survey.name }}</option>
+					{% endfor %}
+				</select>
+			</div>
+		</div>
+		
+		
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-width="100%">
+			<thead>
+				<tr>
+					<th class="tl">Short name</th>
+					<th class="tl">Question text</th>
+					<th class="tl">Type</th>
+					<th class="tl">Required</th>
+					<th class="tl">Shared</th>
+					<th class="tl">Surveys</th>
+					<th class="tl">Campaigns</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for item in listItems %}
+					<tr>
+						<td class=""><a href="{% url 'survey:admin_question_edit' id=item.id %}" class="{{ templateHelpers.classes.link }}">{{ item.short_name }}</a></td>
+						<td class="">{{ item.question_text }}</td>
+						<td class="">{{ item.type }}</td>
+						<td class="tc">{% if item.required %}✅{% endif %}</td>
+						<td class="tc">{% if item.shared %}✅{% endif %}</td>
+						<td class="tr">{% if item.surveyCount > 0 %}<a class="{{ templateHelpers.classes.link }}" href="{% url 'survey:admin_survey_list' %}?question={{ item.id }}">{{ item.surveyCount }}</a>{% endif %}</td>
+						<td class="tr">{% if item.campaignCount > 0 %}<a class="{{ templateHelpers.classes.link }}" href="{% url 'survey:admin_campaign_list' %}?question={{ item.id }}">{{ item.campaignCount }}</a>{% endif %}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

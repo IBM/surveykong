@@ -1,0 +1,144 @@
+{% extends "survey/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Campaigns {% endblock %}
+
+{% block pageTitle %} Campaigns {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	
+	<script>
+	
+		(function ($) {
+			
+			function doFilter () {
+				var filterText = '{{ request.GET.filter }}';
+				if (filterText.length > 0) {
+					$('.dataTables_filter').find('input').val(filterText).trigger('input');
+				}	
+			}
+			
+			
+			function setupToggleSwitches () {
+				$('.bo-switch').on('change', 'input', function (evt) {
+					var campaignId = $(this).closest('tr').data('campaign-id');
+					
+					$.ajax({
+						url: '{% url "survey:api_campaign_toggle_enabled" %}',
+						type: 'post',
+						data: {
+							csrfmiddlewaretoken: '{{ csrf_token }}',
+							campaign: campaignId,
+						}
+					})
+				});
+			}
+			
+			
+			function setupHitApi () {
+				$('.custom-hit-api').on('click', function (evt) {
+					evt.preventDefault();
+					
+					$.ajax({
+						url: evt.currentTarget.dataset.href,
+						type: 'post',
+						data: {
+							csrfmiddlewaretoken: '{{ csrf_token }}',
+							campaign: evt.currentTarget.dataset.id,
+						},
+						success: function () {
+							if (evt.currentTarget.dataset.callback) {
+								BH[evt.currentTarget.dataset.callback](evt);
+							}
+						},
+					})
+					
+				});
+			}
+			
+			
+			function responsesToZero (evt) {
+				$(evt.target).closest('td').find('.custom-response-count').html('0');
+			}
+			BH.responsesToZero = responsesToZero
+		
+		
+			$(function () {
+				setupHitApi();
+				doFilter();
+				setupToggleSwitches();
+			});
+			
+		})(jQuery);
+		
+	</script>
+	
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<div class="pb0">Edit an item below or <a class="{{ templateHelpers.classes.hasIcon }} animate" href="{% url 'survey:admin_campaign_add' %}"><span class="mr1">add a new campaign</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a></div>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		
+		<div>{% if request.GET.question %}You are currently viewing a scoped set of campaigns. <a class="{{ templateHelpers.classes.link }}" href="?">View all campaigns</a></div>{% endif %}
+		
+		<!-- <div class="flex items-center mb4">
+			<div>Filter project name:</div>
+			<div class="ml3-ns"><input type="text" class="mw5"></div>
+		</div> -->
+		
+		
+		<table id="custom-campaign-table" {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-width="100%" data-order='[[6,"desc"]]'>
+			<thead>
+				<tr>
+					<th class="tl" data-orderable="false"></th>
+					<th class="tl">UID</th>
+					<th class="tl">Project</th>
+					<th class="tl">Survey</th>
+					<th class="tl">Trigger</th>
+					<th class="tl">Type</th>
+					<th class="tl">Enabled</th>
+					<th class="tl">Button</th>
+					<th class="tl">Visitors</th>
+					<th class="tl">Intcpt shown</th>
+					<th class="tl w3">Resps</th>
+					<th class="tl">View</th>
+					<!-- <th class="tl">Active</th> -->
+					<th class="tl">Latest response</th>
+				</tr>
+			</thead>
+			
+			<tbody class="f6">
+				{% for item in listItems %}
+					<tr data-campaign-id="{{ item.id }}">
+						<td class=""><a href="{% url 'survey:admin_campaign_edit' id=item.id %}" class="{{ templateHelpers.classes.link }} green hover-dark-green">{{ templateHelpers.html.icons.edit|safe }}</a></td>
+						<td class=""><code>{{ item.uid|truncatechars:8 }}</a></td>
+						<td class=""><a href="{% url 'survey:admin_project_list' %}?filter={{ item.project.name }}" class="{{ templateHelpers.classes.link }}">{{ item.project.name }}</a></td>
+						<td class=""><a href="{% url 'survey:admin_survey_list' %}?filter={{ item.survey.name }}" class="{{ templateHelpers.classes.link }}">{{ item.survey.name }}</a></td>
+						<td class="">{{ item.survey_trigger_type|capfirst|default:'URL only' }}</td>
+						<td class="">{{ item.survey.survey_type|capfirst }}</a></td>
+						<td data-order="{% if item.enabled %}1{% else %}0{% endif %}"class="tc"><label class="bo-switch" aria-label="Toggle on/off"><input type="checkbox" {% if item.enabled %}checked{% endif %}><span class="bo-switch-slider"></span></label></td>
+						<td class="">{% if item.button %}<a href="{% url 'survey:admin_button_list' %}?filter={{ item.button.name }}" class="{{ templateHelpers.classes.link }}">{{ item.button.name }}</a>{% endif %}</td>
+						<td class="tr">{{ item.unique_visitor_count }}</td>
+						<td class="tr">{{ item.intercept_shown_count }}</td>
+						<td class="w3"><div class="flex items-center justify-end"><a href="{% url 'survey:campaign_responses_list' %}?uid={{ item.uid }}" class="hint--medium hint--top-left ph2 {{ templateHelpers.classes.link }} custom-response-count" aria-label="View responses">{{ item.response_campaign.count }}</a><a class="hint--medium hint--top-left red ph2 {{ templateHelpers.classes.link }} custom-hit-api" href="#" data-href="{% url 'survey:api_delete_campaign_responses' %}" data-id="{{ item.id }}" data-callback="responsesToZero" aria-label="Delete all responses. This is IRREVERSIBLE!">{{ templateHelpers.html.icons.trash|safe }}</a></div></td>
+						<td class="tc">{% if item.uid %}
+							<a href="{% if item.survey_trigger_type == 'intercept' or item.survey_trigger_type == 'button' %}{% url 'survey:iframe_embed_test' %}?puid={{ item.project.uid }}{% else %}{% url 'survey:survey_standalone_display' uid=item.uid %}{% endif %}" target="_blank" aria-label="View campaign survey in new tab" class="hint hint--top hint--medium ph3 {{ templateHelpers.classes.link }}">{{ templateHelpers.html.icons.newWindow|safe }}</a>{% endif %}</td>
+						<td class="">{{ item.latest_response_date }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

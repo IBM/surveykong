@@ -1,0 +1,44 @@
+{% load common_templatetags %}
+{% load static %}
+{% getTemplateHelpers as templateHelpers %}
+
+<!DOCTYPE html>
+<html lang="en-US">
+	<head>
+		<meta charset="UTF-8">
+		<link href="{% static 'shared/img/favicon.ico' %}" rel="icon"/>
+		<meta name="author" content="Michael Santelia">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="robots" content="noindex,nofollow">
+		<meta name="geo.country" content="WW">
+		<meta name="dcterms.date" content="2021-06-01">
+		
+		{% include 'partials/base_design_css_files.inc' %}
+		<style>#djDebug{display:none}</style>
+			
+		{% include 'partials/base_design_js_files.inc' %}
+		
+		<script>
+			if (document.readyState === 'loading') {
+				document.addEventListener('DOMContentLoaded', function () {
+					window.parent.postMessage({message: 'sizeAdminPanel', height: document.body.scrollHeight},'*');
+				});
+			}
+			else {
+				window.parent.postMessage({message: 'sizeAdminPanel', height: document.body.scrollHeight},'*');
+			}
+		</script>
+	</head>
+
+	<body class="plex bg-white">
+		
+		<main role="main" aria-label="SurveyKong survey content">
+			<a href="#" onclick="window.parent.postMessage({message: 'hideAdminPanel'},'*');" class="absolute right-0 pa3 b f4 {{ templateHelpers.classes.link }}" style="margin-top:-3px;">❌</a>
+			<div class="mb4">{% include 'survey/partials/survey_debug_box.html' %}</div>
+		</main>
+		
+		
+	</body>
+	
+</html>
+

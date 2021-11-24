@@ -1,0 +1,13 @@
+{% for banner in banners %}
+
+	{% if banner.banner_type == "info" %}
+		<div class="ph3 ph4-ns tc pv3 bg-dark-blue white">		
+	{% elif banner.banner_type == "warn" %}
+		<div class="ph3 ph4-ns tc pv3 bg-yellow black">
+	{% elif banner.banner_type == "alert" %}
+		<div class="ph3 ph4-ns tc pv3 bg-dark-red white">
+	{% endif %}
+			{{ banner.banner_text }}
+		</div>
+
+{% endfor %}

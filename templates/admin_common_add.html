@@ -1,0 +1,39 @@
+{% extends adminTemplate %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}Admin - Add a new {{ modelMeta.verbose_name }}{% endblock %}
+
+{% block pageTitle %} Add a new {{ modelMeta.verbose_name }} {% endblock %}
+
+{% block pageSubtitle %} {% endblock %}
+
+{% block extraFiles %}
+	
+{% endblock %}
+
+
+{% block content %}
+	
+	<style>
+		.dn {
+			display: none;
+		}
+	</style>
+		
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		
+		{% include 'partials/form_complete_horizontal.html' with form=form %}
+	
+		{% block deleteButton %}{% endblock %}
+		
+		
+	</div>
+	
+	{% if customJsPath %}
+		<script src="{% static customJsPath %}"></script>
+	{% endif %}
+		
+{% endblock %}
+

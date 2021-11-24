@@ -1,0 +1,65 @@
+{% extends "survey/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Surveys {% endblock %}
+
+{% block pageTitle %} Surveys {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	
+	<script>
+	
+		(function ($) {
+			
+			function doFilter () {
+				var filterText = '{{ request.GET.filter }}';
+				if (filterText.length > 0) {
+					$('.dataTables_filter').find('input').val(filterText).trigger('input');
+				}	
+			}
+			
+			$(doFilter);
+		
+		
+		})(jQuery);
+		
+	</script>
+	
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<div class="pb0">Edit an item below or <a class="{{ templateHelpers.classes.hasIcon }} animate" href="{% url 'survey:admin_surveyinvite_add' %}"><span class="mr1">add a new survey invite</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a></div>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-width="100%">
+			<thead>
+				<tr>
+					<th class="tl">Name</th>
+					<th class="tl">Message</th>
+					
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for item in listItems %}
+					<tr>
+						<td class=""><a href="{% url 'survey:admin_surveyinvite_edit' id=item.id %}" class="{{ templateHelpers.classes.link }}">{{ item.name }}</a></td>
+						<td class="">{{ item.message|safe }}</a></td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

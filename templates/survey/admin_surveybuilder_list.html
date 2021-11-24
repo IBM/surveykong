@@ -1,0 +1,55 @@
+{% extends "survey/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Survey builder {% endblock %}
+
+{% block pageTitle %} Survey builder {% endblock %}
+
+{% block extraFiles %}
+
+	
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<div class="pb0">Edit a survey below or <a class="{{ templateHelpers.classes.hasIcon }} animate" href="{% url 'survey:admin_surveybuilder_add' %}"><span class="mr1">create a new survey</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a></div>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		
+		{% for survey in surveys %}
+			<a class="db shadow-hover mb4 bg-near-white hover-bg-white" href="{% url 'survey:admin_surveybuilder_edit' id=survey.id %}">
+				<div class="ba b--moon-gray hover-b--current pa3">
+					<div class="mb2">
+						<div class="flex items-bottom"><span class="mr2">{{ templateHelpers.html.icons.edit|safe }}</span><span>{{ survey.name }}</span></div>
+						<div class="mt1 f6 gray">({{ survey.survey_type }}) used by {{ survey.campaignCount }} campaigns</div>
+					</div>
+					
+					<div class="flex-l flex-wrap">
+					{% for page in survey.page_survey.all %}
+						<div class="w-50-l mt3 pl4 textcolor">
+							<div class="b mb2">Page {{ page.page_number }}</div>
+							{% for questionOrder in page.question_order_page.all %}
+								<div class="flex mb2 ml3">
+									<div class="mr2">{{ forloop.counter }}.</div>
+									<div>{{ questionOrder.question.question_text|default:'~~message field~~' }} <span class="ml2 gray f6">({{ questionOrder.question.type }})</span></div>
+								</div>
+									
+							{% endfor %}
+						</div>
+					
+					{% endfor %}
+					</div>
+				</div>
+			</a>
+		{% endfor %}
+		
+
+	</div>
+	
+
+{% endblock %}

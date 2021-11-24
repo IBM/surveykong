@@ -1,0 +1,18 @@
+{% extends 'survey/admin_button_add.html' %}
+
+{% block browserTitle %}Admin - {{ modelMeta.verbose_name_plural|capfirst }} - Edit: {{ itemName }}{% endblock %}
+
+{% block pageTitle %} Edit: <span class="fw4 dark-green">{{ itemName }}</span> {% endblock %}
+
+{% block deleteButton %}
+	
+	{% if allowDelete %}
+		<form class="w-100 mt4 mb4" action="{{ thisModelDeleteUrl }}" method="post">
+			{% csrf_token %}
+			<input type="hidden" name="id" value="{{ thisModelItem.id }}">
+			<div class="mb3 red b">This is irreversible</div>
+			<button class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.redSecButton }} ">Delete</button>
+		</form>
+	{% endif %}
+
+{% endblock %}

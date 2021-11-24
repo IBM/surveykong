@@ -1,0 +1,25 @@
+
+	<div id="drag_{{ page.page_number }}_{{ questionNumber }}" draggable="true" data-dragtype="question" ondragstart="BH.drag(event)" class="custom-fieldset">
+		
+		<div class="custom-drop-con" data-droptype="question" id="dropcon_{{ page.page_number}}_{{ questionNumber }}" ondrop="BH.drop(event);BH.customSetFieldNames();" ondragenter="BH.dragEnter(event)" ondragleave="BH.dragLeave(event)" ondragover="BH.allowDrop(event)"></div>
+		
+		<div class="w-100 flex items-center">
+			<div style="flex: 0 0 24px" class="linkcolor">{{ templateHelpers.html.icons.dragVertical|safe }}</div>
+			
+			<div style="flex: 0 0 24px" class="tr mh2 custom-questionnumber">{{ questionOrder.question_number|floatformat }}</div>
+			
+			<div class="w-100 overflow-hidden">
+				<select name="" data-placeholder="Select one">
+					<option value=""></option>
+					{% for question in questions %}
+						<option value="{{ question.id }}" {% if questionOrder.question.id == question.id %}selected{% endif %}>{{ question }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			
+			<div class="ml3 flex items-center">
+				<span class="mr3 db hint hint--top-left" style="top:-2px;" aria-label="Add a question after this one"><a class="dib f2 relative green hover-dark-green" href="#" onclick="BH.customAddItem(this);return false;">+</a></span>
+				<a href="#" onclick="BH.customRemoveItem(this);return false;"><span class="red b f4">❌</span></a>
+			</div>
+		</div>
+	</div>

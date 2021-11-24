@@ -1,0 +1,84 @@
+<style>
+.custom-col-2 {
+	width: 13rem;
+}
+</style>
+	<div class="fr-l ml5-l mb4 w6">
+		<div class="f6 pa3 b--moon-gray ba bo-word-break-all">
+			<div class="b">Admin debug box</div>
+			<div class="mt2 flex w-100">
+				<span class="w4">Project</span>
+				<span class="custom-col-2 gray">{{ campaignStats.campaign.project.name }}</span>
+			</div>
+			<div class="mt2 flex w-100">
+				<span class="w4">Campaign</span>
+				<a class="custom-col-2 {{ templateHelpers.classes.link }}" target="_blank" href="{% url 'survey:admin_campaign_list' %}?filter={{ campaignStats.campaign.uid|slice:'0:6' }}"><code>{{ campaignStats.campaign.uid|truncatechars:8 }}</code></a>
+			</div>
+			<div class="mt2 flex w-100">
+				<span class="w4">Survey</span>
+				<a class="custom-col-2 {{ templateHelpers.classes.link }}" target="_blank" href="{% url 'survey:admin_survey_list' %}?filter={{ campaignStats.campaign.survey.name }}">{{ campaignStats.campaign.survey.name }}</a>
+			</div>
+			<div class="mt2 flex w-100">
+				<span class="w4">You</span>
+				<code class="custom-col-2 gray">{{ campaignStats.userInfo.uuid|truncatechars:8 }}</code>
+			</div>
+			<!-- <div class="mt2 flex w-100">
+				<span class="w4">Views:</span><span class="gray">{{ campaignStats.userInfo.view_count }}</span></div> -->
+			<div class="mt2 flex w-100">
+				<span class="w4">Visitors</span>
+				<span class="custom-col-2 gray">{{ campaignStats.unique_visitor_count }}</span>
+			</div>
+			{% if campaignStats.campaign.survey_trigger_type == 'intercept' and currentView == 'intercept' %}
+				<div class="mt2 flex w-100">
+					<span class="w4">Shown %</span>
+					<span class="custom-col-2 gray">{{ campaignStats.interceptShownPercent|floatformat:1 }}</span>
+				</div>
+				<div class="mt2 flex w-100">
+					<span class="w4">Intercept %</span
+					<span class="custom-col-2 gray">{{ campaignStats.visitor_percent|floatformat:0 }}</span>
+				</div>
+				<div class="mt2 flex w-100">
+					<span class="w4">Sessions</span>
+					<span class="custom-col-2 gray">{{ campaignStats.userInfo.session_count }}</span>
+				</div>
+			{% endif %}
+			<div class="mt2 flex w-100">
+				<span class="w4">Responses</span>
+				<a class="custom-col-2 {{ templateHelpers.classes.link }}" target="_blank" href="{% url 'survey:campaign_responses_list' %}?uid={{ campaignStats.campaign.uid }}">{{ campaignStats.responseCount|floatformat:0 }}</a>
+			</div>
+			<div class="mt2 flex w-100">
+				<span class="w4">Conversion</span>
+				<span class="custom-col-2 gray">{{ campaignStats.standaloneSubmittedPercent|floatformat:0 }}%</span>
+			</div>
+			<div class="mt2 flex w-100">
+				<span class="w4">Last resp</span>
+				<span class="custom-col-2 gray">{{ campaignStats.latest_response_date }}</span>
+			</div>
+			{% if not campaignStats.activeCampaign and currentView == 'standalone' %}
+				<div class="mt2">
+					<a class="custom-col-2 {{ templateHelpers.classes.link }}" href="?force=y">Force show survey</a>
+				</div>{% endif %}
+			{% if currentView == 'intercept' %}
+				<div class="mt3">
+					<a class="custom-col-2 {{ templateHelpers.classes.link }}" href="#" onclick="forceIntercept();return false;">Force show intercept</a>
+				</div>
+			{% endif %}
+		</div>
+	</div>
+	
+	{# Any UI controls here when cross-domain intercept need to send postMessages to project_config.js #}
+	<script>
+		function forceIntercept() {
+			$.post({
+				url: '{% url "survey:api_remove_campaign_user_info" %}',
+				data: {
+					csrfmiddlewaretoken: '{{ csrf_token }}',
+					campaign: '{{ campaignStats.campaign.uid }}',
+				},
+				success: function () {
+					window.parent.postMessage({message: 'hideAdminPanel'},'*');
+					window.parent.postMessage({message: 'forceIntercept'},'*');
+				},
+			});
+		}
+	</script>

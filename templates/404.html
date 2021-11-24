@@ -1,0 +1,19 @@
+{% extends "survey/survey_standalone_template.html" %}
+
+{% block browserTitle %}{{ block.super}} Error 404{% endblock %}
+
+{% block pageTitle %} Lost and (not) found {% endblock  %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} custom-leadspace bg-light-green pv3">
+		<h1 class="lh-title f3 fw5 mt0 mb0 w-70">Error 404: Lost and (not) found</h1>
+	</div>
+
+	<div class="{{ templateHelpers.classes.grid }} mb4 mt4">
+        <p class="lh-copy">It seems the only thing you found was this lame 404 page.
+            <br>Try going back or starting from the <a href="{% url 'survey:home' %}" class="underline">home page</a>.</p>
+	</div>
+	
+{% endblock %}

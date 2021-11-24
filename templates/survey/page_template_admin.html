@@ -1,0 +1,10 @@
+{% extends "survey/page_template.html" %}
+
+{% block breadcrumbs__old %}
+
+	<div class="f6 mb3">
+		<a class="{{ templateHelpers.classes.link }} mr2" href="{% url 'survey:admin_home' %}">Admin</a><span class="mr2">/</span>
+		{% for link in breadcrumbs %}<a class="{{ templateHelpers.classes.link }} mr2" href="{{ link.url }}">{{ link.text|safe }}</a><span class="mr2">/</span>{% endfor %}
+	</div>
+	
+{% endblock %}

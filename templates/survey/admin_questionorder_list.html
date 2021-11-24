@@ -1,0 +1,77 @@
+{% extends "survey/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Question orders {% endblock %}
+
+{% block pageTitle %} Question orders {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	
+	<script>
+	
+		(function ($) {
+			
+			function doFilter () {
+				var filterText = '{{ request.GET.filter }}';
+				if (filterText.length > 0) {
+					$('.dataTables_filter').find('input').val(filterText).trigger('input');
+				}	
+			}
+			
+			$(doFilter);
+		
+		
+		})(jQuery);
+		
+	</script>
+	
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<div class="pb0">Edit an item below or <a class="{{ templateHelpers.classes.hasIcon }} animate" href="{% url 'survey:admin_questionorder_add' %}"><span class="mr1">add a new question order</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a></div>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4">
+		
+		<!-- <div class="flex items-center mb4">
+			<div>Filter project name:</div>
+			<div class="ml3-ns"><input type="text" class="mw5"></div>
+		</div> -->
+		
+		
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-width="100%">
+			<thead>
+				<tr>
+					<th class="tl">Survey page</th>
+					<th class="tl">Order</th>
+					<th class="tl">Question short name</th>
+					<th class="tl">Question</th>
+					<th class="tl">Type</th>
+					
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for item in listItems %}
+					<tr>
+						<td class=""><a href="{% url 'survey:admin_questionorder_edit' id=item.id %}" class="{{ templateHelpers.classes.link }}">{{ item.page }}</a></td>
+						<td class="">{{ item.question_number|floatformat}}</td>
+						<td class="">{{ item.question.short_name }}</td>
+						<td class="">{{ item.question.question_text }}</td>
+						<td class="">{{ item.question.type }}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

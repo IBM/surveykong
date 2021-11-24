@@ -1,0 +1,209 @@
+{% extends adminTemplate %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}Admin - Add a new survey{% endblock %}
+
+{% block pageTitle %} Add a new survey {% endblock %}
+
+{% block pageSubtitle %} {% endblock %}
+
+{% block extraFiles %}
+	
+	<style>
+		svg {
+			display: block;
+		}
+		
+	</style>
+	<script>
+		(function ($) {
+			
+			var idNum = 0;
+			
+			function customRemoveItem (el) {
+				var $el = $(el),
+					$widgetCon = $el.closest('.custom-fieldsets-group');
+					
+				if ($widgetCon.find('.custom-fieldset').length > 1) {
+					$el.closest('.custom-fieldset').slideUp(function () {
+						$el.closest('.custom-fieldset').remove();
+						setFieldNames();
+						setPageQuestionNumbers();
+					});
+				}
+				else {
+					$el.closest('.custom-fieldset').find('select').val('').trigger('change');
+				}
+			}
+			BH.customRemoveItem = customRemoveItem;
+			
+			
+			function customRemovePage (el) {
+				var $el = $(el),
+					$pagesGroupContainer = $el.closest('.custom-pages-group');
+				
+				// If there's more than 1 page, allow this page to be removed.
+				// Else, remove all questiions except 1.
+				if ($pagesGroupContainer.find('.custom-page').length > 1) {
+					$el.closest('.custom-page').slideUp(function () {
+						$el.closest('.custom-page').remove();
+						setFieldNames();
+						setPageQuestionNumbers();
+					});
+				}
+				else {
+					$el.closest('.custom-page').find('.custom-fieldset:not(:first)').remove();
+					$el.closest('.custom-page').find('select').val('').trigger('change');
+					setFieldNames();
+					setPageQuestionNumbers();
+				}
+			}
+			BH.customRemovePage = customRemovePage;
+			
+			
+			function customAddItem (el) {
+				var $el = $(el),
+					$clickedRow = $el.closest('.custom-fieldset'),
+					$newRow,
+					newIdNum = idNum + 1;
+				
+				// Kill select2 on clicked row, then clone, then init on both last and new last.
+				$clickedRow.find('select').select2('destroy');
+				
+				$newRow = $clickedRow.clone().css({'display':'none'})
+				$newRow[0].id = 'drag' + newIdNum;
+				$newRow.children('div').first()[0].id = 'dropcon' + newIdNum;
+				$newRow.find('select').val('').trigger('change');
+				$newRow.insertAfter($clickedRow).slideDown(function () {
+					$clickedRow.find('select').select2();
+					$newRow.find('select').select2();
+					setFieldNames();
+					setPageQuestionNumbers();
+				});
+				
+				idNum++;				
+			}
+			BH.customAddItem = customAddItem;
+			
+			
+			function customAddPage (el) {
+				var temp = document.getElementsByTagName("template")[0],
+					newPage = temp.content.cloneNode(true);
+				
+				el.closest('.custom-page').after(newPage);
+				$('#custom-page-template').slideDown(function () {
+					$('#custom-page-template').find('select').select2();
+					this.id = '';
+					setFieldNames();
+					setPageQuestionNumbers();
+				});
+			}
+			BH.customAddPage = customAddPage;
+			
+			
+			function setFieldNames () {
+				document.querySelectorAll('.custom-page').forEach(function (pageEl, pi) {
+					var pageNum = pi+1;
+					
+					pageEl.querySelectorAll('.custom-fieldset').forEach(function (questionEl, qi) {
+						var questionNum = qi+1;
+						questionEl.querySelector('select').setAttribute('name', 'qo_p' + pageNum + '_q' + questionNum);
+					});
+					
+				});
+			}
+			BH.customSetFieldNames = setFieldNames;
+			
+			
+			BH.drop = (function (evt) {
+				var origDrop = BH.drop;
+				
+				return function() {
+					var result = origDrop.apply(this, arguments);
+					setPageQuestionNumbers();
+					return result;
+				};
+			})();
+			
+			
+			function setPageQuestionNumbers () {
+				document.querySelectorAll('.custom-page').forEach(function (page, i) {
+					var pageNum = (i+1);
+					page.querySelector('.custom-pagenumber').innerHTML = 'Page ' + pageNum;
+					
+					page.querySelectorAll('.custom-questionnumber').forEach(function (question, i) {
+						var questionNum = (i+1);
+						question.innerHTML = questionNum;
+					});
+				});	
+			}
+			
+			$(function () {
+				idNum = $('.custom-fieldset').length;
+				setFieldNames();
+				setPageQuestionNumbers();
+			});
+		})(jQuery);
+		
+	</script>
+	
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		
+		{# form posts to same URL displaying it. #}
+		<form class="custom-modelform w-100 mb4" action="" method="post">
+			{% include 'partials/form_error_messages.html' with form=form %}
+		
+			{% csrf_token %}
+			
+			{% for field in form.visible_fields %}
+				{% include 'partials/form_field_horizontal.html' with field=field %}
+			{% endfor %}
+			
+			{% if form.hidden_fields %}
+				<div class="b mt5 mb3">Read-only fields</div>
+				
+				<style>
+					.custom-readonly-fields .custom-form-horizontal-label + * {
+						cursor: not-allowed;
+					}
+				</style>
+				<div class="custom-readonly-fields mb5">
+					{% for field in form.hidden_fields %}
+						{% include 'partials/form_field_horizontal_readonly.html' with field=field %}
+					{% endfor %}
+				</div>
+			{% endif %}
+		
+			<div class="custom-pages-group">
+				
+				{% for page in survey.page_survey.all %}
+					{% include 'partials/surveybuilder_page_dyn_group.html' %}
+				{% endfor %}
+				
+				{% if not survey.page_survey.all %}
+					{% include 'partials/surveybuilder_page_dyn_group.html' %}
+				{% endif %}
+				
+				<template>
+					<div id="custom-page-template" class="dn">
+					{% include 'partials/surveybuilder_page_dyn_group.html' %}
+					</div>
+				</template>
+				
+			</div>
+				
+			<div><button class="mt4 w4 mr4-ns dib-ns db {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }} ">Save</button></div>
+			
+		</form>
+	
+	</div>
+		
+{% endblock %}
+

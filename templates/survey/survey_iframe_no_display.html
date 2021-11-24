@@ -1,0 +1,18 @@
+{% extends "survey/survey_iframe_template.html" %}
+
+{% load common_templatetags %}
+{% getTemplateHelpers as templateHelpers %}
+
+
+{% block content %}
+	
+	<div class="flex justify-between items-center pv2 ph4 bg-light-green">
+		<div class="mt1">SurveyKong</div>
+		<button class="surveykong-overlay-close pointer h2 ba br2 ph2 border-box b--blue blue bg-white hover-bg-dark-blue hover-white custom-animate-all" onclick="BH.closeModal();" aria-label="Close modal"></button>
+	</div>
+
+	<div id="custom-content" class="{{ templateHelpers.classes.grid }} mv3">
+		<div class="lh-copy mw7">{{ campaignStats.campaignMessage|safe }}</div>
+	</div>
+	
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "page_template.html" %}
+
+{% block browserTitle %}{{ block.super}} Sign in{% endblock %}
+
+{% block pageTitle %} Sign in {% endblock  %}
+
+{% block content %}
+
+    <div class="{{ templateHelpers.classes.grid }} mt4">
+        {% if error %}
+            <div class="mb3 dark-red">{{ error|safe }}</div>
+        {% endif %}
+        <div style="max-width: 280px;">
+            {% include "partials/auth_form.html" %}
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "page_template.html" %}
+
+{% block browserTitle %}{{ block.super}} Error 403{% endblock %}
+
+{% block pageTitle %} Womp womp, access denied {% endblock	%}
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mb4 mt4">
+		<p class="lh-copy">It looks like you don't have the proper access level to view this page.
+			<br>Try going back or starting from the <a href="{% url 'survey:home' %}" class="underline">home page</a>.</p>
+	</div>
+	
+{% endblock %}

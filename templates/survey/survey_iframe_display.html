@@ -1,0 +1,173 @@
+{% extends "survey/survey_iframe_template.html" %}
+{% load static %}
+{% load common_templatetags %}
+{% getTemplateHelpers as templateHelpers %}
+
+
+{% block content %}
+
+	<div class="flex justify-between items-center pv2 ph4 bg-light-green">
+		<div class="mt1">SurveyKong</div>
+		<button class="surveykong-overlay-close pointer h2 ba br2 ph2 border-box b--blue blue bg-white hover-bg-dark-blue hover-white custom-animate-all" onclick="BH.closeModal();" aria-label="Close modal"></button>
+	</div>
+			
+	<div id="custom-content" class="pt3 {{ templateHelpers.classes.grid }}">
+		<div class="absolute o-0" style="height:0;width:0" tabindex="0">Modal window with survey form</div>
+		
+		<form id="custom-survey-form" action="{% url 'survey:api_submit_response' %}" method="post">
+			<input type="hidden" name="display_type" value="{{ campaignStats.campaign.survey_trigger_type }}">
+			
+			<div id="custom-form-error-message" class="dn mb4 red b"></div>
+					
+			{% csrf_token %}
+			<input type="hidden" name="cuid" value="{{ campaignStats.campaign.uid }}">
+			<input type="hidden" name="url" id="custom-url" value="">
+			<input type="hidden" name="cc" id="custom-cc" value="">
+			<script>
+				jQuery.getScript('https://api.www.s81c.com/webmaster/dbip/?callback=setcc');
+				window.setcc = function (d) {document.getElementById('custom-cc').value=d.country}
+			</script>
+			
+			{% for page in campaignStats.campaign.survey.page_survey.all %}
+			
+				<div class="custom-survey-page {% if forloop.counter == 1 %}custom-showing{% endif %}" data-page="{{ forloop.counter }}">
+					
+					{% if forloop.counter == 1 and campaignStats.campaign.survey_trigger_type == 'intercept' %}
+						<h1 class="lh-title f4 fw5 mb4 mt0">{{ campaignStats.campaign.survey.title }}</h1>
+						
+						<div class="mb4 f6 pa3 bg-near-white">
+							<div class="flex-ns justify-between">
+								<div class="mw5-ns mb0-ns mb3">
+									<div class="b h1-ns mb4-ns mb2">Catch you at a bad time?</div>
+									<button id="custom-takelater-button" style="padding-top:0;padding-bottom:0;" class="w-100-ns h2 {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenSecButton }}">Remind me later</button>
+								</div>
+								<div class="dn db-ns w3-ns tc self-end">
+									<div class="b f4 self-end mb1">or</div>
+								</div>
+								<div class="w-50-ns">
+									<div class="h1-ns mb2">Expected survey time: <span class="b">2 minutes</span></div>
+									<div class="mb2">Email me a link:</div>
+									<div class="flex items-center relative">
+										<div class="w-100"><input id="custom-email-link-email" style="padding-right: 70px;" class="h2 w5" type="email" value="" placeholder="youremail@domain.com" aria-label="Email address"></div>
+										<button id="custom-email-link-button" style="padding-top:0;padding-bottom:0;" class="absolute right-0 h2 {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenSecButton }}">Send</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					{% endif %}
+					
+					<div class="">
+						{% for questionOrder in page.question_order_page.all %}
+							{% include 'survey/partials/survey_field.html' with question=questionOrder.question %}
+						{% endfor %}
+					</div>
+				</div>
+			{% endfor %}
+			
+			<div id="custom-survey-buttons">
+				<div class="bo-fadein mb3 flex items-center justify-between">
+					<div id="custom-previous-button">
+						<a href="#" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }}">Previous</a>
+					</div>
+					
+					<div id="custom-next-button">
+						<a href="#" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }}">Next</a>
+					</div>
+						
+					<div id="custom-submit-button" class="dn">
+						<div class="flex">
+							<div id="custom-processing" class="flex items-center mr3" style="display:none;">
+								<div class="{{ templateHelpers.classes.spinner }} bw2 w2 h2 dib"></div>
+								<div id="custom-processing-msg" class="dib ml2 f6">Processing</div>
+							</div>
+							<button class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenPriButton }}">Submit</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+		</form>
+		
+	</div>
+	
+	<script>
+	
+		(function () {
+			window.addEventListener('message', function(event) {
+				if (event.data.message == 'parentUrl') {
+					document.getElementById('custom-url').value = event.data.url;
+					
+				}
+			});
+			
+			
+			function showMessageAndCloseModal (msg) {
+				document.getElementById('custom-content').innerHTML = '<div>' + msg + '</div>';
+				setTimeout(function () {
+					window.parent.postMessage({message: 'injectReminder'},'*');
+				},450);
+			}
+			
+			{% if campaignStats.campaign.survey_trigger_type == 'intercept' %}
+				document.getElementById('custom-takelater-button').addEventListener('click', function (evt) {
+					evt.preventDefault();
+					var xhr = new XMLHttpRequest(),
+						params = 'cuid={{ campaignStats.campaign.uid }}';
+					xhr.onreadystatechange = function() {
+						if(xhr.readyState == 4 && xhr.status == 200) {
+							showMessageAndCloseModal('<style>.custom-small-logo svg{width:1.5rem;height:1.5rem}</style><div class="mb2">You\'re all set, we\'ll leave you a reminder on the side.</div><div class="flex items-center">Click the <span class="ml1 mr2 custom-small-logo">{{ templateHelpers.html.icons.reminderIconLeft|safe }}</span> icon to lauch the survey when you\'re ready.</div>');
+						}
+					};
+					xhr.open('POST', '{% url 'survey:api_campaign_take_later' %}');
+					xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+					xhr.send(params);
+				});
+				
+				document.getElementById('custom-email-link-email').addEventListener('keypress', function (evt) {
+					if (evt.key == 'Enter') {
+						evt.preventDefault();
+						document.getElementById('custom-email-link-button').click();
+						return;
+					}
+				});
+					
+				
+				document.getElementById('custom-email-link-button').addEventListener('click', function (evt) {
+					evt.preventDefault();
+					
+					if (document.getElementById('custom-email-link-email').value == '') {
+						alert('You forgot to put your email address');
+						return;
+					}
+					var xhr = new XMLHttpRequest(),
+						params = 'cuid={{ campaignStats.campaign.uid }}&email=' + document.getElementById('custom-email-link-email').value;
+					xhr.onreadystatechange = function() {
+						if (xhr.readyState == 4 && xhr.status == 200) {
+							document.getElementById('custom-content').innerHTML = '<div>You\'re all set, we just emailed you a link.';
+						}
+					};
+					xhr.open('POST', '{% url 'survey:api_campaign_email_link' %}');
+					xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+					xhr.send(params);
+				});
+			{% endif %}
+			
+			
+			if (document.readyState === 'loading') {
+				document.addEventListener('DOMContentLoaded', function () {
+					window.parent.postMessage({message: 'sizeSurveyIframe', height: document.body.scrollHeight},'*');
+					window.parent.postMessage({message: 'sendUrl'},'*');
+				});
+			}
+			else {
+				window.parent.postMessage({message: 'sizeSurveyIframe', height: document.body.scrollHeight},'*');
+				window.parent.postMessage({message: 'sendUrl'},'*');
+			}
+			
+		})();
+	
+	</script>
+	
+	
+
+{% endblock %}

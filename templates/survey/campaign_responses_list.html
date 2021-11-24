@@ -1,0 +1,134 @@
+{% extends "page_template.html" %}
+
+{% block browserTitle %}{{ block.super}} {{ campaign.project.name }} responses{% endblock %}
+
+{% block pageTitle %} {% if campaign %}
+	{{ campaign.project.name }} - {{ campaign.survey.name }} - {{ campaign.survey_trigger_type|default:'Standalone' }}
+	{% else %}
+		Select a campaign to view it's responses
+	{% endif %}
+{% endblock %}
+
+{% block pageSubtitle %}<div class="db mt2">Campaign: <a href="{% url 'survey:admin_campaign_list' %}?filter={{ campaign.uid|truncatechars:8 }}"><code>{{ campaign.uid|truncatechars:8 }}</code></a></div>{% endblock %}
+
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+
+	<script>
+	
+		(function ($) {
+	
+		
+			{% if campaign %}
+				function setupDeleteResponse () {
+					var table = $('#custom-response-table').DataTable();
+					
+					$('#custom-response-table tbody').on('click', '.custom-delete-response', function (evt) {
+						evt.preventDefault();
+						
+						$.ajax({
+							url: '{% url "survey:api_delete_response" %}',
+							type: 'post',
+							data: {
+								csrfmiddlewaretoken: '{{ csrf_token }}',
+								response: evt.currentTarget.dataset.id,
+							},
+							success: function () {
+								table
+									.row($(evt.currentTarget).parents('tr'))
+									.remove()
+									.draw();
+							},
+						});					
+					});
+				}
+				$(setupDeleteResponse);
+			
+			
+				function setupDeleteCampaignResponses () {
+					$('.custom-delete-campaign-responses').on('click', function (evt) {
+						evt.preventDefault();
+						
+						$.ajax({
+							url: '{% url "survey:api_delete_campaign_responses" %}',
+							type: 'post',
+							data: {
+								csrfmiddlewaretoken: '{{ csrf_token }}',
+								campaign: {{ campaign.id }},
+							},
+							success: function () {
+								window.location.reload();
+							},
+						});
+						
+					});
+				}
+				$(setupDeleteCampaignResponses);
+			{% endif %}
+			
+			
+			function setupInstantSubmit () {
+				$('#custom-filters').on('change', 'select', function (evt) {
+					$('#custom-filters').submit();
+				});
+			}
+			$(setupInstantSubmit);
+
+		})(jQuery);
+	
+	</script>
+	
+
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+	
+		<form aria-label="Form will automatically submit and reload the page when selecting a filter value" id="custom-filters" action="" method="get">
+			<div class="mb4 flex-ns flex-row-ns flex-column flex-wrap items-center">
+				<div class="mr3 mb3">
+					<select aria-label="Campaign" class="dib" name="uid" data-width="resolve" required>
+						<option value="">Select a campaign</option>
+						{% for campaign in campaigns %}
+							<option value="{{ campaign.uid }}"{% if request.GET.uid == campaign.uid %}selected="selected"{% endif %}>{{ campaign.key }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<button style="width:0;height:0;opacity:0;" class="pa0 ma0">Show them</button>
+			</div>
+		</form>
+		
+		{% if campaign %}
+			<table id="custom-response-table" {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-order='[[0,"desc"]]'>
+				<thead>
+					<th>Delete</th>
+					<th style="width:100px;">Date</th>
+					<th>Raw data</th>
+				</thead>
+				
+				<tbody>
+					{% for response in responses %}
+						<tr>
+							<td><a class="custom-delete-response hint--medium hint--top-right red ph2 {{ templateHelpers.classes.link }}" href="#" data-id="{{ response.id }}" aria-label="Delete this response. This is IRREVERSIBLE!">{{ templateHelpers.html.icons.trash|safe }}</a></td>
+							<td data-order="{{ response.created_at|date:'U' }}">{{ response.created_at|date:'Y-m-d' }}</td>
+							<td>{{ response.raw_data }}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			
+			{% if responses %}
+				<div class="mt4"><a href="#" class="custom-delete-campaign-responses {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.redSecButton }}">Permanently delete all responses</a></div>
+			{% endif %}
+		{% endif %}
+		
+		
+	</div>
+
+
+{% endblock %}
+
