@@ -10,7 +10,7 @@
 	];
 	
 	
-	window.OM.closeModal = function () {
+	window.SK.closeModal = function () {
 		window.parent.postMessage({message: 'removeOverlay'},'*');
 	}
 	
@@ -55,7 +55,7 @@
 	// Fire away.
 	setFocusToFirstNode();
 	document.addEventListener('keydown', function (evt) {
-		if (evt.keyCode === 27) OM.closeModal();
+		if (evt.keyCode === 27) SK.closeModal();
 		if (evt.keyCode === 9) retainFocus(evt)
 	});
 	

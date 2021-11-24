@@ -37,7 +37,7 @@
 					$el.closest('.custom-fieldset').find('select').val('').trigger('change');
 				}
 			}
-			OM.customRemoveItem = customRemoveItem;
+			SK.customRemoveItem = customRemoveItem;
 			
 			
 			function customRemovePage (el) {
@@ -60,7 +60,7 @@
 					setPageQuestionNumbers();
 				}
 			}
-			OM.customRemovePage = customRemovePage;
+			SK.customRemovePage = customRemovePage;
 			
 			
 			function customAddItem (el) {
@@ -85,7 +85,7 @@
 				
 				idNum++;				
 			}
-			OM.customAddItem = customAddItem;
+			SK.customAddItem = customAddItem;
 			
 			
 			function customAddPage (el) {
@@ -100,7 +100,7 @@
 					setPageQuestionNumbers();
 				});
 			}
-			OM.customAddPage = customAddPage;
+			SK.customAddPage = customAddPage;
 			
 			
 			function setFieldNames () {
@@ -114,11 +114,11 @@
 					
 				});
 			}
-			OM.customSetFieldNames = setFieldNames;
+			SK.customSetFieldNames = setFieldNames;
 			
 			
-			OM.drop = (function (evt) {
-				var origDrop = OM.drop;
+			SK.drop = (function (evt) {
+				var origDrop = SK.drop;
 				
 				return function() {
 					var result = origDrop.apply(this, arguments);

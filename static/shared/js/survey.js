@@ -32,7 +32,7 @@
 					document.getElementById('custom-form-error-message').innerHTML = 'Error: ' + response.responseJSON.results.message;
 					document.getElementById('custom-form-error-message').classList.remove('dn');
 					document.getElementById('custom-processing').style.display = 'none';
-					OM.scrollToTop();
+					SK.scrollToTop();
 				}
 			});
 		});

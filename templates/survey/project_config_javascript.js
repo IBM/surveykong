@@ -4,7 +4,7 @@
 
 (function () {
 	window.console.info('%c SurveyKong %c ' + [timer], "color: white; background: blue;", "");
-	window.OM = window.OM || {};
+	window.SK = window.SK || {};
 	
 	function injectOnReady(f){"loading"===document.readyState?document.addEventListener("DOMContentLoaded",f):f()}
 	
@@ -28,7 +28,7 @@
 	
 	{% if flags.hasButton %}
 	
-		window.OM.showButtonSurvey = function () {
+		window.SK.showButtonSurvey = function () {
 			activeEl = document.activeElement;
 			showSurvey("{% url 'survey:survey_iframe_display' uid=buttonCampaign.uid %}");
 		};
@@ -37,14 +37,14 @@
 	
 	{% if flags.hasIntercept %}
 	
-		window.OM.showSurvey = function (b) {
+		window.SK.showSurvey = function (b) {
 			activeEl = document.activeElement;
 			showSurvey("{% url 'survey:survey_iframe_display' uid=campaignStats.campaign.uid %}"+(b?'?force=y':''));
 		};
 		
 	{% elif flags.hasInvite %}
 	
-		window.OM.showSurvey = function () {
+		window.SK.showSurvey = function () {
 			if (!document.getElementById('surveykong-invite-card')) {
 				activeEl = document.activeElement;
 				appendToBody(`<style>#surveykong-invite-card{transform:translate3d(101%,-50%,0);transition:transform .5s cubic-bezier(0.4,1,0.5,1);}#surveykong-invite-card.show{transform:translate3d(0,-50%,0);</style><iframe id="surveykong-invite-card" style="background:#fff;z-index:99999999;position:fixed;top:50%;right:0;width:24rem;box-shadow:-2px 2px 15px rgba(0,0,0,0.7);border: 2px solid gray;border-right:0;" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" title="SurveyKong survey" src="{% if not debug %}https://REPLACE_ME.com{% endif %}{% url 'survey:survey_iframe_invite' uid=campaignStats.campaign.uid %}"></iframe>`);
@@ -139,7 +139,7 @@
 		
 		function injectReminderIcon () {
 			if (!document.getElementById('surveykong-survey-reminder')) {
-				document.getElementById('surveykong-buttons-con').innerHTML = `<style>#surveykong-survey-reminder svg{width:2rem;height:2rem;drop-shadow(0px -1px 1px #fff) drop-shadow(1px 0px 3px #fff)}</style><a id="surveykong-survey-reminder" href="#" onclick="OM.rich();return false;" title="Reminder to take the survey" style="display:block;margin-right:1rem;">{{ templateHelpers.html.icons.reminderIconLeft|safe }}</a>` + document.getElementById('surveykong-buttons-con').innerHTML;
+				document.getElementById('surveykong-buttons-con').innerHTML = `<style>#surveykong-survey-reminder svg{width:2rem;height:2rem;drop-shadow(0px -1px 1px #fff) drop-shadow(1px 0px 3px #fff)}</style><a id="surveykong-survey-reminder" href="#" onclick="SK.rich();return false;" title="Reminder to take the survey" style="display:block;margin-right:1rem;">{{ templateHelpers.html.icons.reminderIconLeft|safe }}</a>` + document.getElementById('surveykong-buttons-con').innerHTML;
 				
 				if (document.getElementById('surveykong-buttons-con').style.transform.indexOf('(-90deg') > -1) {
 					document.getElementById('surveykong-survey-reminder').style.transform = 'rotate(90deg)';
@@ -148,8 +148,8 @@
 					document.getElementById('surveykong-survey-reminder').style.transform = 'rotate(-90deg)';
 				}
 				
-				window.OM.rich = function (evt) {
-					OM.showSurvey();
+				window.SK.rich = function (evt) {
+					SK.showSurvey();
 				
 					var xhr = new XMLHttpRequest(),
 						params = 'cuid={{ campaignStats.campaign.uid }}';
@@ -215,7 +215,7 @@
 			
 			document.addEventListener('mouseleave', function (evt) {
 				if (!shown && evt.pageY - window.scrollY <= 0) {
-					OM.showSurvey();
+					SK.showSurvey();
 					shown = true;
 				}
 			});
@@ -249,7 +249,7 @@
 		
 		{% if 'show_survey' == campaignStats.interceptStatus %}
 		
-			injectOnReady(OM.showSurvey);
+			injectOnReady(SK.showSurvey);
 		
 		{% endif %}
 	
@@ -265,7 +265,7 @@
 		
 		function injectSurveyButton () {
 			if (!document.getElementById('surveykong-survey-button')) {
-				document.getElementById('surveykong-buttons-con').innerHTML += `<a id="surveykong-survey-button" href="#" onclick="OM.showButtonSurvey();return false;" style="display:block;background-color:{{ buttonCampaign.button.background_color }};color:{{ buttonCampaign.button.text_color }};padding:.5rem;text-decoration:none;">{{ buttonCampaign.button.text }}</a>`;
+				document.getElementById('surveykong-buttons-con').innerHTML += `<a id="surveykong-survey-button" href="#" onclick="SK.showButtonSurvey();return false;" style="display:block;background-color:{{ buttonCampaign.button.background_color }};color:{{ buttonCampaign.button.text_color }};padding:.5rem;text-decoration:none;">{{ buttonCampaign.button.text }}</a>`;
 			}
 		}
 		
@@ -306,7 +306,7 @@
 			document.getElementById('surveykong-admin-panel').classList.add('show')
 		}
 		else if (event.data.message == 'forceIntercept') {
-			OM.showSurvey(true);
+			SK.showSurvey(true);
 			shown = true;
 		}
 	});

@@ -9,7 +9,7 @@
 			el.classList.add('bo-fadeout');
 		}, 1600);	
 	}
-	OM.flashMessage = flashMessage;
+	SK.flashMessage = flashMessage;
 
 	
 	function addFieldUnits () {
@@ -19,7 +19,7 @@
 	}
 	
 	
-	OM.scrollToTop = function () {
+	SK.scrollToTop = function () {
 		window.scrollTo({
 			top: 0,
 			left: 0,
@@ -28,23 +28,23 @@
 	}
 	
 	
-	OM.dragEnter = function (evt) {
+	SK.dragEnter = function (evt) {
 		evt.target.classList.add('custom-droppable');
 	}
 	
-	OM.dragLeave = function (evt) {
+	SK.dragLeave = function (evt) {
 		evt.target.classList.remove('custom-droppable');
 	}
 	
-	OM.allowDrop = function (evt) {
+	SK.allowDrop = function (evt) {
 		evt.preventDefault();
 	}
 	
-	OM.drag = function (evt) {
+	SK.drag = function (evt) {
 		evt.dataTransfer.setData("text", evt.target.id);
 	}
 	
-	OM.drop = function (evt) {
+	SK.drop = function (evt) {
 		evt.preventDefault();
 		var data = evt.dataTransfer.getData("text");
 		

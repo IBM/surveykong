@@ -1,12 +1,12 @@
-<div class="custom-page" id="drag_{{ page.page_number}}" data-dragtype="page" draggable="true" ondragstart="OM.drag(event)">
+<div class="custom-page" id="drag_{{ page.page_number}}" data-dragtype="page" draggable="true" ondragstart="SK.drag(event)">
 	
-	<div class="custom-drop-con" data-droptype="page" id="dropcon_{{ page.page_number}}" ondrop="OM.drop(event);OM.customSetFieldNames();" ondragenter="OM.dragEnter(event)" ondragleave="OM.dragLeave(event)" ondragover="OM.allowDrop(event)"></div>
+	<div class="custom-drop-con" data-droptype="page" id="dropcon_{{ page.page_number}}" ondrop="SK.drop(event);SK.customSetFieldNames();" ondragenter="SK.dragEnter(event)" ondragleave="SK.dragLeave(event)" ondragover="SK.allowDrop(event)"></div>
 	
 	<div class="pa3 bg-near-white">
 		<div class="flex items-center">
 			<div class="w2 linkcolor">{{ templateHelpers.html.icons.dragVertical|safe }}</div>
 			<div class="b custom-pagenumber">Page {{ page.page_number }}</div>
-			<a href="#" onclick="OM.customRemovePage(this);return false;" class="pl1 ml2"><span class="red b f4">❌</span></a>
+			<a href="#" onclick="SK.customRemovePage(this);return false;" class="pl1 ml2"><span class="red b f4">❌</span></a>
 		</div>
 	
 		<div class="mb2 custom-fieldsets-group" data-pagenumber="{{ page.page_number}}">
@@ -17,7 +17,7 @@
 			{% include 'partials/surveybuilder_question_dyn_group.html' with questionNumber=0 %}
 		</div>
 		
-		<div class="mr3" style=""><a class="flex items-center f2 relative green hover-dark-green" href="#" onclick="OM.customAddPage(this);return false;"><span class="dib" style="margin-top:-2px;">+</span><span class="f5 ml2">Add a new page</a></div>
+		<div class="mr3" style=""><a class="flex items-center f2 relative green hover-dark-green" href="#" onclick="SK.customAddPage(this);return false;"><span class="dib" style="margin-top:-2px;">+</span><span class="f5 ml2">Add a new page</a></div>
 		
 	</div>
 </div>

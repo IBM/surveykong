@@ -52,7 +52,7 @@
 						},
 						success: function () {
 							if (evt.currentTarget.dataset.callback) {
-								OM[evt.currentTarget.dataset.callback](evt);
+								SK[evt.currentTarget.dataset.callback](evt);
 							}
 						},
 					})
@@ -64,7 +64,7 @@
 			function responsesToZero (evt) {
 				$(evt.target).closest('td').find('.custom-response-count').html('0');
 			}
-			OM.responsesToZero = responsesToZero
+			SK.responsesToZero = responsesToZero
 		
 		
 			$(function () {
@@ -107,9 +107,9 @@
 					<th class="tl">Type</th>
 					<th class="tl">Enabled</th>
 					<th class="tl">Button</th>
+					<th class="tl w3">Resps</th>
 					<th class="tl">Visitors</th>
 					<th class="tl">Intcpt shown</th>
-					<th class="tl w3">Resps</th>
 					<th class="tl">View</th>
 					<!-- <th class="tl">Active</th> -->
 					<th class="tl">Latest response</th>
@@ -127,9 +127,9 @@
 						<td class="">{{ item.survey.survey_type|capfirst }}</a></td>
 						<td data-order="{% if item.enabled %}1{% else %}0{% endif %}"class="tc"><label class="bo-switch" aria-label="Toggle on/off"><input type="checkbox" {% if item.enabled %}checked{% endif %}><span class="bo-switch-slider"></span></label></td>
 						<td class="">{% if item.button %}<a href="{% url 'survey:admin_button_list' %}?filter={{ item.button.name }}" class="{{ templateHelpers.classes.link }}">{{ item.button.name }}</a>{% endif %}</td>
+						<td class="w3"><div class="flex items-center justify-end"><a href="{% url 'survey:campaign_responses_list' %}?uid={{ item.uid }}" class="hint--medium hint--top-left ph2 {{ templateHelpers.classes.link }} custom-response-count" aria-label="View responses">{{ item.response_campaign.count }}</a><a class="hint--medium hint--top-left red ph2 {{ templateHelpers.classes.link }} custom-hit-api" href="#" data-href="{% url 'survey:api_delete_campaign_responses' %}" data-id="{{ item.id }}" data-callback="responsesToZero" aria-label="Delete all responses. This is IRREVERSIBLE!">{{ templateHelpers.html.icons.trash|safe }}</a></div></td>
 						<td class="tr">{{ item.unique_visitor_count }}</td>
 						<td class="tr">{{ item.intercept_shown_count }}</td>
-						<td class="w3"><div class="flex items-center justify-end"><a href="{% url 'survey:campaign_responses_list' %}?uid={{ item.uid }}" class="hint--medium hint--top-left ph2 {{ templateHelpers.classes.link }} custom-response-count" aria-label="View responses">{{ item.response_campaign.count }}</a><a class="hint--medium hint--top-left red ph2 {{ templateHelpers.classes.link }} custom-hit-api" href="#" data-href="{% url 'survey:api_delete_campaign_responses' %}" data-id="{{ item.id }}" data-callback="responsesToZero" aria-label="Delete all responses. This is IRREVERSIBLE!">{{ templateHelpers.html.icons.trash|safe }}</a></div></td>
 						<td class="tc">{% if item.uid %}
 							<a href="{% if item.survey_trigger_type == 'intercept' or item.survey_trigger_type == 'button' %}{% url 'survey:iframe_embed_test' %}?puid={{ item.project.uid }}{% else %}{% url 'survey:survey_standalone_display' uid=item.uid %}{% endif %}" target="_blank" aria-label="View campaign survey in new tab" class="hint hint--top hint--medium ph3 {{ templateHelpers.classes.link }}">{{ templateHelpers.html.icons.newWindow|safe }}</a>{% endif %}</td>
 						<td class="">{{ item.latest_response_date }}</td>

@@ -1,7 +1,7 @@
 
-	<div id="drag_{{ page.page_number }}_{{ questionNumber }}" draggable="true" data-dragtype="question" ondragstart="OM.drag(event)" class="custom-fieldset">
+	<div id="drag_{{ page.page_number }}_{{ questionNumber }}" draggable="true" data-dragtype="question" ondragstart="SK.drag(event)" class="custom-fieldset">
 		
-		<div class="custom-drop-con" data-droptype="question" id="dropcon_{{ page.page_number}}_{{ questionNumber }}" ondrop="OM.drop(event);OM.customSetFieldNames();" ondragenter="OM.dragEnter(event)" ondragleave="OM.dragLeave(event)" ondragover="OM.allowDrop(event)"></div>
+		<div class="custom-drop-con" data-droptype="question" id="dropcon_{{ page.page_number}}_{{ questionNumber }}" ondrop="SK.drop(event);SK.customSetFieldNames();" ondragenter="SK.dragEnter(event)" ondragleave="SK.dragLeave(event)" ondragover="SK.allowDrop(event)"></div>
 		
 		<div class="w-100 flex items-center">
 			<div style="flex: 0 0 24px" class="linkcolor">{{ templateHelpers.html.icons.dragVertical|safe }}</div>
@@ -18,8 +18,8 @@
 			</div>
 			
 			<div class="ml3 flex items-center">
-				<span class="mr3 db hint hint--top-left" style="top:-2px;" aria-label="Add a question after this one"><a class="dib f2 relative green hover-dark-green" href="#" onclick="OM.customAddItem(this);return false;">+</a></span>
-				<a href="#" onclick="OM.customRemoveItem(this);return false;"><span class="red b f4">❌</span></a>
+				<span class="mr3 db hint hint--top-left" style="top:-2px;" aria-label="Add a question after this one"><a class="dib f2 relative green hover-dark-green" href="#" onclick="SK.customAddItem(this);return false;">+</a></span>
+				<a href="#" onclick="SK.customRemoveItem(this);return false;"><span class="red b f4">❌</span></a>
 			</div>
 		</div>
 	</div>
