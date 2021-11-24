@@ -1,6 +1,6 @@
 # SurveyKong
 
-SurveyKong is a free open source NPS, feedback, and general survey tool that allows you to create flexible surveys. Anything from basic questions to time-bombed, response limited, advanced logic surveys. Surveys can be added to web pages and served to a certain % of your visitors, or you create standalone email campaign surveys.
+SurveyKong is a free open source NPS, feedback, and general survey tool that allows you to create flexible surveys. Anything from basic questions to time-bombed, response limited, advanced logic surveys. Surveys can be added to web pages and served to a certain % of your visitors, or you can create standalone email campaign surveys.
 
 ## Included/installed Features:
 - Debugging toolbar
