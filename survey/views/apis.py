@@ -267,7 +267,12 @@ def api_campaign_remove_take_later(request):
 		print(f"Error: Take later api_campaign_remove_take_later failed. UID: {request.session['uuid']} | CUID: {request.POST.get('cuid')} | ex: {ex}")
 
 	response = JsonResponse({'results': {'message': 'Success.'}}, status=200)
-	response["Access-Control-Allow-Origin"] = "*"
+	try:
+		reqDomain = request.META['HTTP_ORIGIN']
+	except:
+		reqDomain = '*'
+	response['Access-Control-Allow-Origin'] = reqDomain
+	response['Access-Control-Allow-Credentials'] = 'true'
 	return response
 	
 ##
