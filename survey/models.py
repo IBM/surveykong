@@ -942,7 +942,7 @@ class ReleaseNote(models.Model):
 	updated_by = models.ForeignKey(User, related_name='release_note_updated_by', on_delete=models.PROTECT)
 	
 	release_number = models.PositiveIntegerField(default=incrementReleaseNum, unique=True)
-	date = models.DateTimeField(default=getToday)
+	date = models.DateField(default=getToday)
 	notes = models.TextField(max_length=1000)
 	
 	class Meta:
