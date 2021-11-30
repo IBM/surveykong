@@ -461,6 +461,7 @@ def admin_campaign_edit(request, id):
 		if form.is_valid():
 			post = form.save(commit=False)
 			post.updated_by = request.user
+			post.customPreSave()
 			post.save()
 			form.save_m2m()
 			
