@@ -298,9 +298,13 @@ def api_campaign_remove_take_later(request):
 		campaign = Campaign.objects.get(uid=request.POST.get('cuid'))
 		campaign.setUserStatus(request.session['uuid'], 'remove_take_later')
 	except Exception as ex:
-		cuid = campaign.uid if campaign else 'none'
-		uuid = request.session['uuid'] if request.session['uuid'] else 'none'
-		print(f'Error: api_campaign_remove_take_later failed - CUID:{cuid}:, UID :{uuid}: - {ex}')
+		try:
+			userInfo, created = campaign.getCreateUserInfo(request)
+			campaign.setUserStatus(request.session['uuid'], 'intercept_shown')
+		except Exception as ex:
+			cuid = campaign.uid if campaign else 'none'
+			uuid = request.session['uuid'] if request.session['uuid'] else 'none'
+			print(f'Error: api_campaign_remove_take_later failed - CUID:{cuid}:, UID :{uuid}: - {ex}')
 
 	response = JsonResponse({'results': {'message': 'Success.'}}, status=200)
 	try:

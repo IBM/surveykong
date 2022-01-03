@@ -232,8 +232,13 @@ def project_config_javascript(request, uid):
 	Get the stats for the user for the campaign (lottery logic) and JS decides what to do (show or not)
 	'''
 	t0 = time.time()
+	try:
+		pageUrl = request.POST.get('url')
+	except:
+		pageUrl = None
+	
 	project = get_object_or_404(Project, uid=uid)
-	interceptCampaign = project.getActiveMatchingInterceptCampaign(request.POST.get('url'))
+	interceptCampaign = project.getActiveMatchingInterceptCampaign(pageUrl)
 	interceptCampaignStats = None
 	setLotteryCookie = False
 	
@@ -246,7 +251,7 @@ def project_config_javascript(request, uid):
 	except:
 		interceptCampaignStats = None
 	
-	buttonCampaign = project.getActiveMatchingButtonCampaign(request.POST.get('url', ''))
+	buttonCampaign = project.getActiveMatchingButtonCampaign(pageUrl)
 	
 	# Generate some stats as JS object for the page to see/use if they want their own rules to 
 	#  manually trigger a campaign survey.

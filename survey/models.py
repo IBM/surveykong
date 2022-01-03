@@ -543,37 +543,41 @@ class Campaign(models.Model):
 			self.active = False
 			return
 			
-		# If we make it here, do logic based on start/stop dates if they exist.
-		if self.start_date or self.stop_date:
-			today = datetime.today().date()
+		# If there's no limit and start/stop dates, there's no reason for it to be inactive.
+		if not self.start_date and not self.stop_date:
+			self.active = True
+			return
 			
-			# Currently active, try and deactivate.
-			if self.active:
-				try:
-					if self.stop_date and today >= self.stop_date:
-						self.active = False
-					elif self.start_date and today < self.start_date:
-						self.active = False
-				except:
-					pass
-			# Currently inactive and not past response limit, try and activate.
-			else:
-				try:
-					if self.start_date:
-						if today >= self.start_date:
-							if self.stop_date:
-								if today < self.stop_date:
-									self.active = True
-							else:
-								self.active = True
-					elif self.stop_date:
-						if today < self.stop_date:
-							self.active = True
-					else:
-						self.active = True
-				except:
-					pass
+		today = datetime.today().date()
 		
+		# If we make it here, do logic based on start/stop dates if they exist.
+		# Currently active, try and deactivate.
+		if self.active:
+			try:
+				if self.stop_date and today >= self.stop_date:
+					self.active = False
+				elif self.start_date and today < self.start_date:
+					self.active = False
+			except:
+				pass
+		# Currently inactive and not past response limit, try and activate.
+		else:
+			try:
+				if self.start_date:
+					if today >= self.start_date:
+						if self.stop_date:
+							if today < self.stop_date:
+								self.active = True
+						else:
+							self.active = True
+				elif self.stop_date:
+					if today < self.stop_date:
+						self.active = True
+				else:
+					self.active = True
+			except:
+				pass
+	
 	
 	@staticmethod
 	def setActiveStateAllCampaigns():
