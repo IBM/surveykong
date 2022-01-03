@@ -154,6 +154,9 @@ def survey_iframe_display(request):
 @login_exempt
 @xframe_options_exempt
 def survey_iframe_invite(request, uid):
+	'''
+	Special intercept that has an invite screen.
+	'''
 	campaign = get_object_or_404(Campaign, uid=uid)
 	
 	context = {
@@ -176,6 +179,9 @@ def survey_iframe_invite(request, uid):
 ##
 @user_passes_test(helpers.hasAdminAccess)
 def campaign_responses_list(request):
+	'''
+	Admin-only view. All pages here are admin only.
+	'''
 	try:
 		campaign = Campaign.objects.get(uid=request.GET.get('uid', None))
 		responses = campaign.response_campaign.all()
@@ -290,6 +296,9 @@ def project_config_javascript(request, uid):
 ##
 @login_exempt
 def iframe_embed_test(request):
+	'''
+	Sample test page when testing an intercept camapign, on campaign list page.
+	'''
 	response = render(request, 'survey/test_implementation.html', {})
 	return response
 	

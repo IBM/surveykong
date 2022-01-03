@@ -29,12 +29,17 @@ MISSING_THANKYOU_MESSAGE = 'Thank you! Your response was submitted successfully.
 
 
 ##
-##	/survey/api/campaigns/responses/ 
+##	/survey/api/campaigns/responses/ <campaign=___, since=___>
 ##
 @login_exempt
 def api_responses(request):
+	'''
+	Return all responses for the given campaign, since the given date.
+	"campaign" and "since" are required.
+	'''
 	try:
-		campaign = Campaign.objects.get(uid=request.GET.get('campaign'))
+		campaign = Campaign.objects.get(uid=request.GET['campaign']))
+		sinceDate = timezone.make_aware(datetime.fromtimestamp(int(request.GET['since'])+1))
 	except:
 		response = JsonResponse({'responses':[]}, status=404)
 		response["Access-Control-Allow-Origin"] = "*"
@@ -42,13 +47,6 @@ def api_responses(request):
 		
 	campaignResponses = campaign.response_campaign
 	
-	# Require "since" param, if missing or invalid, 
-	#  return nothing for safety (instead of returning all)
-	try:
-		sinceDate = timezone.make_aware(datetime.fromtimestamp(int(request.GET.get('since', None))+1))
-	except:
-		sinceDate = timezone.now()
-		
 	response = JsonResponse({
 		'responses': list(campaign.response_campaign.filter(created_at__gt=sinceDate).values_list('raw_data', flat=True))
 	}, status=200)
@@ -60,11 +58,12 @@ def api_responses(request):
 ##
 ##	/survey/api/user/add/ <POST DATA>
 ##
-##	Creates a user with the passed email and name. Basic.
-##	Returns the user object ID and user's name (for optional display).
-##
 @user_passes_test(helpers.hasAdminAccess)
 def api_user_add(request):
+	'''
+	Creates a user with the passed email and name. Basic.
+	Returns the user object ID and user's name (for optional display).
+	'''
 	email = request.POST.get('email')
 	httpCode = 404
 	
@@ -95,6 +94,9 @@ def api_user_add(request):
 ##
 @user_passes_test(helpers.hasAdminAccess)
 def api_adminaccess(request):
+	'''
+	Admin access api, adds/removes user via email to admin group.
+	'''
 	email = request.POST.get('email')
 	action = request.POST.get('action')
 	adminGroup, created = Group.objects.get_or_create(name='admins')
@@ -146,6 +148,9 @@ def api_adminaccess(request):
 @xframe_options_exempt
 @login_exempt
 def api_submit_response(request):
+	'''
+	Surveys post to this URL. Store the response and return message to display.
+	'''
 	try:
 		campaign = Campaign.objects.get(uid=request.POST.get('cuid'))
 	except:
@@ -174,6 +179,9 @@ def api_submit_response(request):
 ##
 @user_passes_test(helpers.hasAdminAccess)
 def api_delete_response(request):
+	'''
+	Admin center response list delete a response link hits this.
+	'''
 	try:
 		response = Response.objects.get(id=request.POST.get('response'))
 		response.deleteResponseAndRecalc()
@@ -188,6 +196,9 @@ def api_delete_response(request):
 ##
 @user_passes_test(helpers.hasAdminAccess)
 def api_delete_campaign_responses(request):
+	'''
+	Admin center campaign list page "delete all responses" hits this.
+	'''
 	try:
 		campaign = Campaign.objects.get(id=request.POST.get('campaign'))
 		campaign.deleteResponsesAndReset()
@@ -204,6 +215,11 @@ def api_delete_campaign_responses(request):
 ##
 @user_passes_test(helpers.hasAdminAccess)
 def api_delete_taken_flags(request):
+	'''
+	Admin center api to ONLY delete campaignUserInfos for a campaign. Leaves responses.
+	Use case is if you want to leave existing responses, but allow everyone to be able to take
+	the survey again. Essentially clearing the "shown" and "taken" flags.
+	'''
 	try:
 		campaign = Campaign.objects.get(id=request.POST.get('campaign'))
 		campaign.resetUserStatusFlags()
@@ -220,6 +236,9 @@ def api_delete_taken_flags(request):
 ##
 @user_passes_test(helpers.hasAdminAccess)
 def api_campaign_toggle_enabled(request):
+	'''
+	Admin center campaign list, toggle a campaign on/off.
+	'''
 	try:
 		campaign = Campaign.objects.get(id=request.POST.get('campaign'))
 		campaign.enabled = True if not campaign.enabled else False
@@ -297,6 +316,9 @@ def api_campaign_remove_take_later(request):
 ##
 @login_exempt
 def api_set_active_states(request):
+	'''
+	Cron job api run daily to check for campaigns with dates and en/disable them.
+	'''
 	Campaign.setActiveStateAllCampaigns()
 	return JsonResponse({'results':'Success.'}, status=200)
 	
@@ -370,7 +392,7 @@ def api_remove_campaign_user_info(request):
 ##
 def api_get_default_thankyou(request):
 	'''
-	For admins - when choosing campaign survey, get and set the initial thank you based on survey type
+	For admins - when choosing campaign survey, get and set the initial thank you based on survey type.
 	'''
 	data = {
 		'thankyouId': False
