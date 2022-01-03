@@ -10,7 +10,7 @@
 		</div>
 	
 		<div class="mb2 custom-fieldsets-group" data-pagenumber="{{ page.page_number}}">
-			{% for questionOrder in page.question_order_page.all %}
+			{% for questionOrder in page.questionOrders.all %}
 				{% include 'partials/surveybuilder_question_dyn_group.html' with questionNumber=forloop.counter %}
 			{% endfor %}
 			

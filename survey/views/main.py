@@ -16,6 +16,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.crypto import get_random_string
+from django.views.decorators.csrf import csrf_exempt
 
 from middleware.login_required import login_exempt
 
@@ -53,6 +54,14 @@ def survey_standalone_display(request, uid):
 	try:
 		campaign = Campaign.objects.filter(uid=uid).select_related('survey',).prefetch_related('survey__page_survey','survey__page_survey__question_order_page', 'survey__page_survey__question_order_page__question').first()
 		campaignStats = campaign.getStatsForUser(request)
+		
+		pagesWithQuestions = []
+		# For each page, call function that returns sorted standard survey + custom campaign questions.
+		for page in campaign.survey.page_survey.all():
+			page.questionOrders = page.getAllQuestionOrders(campaign)
+			if page.questionOrders:
+				pagesWithQuestions.append(page)
+				
 	except:
 		return render(request, '404.html', {}, status=404)
 	
@@ -60,6 +69,7 @@ def survey_standalone_display(request, uid):
 		'campaign': campaign,
 		'campaignStats': campaignStats,
 		'currentView': 'standalone',
+		'pagesWithQuestions': pagesWithQuestions,
 	}
 	
 	# Template chooser.
@@ -67,9 +77,13 @@ def survey_standalone_display(request, uid):
 		template = 'survey/survey_standalone_display.html'
 	else:
 		template = 'survey/survey_standalone_no_display.html'
-		
+	
+	projectNameToUse = campaign.project.getDisplayName()
+	if campaign.custom_project_name:
+		projectNameToUse = campaign.custom_project_name
+	
 	responseText = render_to_string(template, context=context, request=request)
-	responseText = responseText.replace('{projectname}', campaign.project.getDisplayName())
+	responseText = responseText.replace('{projectname}', projectNameToUse)
 	response = HttpResponse(responseText)
 	
 	helpers.clearPageMessage(request)
@@ -81,13 +95,22 @@ def survey_standalone_display(request, uid):
 ##
 @login_exempt
 @xframe_options_exempt
-def survey_iframe_display(request, uid):
+def survey_iframe_display(request):
 	'''
 	Iframe survey version.
 	'''
 	try:
+		uid = request.GET.get('cuid')
 		campaign = Campaign.objects.filter(uid=uid).select_related('survey',).prefetch_related('survey__page_survey','survey__page_survey__question_order_page', 'survey__page_survey__question_order_page__question').first()
 		campaignStats = campaign.getStatsForUser(request)
+		
+		pagesWithQuestions = []
+		# For each page, call function that returns sorted standard survey + custom campaign questions.
+		for page in campaign.survey.page_survey.all():
+			page.questionOrders = page.getAllQuestionOrders(campaign)
+			if page.questionOrders:
+				pagesWithQuestions.append(page)
+				
 	except:
 		return render(request, '404.html', {}, status=404)
 		
@@ -100,6 +123,7 @@ def survey_iframe_display(request, uid):
 	context = {
 		'campaignStats': campaignStats,
 		'currentView': 'intercept',
+		'pagesWithQuestions': pagesWithQuestions,
 	}
 	
 	# Template chooser.
@@ -108,8 +132,12 @@ def survey_iframe_display(request, uid):
 	else:
 		template = 'survey/survey_iframe_no_display.html'
 		
+	projectNameToUse = campaignStats['campaign'].project.getDisplayName()
+	if campaignStats['campaign'].custom_project_name:
+		projectNameToUse = campaignStats['campaign'].custom_project_name
+	
 	responseText = render_to_string(template, context=context, request=request)
-	responseText = responseText.replace('{projectname}', campaignStats['campaign'].project.getDisplayName())
+	responseText = responseText.replace('{projectname}', projectNameToUse)
 	response = HttpResponse(responseText)
 	
 	helpers.clearPageMessage(request)
@@ -128,8 +156,12 @@ def survey_iframe_invite(request, uid):
 		'campaign': campaign,
 	}
 	
+	projectNameToUse = campaign.project.getDisplayName()
+	if campaign.custom_project_name:
+		projectNameToUse = campaign.custom_project_name
+	
 	responseText = render_to_string('survey/survey_iframe_invite.html', context=context, request=request)
-	responseText = responseText.replace('{projectname}', campaign.project.getDisplayName())
+	responseText = responseText.replace('{projectname}', projectNameToUse)
 	response = HttpResponse(responseText)
 	
 	return response
@@ -163,10 +195,30 @@ def campaign_responses_list(request):
 	
 	
 ##
-##	/survey/config/<uid>.js
+##	/survey/preconfig/<uid>.js
 ##
 @login_exempt
 @xframe_options_exempt
+def preconfig_javascript(request, uid):
+	'''
+	Return JS that does ajax request, sending origin to project_config.
+	'''
+	context = {
+		'projectUid': uid,
+	}
+	
+	responseText = render_to_string('survey/preconfig_javascript.js', context=context, request=request)
+	responseText = responseText.replace('\n','').replace('\t','')
+	response = HttpResponse(responseText, content_type='text/javascript')
+	return response
+	
+
+##
+##	/survey/projectconfig/<uid>.js
+##
+@login_exempt
+@xframe_options_exempt
+@csrf_exempt
 def project_config_javascript(request, uid):
 	'''
 	If there's an active intercept campaign, and they don't have the lottery cookie:
@@ -174,7 +226,7 @@ def project_config_javascript(request, uid):
 	'''
 	t0 = time.time()
 	project = get_object_or_404(Project, uid=uid)
-	interceptCampaign = Campaign.objects.filter(project=project, survey_trigger_type='intercept', active=True).select_related('survey', 'survey_invite').first()
+	interceptCampaign = project.getActiveMatchingInterceptCampaign(request.POST.get('url', ''))
 	interceptCampaignStats = None
 	setLotteryCookie = False
 	
@@ -187,12 +239,20 @@ def project_config_javascript(request, uid):
 	except:
 		interceptCampaignStats = None
 	
-	buttonCampaign = Campaign.objects.filter(project=project, survey_trigger_type='button', active=True).select_related('button').first()
+	buttonCampaign = project.getActiveMatchingButtonCampaign(request.POST.get('url', ''))
 	
+	# Generate some stats as JS object for the page to see/use if they want their own rules to 
+	#  manually trigger a campaign survey.
+	activeCampaignsData = {}
+	for campaign in Campaign.objects.filter(project=project, active=True):
+		stats = campaign.getStats(request)
+		activeCampaignsData[campaign.uid] = stats
+		
 	context = {
 		'campaignStats': interceptCampaignStats,
 		'buttonCampaign': buttonCampaign,
 		'forceIntercept': request.GET.get('forceintercept', None),
+		'activeCampaignsData': json.dumps(activeCampaignsData),
 		'flags': {
 			'hasIntercept': True if interceptCampaignStats and not interceptCampaignStats['hasInvite'] else False,
 			'hasInvite': True if interceptCampaignStats and interceptCampaignStats['hasInvite'] else False,
@@ -201,13 +261,18 @@ def project_config_javascript(request, uid):
 		}
 	}
 	
-	#print(json.dumps(context['flags'], indent=4))
-	
 	#content = render(request, 'survey/project_config_javascript.js', context)
 	#response = HttpResponse(content, content_type='text/javascript')
 	responseText = render_to_string('survey/project_config_javascript.js', context=context, request=request)
 	responseText = responseText.replace('\n','').replace('\t','').replace('[timer]', str(round((time.time()-t0)*1000)))
 	response = HttpResponse(responseText, content_type='text/javascript')
+	
+	try:
+		reqDomain = request.META['HTTP_ORIGIN']
+	except:
+		reqDomain = '*'
+	response['Access-Control-Allow-Origin'] = reqDomain
+	response['Access-Control-Allow-Credentials'] = 'true'
 	
 	# Campaign Session tracker.
 	if interceptCampaignStats and interceptCampaignStats['setSessionCookie']:

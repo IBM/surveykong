@@ -139,6 +139,7 @@ class QuestionForm(ModelForm):
 			'message_text': forms.Textarea(attrs={'class': 'bo-common-autotextarea', 'rows': '3'}),
 			'type': forms.Select(attrs={'data-width':'16rem'}),
 			'layout': forms.Select(attrs={'data-width':'16rem'}),
+			'shared': forms.TextInput(attrs={'type':'hidden'}),
 		}
 		error_messages = {
 			'short_name': {

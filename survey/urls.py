@@ -19,9 +19,10 @@ urlpatterns = [
 	## Pages
 	url(r'^$', home, name='home'), 
 	url(r'^campaign/responses/$', campaign_responses_list, name='campaign_responses_list'),
-	url(r'^config/(?P<uid>[\w-]+).js$', project_config_javascript, name='project_config_javascript'),
+	url(r'^preconfig/(?P<uid>[\w-]+).js$', preconfig_javascript, name='preconfig_javascript'),
+	url(r'^projectconfig/(?P<uid>[\w-]+).js$', project_config_javascript, name='project_config_javascript'),
 	url(r'^display/(?P<uid>[\w-]+)/$', survey_standalone_display, name='survey_standalone_display'),
-	url(r'^iframe/display/(?P<uid>[\w-]+)/$', survey_iframe_display, name='survey_iframe_display'),
+	url(r'^iframe/display/$', survey_iframe_display, name='survey_iframe_display'),
 	url(r'^iframe/invite/(?P<uid>[\w-]+).html$', survey_iframe_invite, name='survey_iframe_invite'),
 	url(r'^iframe/embedtest/$', iframe_embed_test, name='iframe_embed_test'),
 	url(r'^iframe/admin_debugbox/(?P<uid>[\w-]+)/$', survey_iframe_admin_debug_box, name='survey_iframe_admin_debug_box'),
@@ -32,16 +33,20 @@ urlpatterns = [
 	url(r'^api/adminaccess/$', api_adminaccess, name='api_adminaccess'),
 	url(r'^api/campaign/toggleenabled/$', api_campaign_toggle_enabled, name='api_campaign_toggle_enabled'),
 	url(r'^api/campaigns/$', api_campaigns, name='api_campaigns'),
+	url(r'^api/defaultthankyou/$', api_get_default_thankyou, name='api_get_default_thankyou'),
 	url(r'^api/deletecampaignresponses/$', api_delete_campaign_responses, name='api_delete_campaign_responses'),
 	url(r'^api/deleteresponse/$', api_delete_response, name='api_delete_response'),
 	url(r'^api/deletetakenflags/$', api_delete_taken_flags, name='api_delete_taken_flags'),
 	url(r'^api/emaillink/$', api_campaign_email_link, name='api_campaign_email_link'),
 	url(r'^api/removetakelater/$', api_campaign_remove_take_later, name='api_campaign_remove_take_later'),
-	url(r'^api/removecampiagnuserinfo/$', api_remove_campaign_user_info, name='api_remove_campaign_user_info'),
+	url(r'^api/removecampaignuserinfo/$', api_remove_campaign_user_info, name='api_remove_campaign_user_info'),
 	url(r'^api/responses/$', api_responses, name='api_responses'),
 	url(r'^api/submit/$', api_submit_response, name='api_submit_response'),
 	url(r'^api/takelater/$', api_campaign_take_later, name='api_campaign_take_later'),
 	url(r'^api/user/add/$', api_user_add, name='api_user_add'),
+	
+	
+	
 	
 	## APIs crons.
 	url(r'^api/setactivestates/$', api_set_active_states, name='api_set_active_states'),

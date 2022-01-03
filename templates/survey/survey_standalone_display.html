@@ -34,14 +34,14 @@
 					window.setcc = function (d) {document.getElementById('custom-cc').value=d.country}
 				</script>
 				
-				{% for page in campaign.survey.page_survey.all %}
-					<div class="custom-survey-page {% if forloop.counter == 1 %}custom-showing{% endif %}" data-page="{{ forloop.counter }}">
-						<div class="mb4">
-							{% for questionOrder in page.question_order_page.all %}
+				{% for page in pagesWithQuestions %}
+					{% if page.questionOrders %}
+						<div class="custom-survey-page {% if forloop.counter == 1 %}custom-showing{% endif %}" data-page="{{ forloop.counter }}">
+							{% for questionOrder in page.questionOrders %}
 								{% include 'survey/partials/survey_field.html' with question=questionOrder.question %}
 							{% endfor %}
 						</div>
-					</div>
+					{% endif %}
 				{% endfor %}
 				
 				<div id="custom-survey-buttons">

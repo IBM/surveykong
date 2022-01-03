@@ -12,9 +12,35 @@
 	}
 	
 	
+	// Listen for parent to send custom form vars and create each as hidden fields.
+	window.addEventListener('message', function (event) {
+		if (event.data.message == 'customFormData') {
+			var nameValuePairs = event.data.customFormData;
+			
+			document.getElementById('custom-parent-page-data').innerHTML = '';
+			
+			for (var key in nameValuePairs) {
+				document.getElementById('custom-parent-page-data').innerHTML += '<input type="hidden" name="' + key + '" value="' + nameValuePairs[key] + '">';
+			}
+			// Have to dispatch event else event listener below won't work.
+			document.getElementById('custom-survey-form').dispatchEvent(new Event('submit'));
+		}
+	});
+	
+	
+	var checkedCustomVars = false;
 	function setupSurveySubmit () {
 		document.getElementById('custom-survey-form').addEventListener('submit', function (evt) {
 			evt.preventDefault();
+			
+			// If in iframe and we haven't fetched custom data yet, fetch it.
+			// The event listener (above) for the return message triggers submit again after
+			//   it injects custom name/value pairs.
+			if (!checkedCustomVars && window !== top) {
+				checkedCustomVars = true;
+				window.parent.postMessage({message:'sendCustomFormData'},'*');
+				return;
+			}
 			
 			document.getElementById('custom-processing').removeAttribute('style');
 
@@ -74,8 +100,10 @@
 		nextButton.addEventListener('click', function (evt) {
 			evt.preventDefault();
 			
+			// Find required fields that aren't hidden and check if they are validly selected.
+			// If any not, trigger submit to do native form error checking and notification.
 			var valid = true;
-			$(viewingPage).find('[required]').each(function() {
+			$(viewingPage).find(':not(".dn") [required]').each(function() {
 				if (valid == true && !this.checkValidity()) {
 					valid = false;
 					this.closest('form').querySelector('#custom-submit-button button').click();
@@ -84,12 +112,31 @@
 			})
 			
 			if (valid) {
-				showPage(viewingPage.nextElementSibling);
+				// If the next page doesn't have any visible questions, 
+				//  and there's a next page, go to that one.
+				// Else just go to next one.
+				var nextPage = viewingPage.nextElementSibling,
+					pageToShow = nextPage;
+					
+				if ($(nextPage).find('.custom-question-con').not('.dn').length === 0 && nextPage.classList.contains('custom-survey-page')) {
+					pageToShow = nextPage.nextElementSibling;
+				}
+				showPage(pageToShow);
 			}
 		});
 		previousButton.addEventListener('click', function (evt) {
 			evt.preventDefault();
-			showPage(viewingPage.previousElementSibling);
+			
+			// If the previous page doesn't have any visible questions, 
+			//  and there's a previous page, go to that one.
+			// Else just go to previous one.
+			var prevPage = viewingPage.previousElementSibling,
+				pageToShow = prevPage;
+				
+			if ($(prevPage).find('.custom-question-con').not('.dn').length === 0 && prevPage.classList.contains('custom-survey-page')) {
+				pageToShow = prevPage.previousElementSibling;
+			}
+			showPage(pageToShow);
 		});
 	}
 	
@@ -113,10 +160,15 @@
 	
 	
 	function setupQuestionDependency () {
-		function toggleQuestion (selectedVal, targetVal, targetAction, childCon) {
+		function toggleQuestion (selectedVal, targetValues, targetAction, childCon) {
 			// If it's a match, do the action,
 			// Otherwise do the opposite of the action.
-			if (selectedVal == targetVal) {
+			selectedVal = isNaN(selectedVal) == false ? parseFloat(selectedVal) : selectedVal;
+			
+			// Target comes thru as possible CSV, so split it.
+			targetValuesArr = targetValues.split(',');
+			
+			if (targetValuesArr.includes(selectedVal)) {
 				if (targetAction === 'show') {
 					showQuestion(childCon, true);
 				}
@@ -137,18 +189,46 @@
 		}
 		
 		
-		function showQuestion (container, b) {
+		function showQuestion (fieldCon, b) {
 			if (b) {
-				$(container).slideDown();
+				$(fieldCon).slideDown('fast', function () {
+					$(fieldCon).removeClass('dn');
+				});
+				setRequired(fieldCon, b);
 			}
 			else {
-				$(container).slideUp();
+				$(fieldCon).slideUp('fast', function () {
+					$(fieldCon).addClass('dn');
+				});
+				setRequired(fieldCon, b);
 			}
 		}
 		
 		
-		function clearAnswer (container) {
-			$(container).find("textarea").val("").end().find("input:checked").prop("checked",false);
+		function clearAnswer (fieldCon) {
+			$(fieldCon).find("textarea").val("").end().find("input:checked").prop("checked",false);
+		}
+		
+		
+		function setRequired (fieldCon, b) {
+			if ($(fieldCon).find('label').data('required') == true) {
+				if (b) {
+					$(fieldCon).find('label[data-required="true"]').addClass('bo-field-required');
+					$(fieldCon).find('input, select, textarea').each(function () {
+						// If the field is the auto-generated "other" write-in field, don't make it required.
+						if ($(this).closest('[id$="_autoother_container"]')[0]) {
+							return;
+						}
+						else {
+							$(this).prop('required', true);
+						}
+					});
+				}
+				else {
+					$(fieldCon).find('label[data-required="true"]').removeClass('bo-field-required');
+					$(fieldCon).find('input, select, textarea').prop('required', false);
+				}	
+			}
 		}
 		
 		
@@ -156,13 +236,14 @@
 		$("[data-parent-question]").each(function () {
 			var childCon = $(this),
 				parentCon = $('#q_' + $(this).data('parent-question') + '_container'),
-				targetVal = $(this).data('parent-answer'),
+				targetValues = $(this).data('parent-answer'),
 				targetAction = $(this).data('parent-answer-action');
 				
 			parentCon.on("change", "select, input", function (evt) {
-				toggleQuestion ($(evt.target).val(), targetVal, targetAction, childCon);
+				toggleQuestion ($(evt.target).val(), targetValues, targetAction, childCon);
 			});
-			toggleQuestion ('_', targetVal, targetAction, childCon);
+			// Run onload to set questions
+			toggleQuestion ('_', targetValues, targetAction, childCon);
 		});
 		
 		

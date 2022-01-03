@@ -333,7 +333,7 @@ def admin_project_delete(request):
 @user_passes_test(helpers.hasAdminAccess)
 def admin_campaign_list(request):
 	thisModel = Campaign
-	queryItems = thisModel.objects.all().order_by('-enabled', 'project__name').select_related('survey', 'project').prefetch_related('response_campaign')
+	queryItems = thisModel.objects.all().order_by('-enabled', 'project__name').select_related('survey', 'project', 'button').prefetch_related('response_campaign')
 	if request.GET.get('question',None):
 		queryItems = thisModel.objects.filter(survey__page_survey__question_order_page__question=request.GET.get('question'))
 		
@@ -349,7 +349,7 @@ def admin_campaign_add(request):
 	# Needs special presave.
 	thisModel = Campaign
 	thisModelForm = globals()[thisModel._meta.object_name + 'Form']
-	thisViewTemplate = 'admin_common_add.html'
+	thisViewTemplate = 'survey/admin_campaign_add.html'
 	adminTemplate = 'survey/page_template_admin.html'
 	thisModelListUrl = reverse(f'survey:admin_{thisModel._meta.model_name}_list')
 	
@@ -366,9 +366,9 @@ def admin_campaign_add(request):
 		'form': None,
 		'modelMeta': thisModel._meta,
 		'newItemName': thisModel._meta.verbose_name,
+		'questions': Question.objects.all(),
 		'adminTemplate': adminTemplate,
 		'leftNavHighlight': thisModel._meta.verbose_name_plural,
-		'customJsPath': 'shared/js/admin_campaign.js',
 	}
 
 	if request.method == 'GET':
@@ -390,16 +390,39 @@ def admin_campaign_add(request):
 			post.save()
 			form.save_m2m()
 			
-			# If it's a success and they want JSON back, return the ID and label as JSON,
-			#  otherwise we redirect to the list page with a message.
-			if request.POST.get('returntype', None) == 'json':
-				response = JsonResponse({
-					'id': post.id,
-					'name': post.__str__()
-				}, status=200)
-			else:
-				helpers.setPageMessage(request, 'success', f'{capfirst(thisModel._meta.verbose_name)} was added successfully')
+			# Now create the survey pages and orders with questions.	
+			try:
+				campaign = post
+				
+				# Delete all custom questionorders for this campaign and create them with posted data.
+				QuestionOrder.objects.filter(campaign=campaign).delete()
+				
+				for fieldName in request.POST:
+					if fieldName.startswith('cqo'):
+						nameArr = fieldName.split('_')
+						pageNum = nameArr[1]
+						questionNum = nameArr[2]
+						questionId = nameArr[3]
+						
+						# If there was a valid question ID passed (non-blank), create question order.
+						try:
+							question = Question.objects.get(id=questionId)
+							surveyPage, created = Page.objects.get_or_create(survey=campaign.survey, page_number=pageNum)
+							QuestionOrder.objects.create(
+								campaign = campaign,
+								page = surveyPage,
+								question_number = questionNum,
+								question = question,
+								
+							)
+						except Exception as ex:
+							print(f'{ex}')
+				
+				helpers.setPageMessage(request, 'success', 'Campaign was saved successfully')
 				response = redirect(thisModelListUrl)
+			except Exception as ex:
+				helpers.setPageMessage(request, 'error', f'There was a problem saving the campaign: {ex}')
+				response = render(request, thisViewTemplate, context)
 		else:
 			response = render(request, thisViewTemplate, context)
 			
@@ -415,7 +438,7 @@ def admin_campaign_edit(request, id):
 	allowDelete=True
 	thisModelItem = get_object_or_404(thisModel, id=id)
 	thisModelForm = globals()[thisModel._meta.object_name + 'Form']
-	thisViewTemplate = 'admin_common_edit.html'
+	thisViewTemplate = 'survey/admin_campaign_edit.html'
 	adminTemplate = 'survey/page_template_admin.html'
 	addItemTemplate = 'admin_common_add.html'
 	thisModelListUrl = reverse(f'survey:admin_{thisModel._meta.model_name}_list')
@@ -439,6 +462,8 @@ def admin_campaign_edit(request, id):
 		'modelMeta': thisModel._meta,
 		'thisModelItem': thisModelItem,
 		'itemName': thisModelItem.uid,
+		'questions': Question.objects.all(),
+		'customQuestions': QuestionOrder.objects.filter(campaign=thisModelItem),
 		'adminTemplate': adminTemplate,
 		'addItemTemplate': addItemTemplate,
 		'thisModelDeleteUrl': thisModelDeleteUrl,
@@ -465,8 +490,39 @@ def admin_campaign_edit(request, id):
 			post.save()
 			form.save_m2m()
 			
-			helpers.setPageMessage(request, 'success', f'{capfirst(thisModel._meta.verbose_name)} was edited successfully')
-			response = redirect(thisModelListUrl)
+			# Now create the survey pages and orders with questions.	
+			try:
+				campaign = post
+				
+				# Delete all custom questionorders for this campaign and create them with posted data.
+				QuestionOrder.objects.filter(campaign=campaign).delete()
+				
+				for fieldName in request.POST:
+					if fieldName.startswith('cqo'):
+						nameArr = fieldName.split('_')
+						pageNum = nameArr[1]
+						questionNum = nameArr[2]
+						questionId = nameArr[3]
+						
+						# If there was a valid question ID passed (non-blank), create question order.
+						try:
+							question = Question.objects.get(id=questionId)
+							surveyPage, created = Page.objects.get_or_create(survey=campaign.survey, page_number=pageNum)
+							QuestionOrder.objects.create(
+								campaign = campaign,
+								page = surveyPage,
+								question_number = questionNum,
+								question = question,
+								
+							)
+						except Exception as ex:
+							print(f'{ex}')
+				
+				helpers.setPageMessage(request, 'success', 'Campaign was saved successfully')
+				response = redirect(thisModelListUrl)
+			except Exception as ex:
+				helpers.setPageMessage(request, 'error', f'There was a problem saving the campaign: {ex}')
+				response = render(request, thisViewTemplate, context)
 		else:
 			response = render(request, thisViewTemplate, context)
 			
@@ -526,7 +582,6 @@ def admin_survey_add(request):
 		'newItemName': thisModel._meta.verbose_name,
 		'adminTemplate': adminTemplate,
 		'leftNavHighlight': thisModel._meta.verbose_name_plural,
-		'customJsPath': 'shared/js/admin_survey.js',
 	}
 
 	if request.method == 'GET':
@@ -601,7 +656,6 @@ def admin_survey_edit(request, id):
 		'thisModelDeleteUrl': thisModelDeleteUrl,
 		'allowDelete': allowDelete,
 		'leftNavHighlight': thisModel._meta.verbose_name_plural,
-		'customJsPath': 'shared/js/admin_survey.js',
 	}
 
 	if request.method == 'GET':
@@ -636,17 +690,6 @@ def admin_survey_edit(request, id):
 @user_passes_test(helpers.hasAdminAccess)
 def admin_survey_delete(request):
 	return doCommonDeleteView(request, Survey)
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -729,7 +772,7 @@ def admin_language_delete(request):
 ##
 @user_passes_test(helpers.hasAdminAccess)
 def admin_question_list(request):
-	questions = Question.objects.all()
+	questions = Question.objects.all().prefetch_related('question_order_question', 'question_order_question__page', 'question_order_question__page__survey')
 	
 	if request.GET.get('survey', None):
 		try:
@@ -737,10 +780,14 @@ def admin_question_list(request):
 		except:
 			pass
 	
+	# Not perfect, but good enough for now.
 	for question in questions:
 		surveys = Survey.objects.filter(page_survey__question_order_page__question=question)
 		question.surveyCount = surveys.count()
-		question.campaignCount = Campaign.objects.filter(survey__in=surveys).count()
+		# Get custom campaign count.
+		question.campaignCount = Campaign.objects.filter(survey__in=surveys,question_order_campaign__question=question).count()
+		if question.campaignCount == 0:
+			question.campaignCount = Campaign.objects.filter(survey__in=surveys,survey__page_survey__question_order_page__question=question).count()
 			
 	context = {
 		'listItems': questions,
@@ -809,7 +856,7 @@ def admin_question_delete(request):
 @user_passes_test(helpers.hasAdminAccess)
 def admin_questionorder_list(request):
 	thisModel = QuestionOrder
-	listItems = thisModel.objects.order_by('page', 'question_number').all().select_related('page', 'question')
+	listItems = thisModel.objects.order_by('page', 'question_number').all().select_related('page', 'question', 'campaign', 'campaign__project', 'campaign__survey')
 	return doCommonListView(request, thisModel, listItems)
 
 
@@ -1028,6 +1075,14 @@ def admin_page_delete(request):
 def admin_surveybuilder_list(request):
 	surveys = Survey.objects.all().order_by('name').prefetch_related('page_survey__question_order_page__question').select_related('language').annotate(campaignCount=Count('campaign_survey',distinct=True))
 	
+	for survey in surveys:
+		# For each page, call function that returns sorted standard survey + custom campaign questions.
+		survey.pagesWithQuestions = []
+		for page in survey.page_survey.all():
+			page.questionOrders = page.getAllQuestionOrders(None)
+			if page.questionOrders:
+				survey.pagesWithQuestions.append(page)
+				
 	context = {
 		'surveys': surveys,
 		'leftNavHighlight': 'survey builders',
@@ -1058,7 +1113,7 @@ def admin_surveybuilder_add(request):
 	context = {
 		'breadcrumbs': breadcrumbs,
 		'form': None,
-		'questions': Question.objects.all().only('question_text', 'type'),
+		'questions': Question.objects.all(),
 		'adminTemplate': adminTemplate,
 		'leftNavHighlight': 'survey builders',
 	}
@@ -1084,13 +1139,11 @@ def admin_surveybuilder_add(request):
 			helpers.setPageMessage(request, 'error', f'There was a problem saving survey changes: {ex}')
 			response = render(request, thisViewTemplate, context)
 
-		# Now create the survey pages and orders with questions.	
+		# Now create the survey pages and orders with questions.
+		# Since we are ADDING a new one, there's nothing to check or delete. 
+		# Just add pages and questions.
 		try:
 			survey = post
-			
-			# Delete all questionorders and pages for this survey and create them with posted data.
-			QuestionOrder.objects.filter(page__survey=survey).delete()
-			Page.objects.filter(survey=survey).delete()
 			
 			for fieldName in request.POST:
 				if fieldName.startswith('qo'):
@@ -1144,11 +1197,19 @@ def admin_surveybuilder_edit(request, id):
 		}
 	)
 
+	# For each page, call function that returns sorted standard survey + custom campaign questions.
+	pagesWithQuestions = []
+	for page in survey.page_survey.all():
+		page.questionOrders = page.getAllQuestionOrders(None)
+		if page.questionOrders:
+			pagesWithQuestions.append(page)
+			
 	context = {
 		'breadcrumbs': breadcrumbs,
 		'form': None,
 		'survey': survey,
-		'questions': Question.objects.all().only('required', 'question_text', 'type'),
+		'pagesWithQuestions': pagesWithQuestions,
+		'questions': Question.objects.all(),
 		'adminTemplate': adminTemplate,
 		'leftNavHighlight': 'survey builders',
 	}
@@ -1176,14 +1237,32 @@ def admin_surveybuilder_edit(request, id):
 		
 		# Now create the survey pages and orders with questions.	
 		try:
-			# Delete all questionorders and pages for this survey and create them with posted data.
-			QuestionOrder.objects.filter(page__survey=survey).delete()
-			Page.objects.filter(survey=survey).delete()
+			postedPageNumbers = list(map(int, request.POST.getlist('pageNumbers')))
+			postedPageNumbers.sort()
+			
+			commonPagesCount = Page.objects.filter(survey=survey, question_order_page__campaign__isnull=True).distinct().count()
+			existingPageNumbers = list(range(1,commonPagesCount+1))
+			
+			# For pages that existed, but were deleted in the edit form, delete the pages.
+			for i in set(existingPageNumbers) - set(postedPageNumbers):
+				try:
+					Page.objects.get(survey=survey, page_number=pageNum).delete()
+				except:
+					pass
+			
+			# For common pages (not ones that were created in campaign custom questions,
+			#  that were posted in the form, delete the questions on them,
+			#  and recreate the orders from the posted data.
+			for pageNum in postedPageNumbers:
+				try:
+					surveyPage = Page.objects.get(survey=survey, page_number=pageNum)
+					QuestionOrder.objects.filter(page=surveyPage, campaign__isnull=True).delete()
+				except:
+					pass
+			
 			
 			for fieldName in request.POST:
 				if fieldName.startswith('qo'):
-					# Pages already exist right now thur "Survey" admin.
-					# Future use, they will create pages in here and will need to create pages first.
 					nameArr = fieldName.split('_')
 					pageNum = nameArr[1][1:]
 					questionNum = nameArr[2][1:]

@@ -40,8 +40,8 @@
 					<div class="lh-copy">{{ campaign.survey_invite.message|safe }}</div>
 					
 					<div class="mt3 flex items-center justify-between">
-						<a target="_blank" href="{% url 'survey:survey_standalone_display' uid=campaign.uid %}" onclick="setTimeout(function(){window.parent.postMessage({message: 'removeInvite'},'*')},250);" class="f6 {{ templateHelpers.classes.bluePriButton }} {{ templateHelpers.classes.smallButton }}">Yes I'll take a brief survey</a>
-						<a href="#" onclick="window.parent.postMessage({message: 'removeInvite'},'*');" class="f6 {{ templateHelpers.classes.redSecButton }} {{ templateHelpers.classes.smallButton }}">No thanks</a>
+						<a target="_blank" href="{% url 'survey:survey_standalone_display' uid=campaign.uid %}" onclick="setTimeout(function(){window.parent.postMessage({message: 'removeInvite'},'*')},250);" class="f6 {{ templateHelpers.classes.bluePriButton }} {{ templateHelpers.classes.smallButton }}">{{ campaign.survey_invite.yes_button_text }}</a>
+						<a href="#" onclick="window.parent.postMessage({message: 'removeInvite'},'*');" class="f6 {{ templateHelpers.classes.redSecButton }} {{ templateHelpers.classes.smallButton }}">{{ campaign.survey_invite.no_button_text }}</a>
 					</div>
 					
 				</div>

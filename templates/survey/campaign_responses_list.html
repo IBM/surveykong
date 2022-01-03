@@ -47,25 +47,21 @@
 				$(setupDeleteResponse);
 			
 			
-				function setupDeleteCampaignResponses () {
-					$('.custom-delete-campaign-responses').on('click', function (evt) {
-						evt.preventDefault();
-						
-						$.ajax({
-							url: '{% url "survey:api_delete_campaign_responses" %}',
-							type: 'post',
-							data: {
-								csrfmiddlewaretoken: '{{ csrf_token }}',
-								campaign: {{ campaign.id }},
-							},
-							success: function () {
-								window.location.reload();
-							},
-						});
-						
-					});
+				function deleteCampaignResponses () {
+					$.ajax({
+						url: '{% url "survey:api_delete_campaign_responses" %}',
+						type: 'post',
+						data: {
+							csrfmiddlewaretoken: '{{ csrf_token }}',
+							campaign: {{ campaign.id }},
+						},
+						success: function () {
+							window.location.reload();
+						},
+					});					
 				}
-				$(setupDeleteCampaignResponses);
+				window.deleteCampaignResponses = deleteCampaignResponses;
+				
 			{% endif %}
 			
 			
@@ -122,7 +118,7 @@
 			</table>
 			
 			{% if responses %}
-				<div class="mt4"><a href="#" class="custom-delete-campaign-responses {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.redSecButton }}">Permanently delete all responses</a></div>
+				<div class="mt4"><a href="#" onclick="deleteCampaignResponses();return false;" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.redSecButton }}">Permanently delete all responses</a></div>
 			{% endif %}
 		{% endif %}
 		

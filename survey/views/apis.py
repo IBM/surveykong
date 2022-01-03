@@ -238,7 +238,7 @@ def api_campaign_take_later(request):
 		campaign = Campaign.objects.get(uid=request.POST.get('cuid'))
 		campaign.setUserStatus(request.session['uuid'], 'take_later')
 	except Exception as ex:
-		print(f'Error: Take later api_campaign_take_later failed. UID :{request.session["uuid"]}: - {ex}')
+		print(f'Error: Take later api_campaign_take_later failed. CUID:{campaign.uid}:, UID :{request.session["uuid"]}: - {ex}')
 
 	response = JsonResponse({'results': {'message': 'Success.'}}, status=200)
 	response["Access-Control-Allow-Origin"] = "*"
@@ -327,7 +327,7 @@ def api_campaigns(request):
 	
 
 ##
-##	/survey/removecampiagnuserinfo/
+##	/survey/removecampaignuserinfo/
 ##
 def api_remove_campaign_user_info(request):
 	'''
@@ -342,3 +342,34 @@ def api_remove_campaign_user_info(request):
 	response = JsonResponse({'results': {'message': 'Success.'}}, status=200)
 	response["Access-Control-Allow-Origin"] = "*"
 	return response
+
+
+##
+##	/survey/api/defaultthankyou/
+##
+def api_get_default_thankyou(request):
+	'''
+	For admins - when choosing campaign survey, get and set the initial thank you based on survey type
+	'''
+	data = {
+		'thankyouId': False
+	}
+	
+	try:
+		surveyType = Survey.objects.get(id=request.GET.get('surveyid')).survey_type
+		
+		if surveyType == 'vote':
+			ty = SurveyThankyou.objects.get(vote_default=True)
+		elif surveyType == 'feedback':
+			ty = SurveyThankyou.objects.get(feedback_default=True)
+		
+		data = {
+			'thankyouId': ty.id,
+		}
+	except Exception as ex:
+		pass
+
+	response = JsonResponse(data, status=200)
+	return response
+
+

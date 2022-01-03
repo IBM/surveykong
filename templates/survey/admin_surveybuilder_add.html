@@ -137,13 +137,25 @@
 						var questionNum = (i+1);
 						question.innerHTML = questionNum;
 					});
-				});	
+				});
 			}
+			
+			
+			function setupOnSubmit () {
+				$('#custom-edit-form').on('submit', function () {
+					var $form = $(this);
+					document.querySelectorAll('.custom-page').forEach(function (page, i) {
+						$form.prepend('<input type="hidden" name="pageNumbers" value="'+(i+1)+'">');
+					});
+				})
+			}
+			
 			
 			$(function () {
 				idNum = $('.custom-fieldset').length;
 				setFieldNames();
 				setPageQuestionNumbers();
+				setupOnSubmit();
 			});
 		})(jQuery);
 		
@@ -157,7 +169,7 @@
 	<div class="{{ templateHelpers.classes.grid }} mt4">
 		
 		{# form posts to same URL displaying it. #}
-		<form class="custom-modelform w-100 mb4" action="" method="post">
+		<form id="custom-edit-form" class="custom-modelform w-100 mb4" action="" method="post">
 			{% include 'partials/form_error_messages.html' with form=form %}
 		
 			{% csrf_token %}
@@ -183,11 +195,11 @@
 		
 			<div class="custom-pages-group">
 				
-				{% for page in survey.page_survey.all %}
+				{% for page in pagesWithQuestions %}
 					{% include 'partials/surveybuilder_page_dyn_group.html' %}
 				{% endfor %}
 				
-				{% if not survey.page_survey.all %}
+				{% if not pagesWithQuestions %}
 					{% include 'partials/surveybuilder_page_dyn_group.html' %}
 				{% endif %}
 				

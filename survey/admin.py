@@ -83,8 +83,15 @@ class ProjectAdmin(admin.ModelAdmin):
 		'contact',
 		'comments',
 	)
-	list_filter = ('created_at', 'updated_at', 'active')
-	raw_id_fields = ('created_by', 'updated_by', 'domain', 'contact')
+	list_filter = (
+		'created_by',
+		'created_at',
+		'updated_by',
+		'updated_at',
+		'active',
+		'domain',
+		'contact',
+	)
 	search_fields = ('name',)
 	date_hierarchy = 'created_at'
 
@@ -126,6 +133,8 @@ class SurveyInviteAdmin(admin.ModelAdmin):
 		'updated_at',
 		'name',
 		'message',
+		'yes_button_text',
+		'no_button_text',
 	)
 	list_filter = ('created_by', 'created_at', 'updated_by', 'updated_at')
 	search_fields = ('name',)
@@ -140,10 +149,19 @@ class SurveyThankyouAdmin(admin.ModelAdmin):
 		'created_at',
 		'updated_by',
 		'updated_at',
+		'feedback_default',
+		'vote_default',
 		'name',
 		'message',
 	)
-	list_filter = ('created_by', 'created_at', 'updated_by', 'updated_at')
+	list_filter = (
+		'created_by',
+		'created_at',
+		'updated_by',
+		'updated_at',
+		'feedback_default',
+		'vote_default',
+	)
 	search_fields = ('name',)
 	date_hierarchy = 'created_at'
 
@@ -161,17 +179,21 @@ class CampaignAdmin(admin.ModelAdmin):
 		'uid',
 		'key',
 		'project',
+		'custom_project_name',
 		'survey',
-		'survey_invite',
-		'survey_thankyou',
 		'slack_notification_url',
 		'survey_trigger_type',
+		'survey_invite',
+		'survey_thankyou',
 		'button',
 		'mouseout_trigger',
 		'url_accessible',
 		'visitor_percent',
 		'limit_one_submission',
 		'limit_one_submission_days',
+		'url_match_action',
+		'url_match_condition',
+		'url_match_string',
 		'seconds_on_page_delay',
 		'repeat_visitors_only',
 		'page_view_count',
@@ -217,6 +239,7 @@ class PageAdmin(admin.ModelAdmin):
 class QuestionAdmin(admin.ModelAdmin):
 	list_display = (
 		'id',
+		'name',
 		'short_name',
 		'question_text',
 		'question_text_past_tense',
@@ -230,17 +253,19 @@ class QuestionAdmin(admin.ModelAdmin):
 		'anchor_text_beginning',
 		'anchor_text_end',
 		'answers',
+		'include_other_specify_answer',
 		'default_answer',
 		'parent_question',
 		'parent_answer',
 		'parent_answer_action',
 	)
-	list_filter = ('required', 'shared')
+	list_filter = ('required', 'shared', 'include_other_specify_answer')
+	search_fields = ('name',)
 
 
 @admin.register(QuestionOrder)
 class QuestionOrderAdmin(admin.ModelAdmin):
-	list_display = ('id', 'page', 'question', 'question_number')
+	list_display = ('id', 'campaign', 'page', 'question', 'question_number')
 
 
 @admin.register(Response)
@@ -272,20 +297,19 @@ class CampaignUserInfoAdmin(admin.ModelAdmin):
 		'reset_date',
 	)
 	list_filter = (
+		'campaign',
 		'intercept_shown_at',
 		'take_later_at',
 		'email_link_at',
 		'submitted_at',
 		'reset_date',
 	)
-	raw_id_fields = ('campaign',)
 
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
 	list_display = ('id', 'inactive', 'user', 'full_name', 'image')
-	list_filter = ('inactive',)
-	raw_id_fields = ('user',)
+	list_filter = ('inactive', 'user')
 
 
 @admin.register(BannerNotification)

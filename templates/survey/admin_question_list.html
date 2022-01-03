@@ -56,7 +56,8 @@
 		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-width="100%">
 			<thead>
 				<tr>
-					<th class="tl">Short name</th>
+					<th class="tl">Name</th>
+					<th class="tl">Field name</th>
 					<th class="tl">Question text</th>
 					<th class="tl">Type</th>
 					<th class="tl">Required</th>
@@ -69,8 +70,9 @@
 			<tbody>
 				{% for item in listItems %}
 					<tr>
-						<td class=""><a href="{% url 'survey:admin_question_edit' id=item.id %}" class="{{ templateHelpers.classes.link }}">{{ item.short_name }}</a></td>
-						<td class="">{{ item.question_text }}</td>
+						<td class=""><a href="{% url 'survey:admin_question_edit' id=item.id %}" class="{{ templateHelpers.classes.link }}">{{ item.name }}</a></td>
+						<td class="">{{ item.short_name }}</td>
+						<td class="">{{ item.question_text|default:item.message_text|truncatechars:60 }}</td>
 						<td class="">{{ item.type }}</td>
 						<td class="tc">{% if item.required %}✅{% endif %}</td>
 						<td class="tc">{% if item.shared %}✅{% endif %}</td>

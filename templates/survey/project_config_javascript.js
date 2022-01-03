@@ -20,31 +20,72 @@
 	
 	var activeEl;
 	
+	SK.activeCampaignsData = {{ activeCampaignsData|safe }};
+	
 	{##}
 	{##}
 	{##  Public APIs  #}
 	{##}
 	{##}
 	
-	{% if flags.hasButton %}
+	{# PUBLIC function passes campaign UID to local function to show overlay and embed iframe survey #}
+	window.SK.showSurvey = function (cuid, b) {
+		activeEl = document.activeElement;
+		showSurvey("{% url 'survey:survey_iframe_display' %}?cuid="+cuid+(b?'&force=y':''));
+	};
 	
-		window.SK.showButtonSurvey = function () {
-			activeEl = document.activeElement;
-			showSurvey("{% url 'survey:survey_iframe_display' uid=buttonCampaign.uid %}");
-		};
+	{# PUBLIC API. Does nothing by default. #}
+	{# If there's an intercept waiting (based on logic) it gets overridden and calls 'showSurvey' #}
+	window.SK.showSurveyWithLogic = function () {};
+	
+	window.BH.addCustomFormData = function (data) {
+		window.BH.customFormData = data;
+	};
+	
+	
+	function showSurvey (url) {
+		if (!document.getElementById('beeheard-overlay')) {
+			appendToBody(`<div data-beeheard-overlay-close id="beeheard-overlay" style="align-items: center;background: rgba(0,0,0,.7);display: flex;height: 100%;left: 0;position: fixed;top: 0;width: 100%;z-index: 99999999999999999999;"><div id="beeheard-overlay-survey" style="background: #fff;max-height: 90vh;height: 90vh;max-width: 576px;width: 90vw;transition: all .4s cubic-bezier(0.4,1,0.5,1);left: 50%;position: absolute;transform: translate3d(-50%,0,0);"><iframe frameborder="0" marginwidth="0" marginheight="0" scrolling="yes" width="100%" height="100%" src="{% if not debug %}https://beeheard.dal1a.cirrus.ibm.com{% endif %}{url}"></iframe></div></div><style>.shrinkToIcon{opacity:0}.shrinkToIcon > div{height:0!important;width:0!important;left:101%!important;opacity:.3}</style>`.replace('{url}', url));
+			document.querySelector('#beeheard-overlay').querySelector('iframe').contentWindow.focus();
+			document.addEventListener('click', function (evt) {
+				if (evt.target.hasAttribute('data-beeheard-overlay-close')) {
+					window.postMessage({message: 'removeOverlay'},'*');
+				}
+			});
+		}
+	}
+	
+	window.addEventListener('message', function(event) {
+		if (event.data.message == 'removeOverlay') {
+			try{document.getElementById('beeheard-overlay').remove()}
+			catch{}
+			activeEl.focus();
+		}
+		else if (event.data.message == 'shrinkToIcon') {
+			try{document.querySelector('#beeheard-overlay').classList.add('shrinkToIcon')}
+			catch{}
+		}
+		else if (event.data.message == 'sizeSurveyIframe') {
+			try{document.getElementById('beeheard-overlay-survey').style.height = (event.data.height+85)+'px'}
+			catch{}
+		}
+		else if (event.data.message == 'sendUrl') {
+			try{document.querySelector('#beeheard-overlay-survey iframe').contentWindow.postMessage({message:'parentUrl',url:window.location.href}, '*')}
+			catch{}
+		}
+		else if (event.data.message == 'injectReminder') {
+			injectReminderIcon();
+		}
+		else if (event.data.message == 'sendCustomFormData') {
+			try{document.querySelector('#beeheard-overlay-survey iframe').contentWindow.postMessage({message:'customFormData',customFormData:BH.customFormData}, '*')}
+			catch{}
+		}
+	});
+	
 		
-	{% endif %}
+	{% if flags.hasInvite %}
 	
-	{% if flags.hasIntercept %}
-	
-		window.SK.showSurvey = function (b) {
-			activeEl = document.activeElement;
-			showSurvey("{% url 'survey:survey_iframe_display' uid=campaignStats.campaign.uid %}"+(b?'?force=y':''));
-		};
-		
-	{% elif flags.hasInvite %}
-	
-		window.SK.showSurvey = function () {
+		window.SK.showInvite = function () {
 			if (!document.getElementById('surveykong-invite-card')) {
 				activeEl = document.activeElement;
 				appendToBody(`<style>#surveykong-invite-card{transform:translate3d(101%,-50%,0);transition:transform .5s cubic-bezier(0.4,1,0.5,1);}#surveykong-invite-card.show{transform:translate3d(0,-50%,0);</style><iframe id="surveykong-invite-card" style="background:#fff;z-index:99999999;position:fixed;top:50%;right:0;width:24rem;box-shadow:-2px 2px 15px rgba(0,0,0,0.7);border: 2px solid gray;border-right:0;" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" title="SurveyKong survey" src="{% if not debug %}https://REPLACE_ME.com{% endif %}{% url 'survey:survey_iframe_invite' uid=campaignStats.campaign.uid %}"></iframe>`);
@@ -112,29 +153,17 @@
 				case 'right':
 					styles = 'right:0;bottom:auto;left:auto;transform-origin:top right;';
 					if (offset < 50) {
-						styles += 'top:'+offset+'%;transform:rotate(90deg) translate3d(100%,0,0);'
+						styles += 'top:'+offset+'%;transform:rotate(-90deg) translate3d(0%,-100%,0);'
 					}
 					else if (offset === 50) {
-						styles += 'top:'+offset+'%;transform:rotate(90deg) translate3d(50%,0,0);'
+						styles += 'top:'+offset+'%;transform:rotate(-90deg) translate3d(50%,-100%,0);'
 					}
 					else {
-						styles += 'top:'+offset+'%;transform:rotate(90deg);'
+						styles += 'top:'+offset+'%;transform:rotate(-90deg) translate3d(100%,-100%,0);'
 					}
 					break;
 			}
 			el.style.cssText += styles;
-		}
-		
-		function showSurvey (url) {
-			if (!document.getElementById('surveykong-overlay')) {
-				appendToBody(`<div data-surveykong-overlay-close id="surveykong-overlay" style="align-items: center;background: rgba(0,0,0,.7);display: flex;height: 100%;left: 0;position: fixed;top: 0;width: 100%;z-index: 99999999999999999999;"><div id="surveykong-overlay-survey" style="background: #fff;max-height: 90vh;height: 90vh;max-width: 576px;width: 90vw;transition: all .4s cubic-bezier(0.4,1,0.5,1);left: 50%;position: absolute;transform: translate3d(-50%,0,0);"><iframe frameborder="0" marginwidth="0" marginheight="0" scrolling="yes" width="100%" height="100%" src="{% if not debug %}https://REPLACE_ME.com{% endif %}{url}"></iframe></div></div><style>.shrinkToIcon{opacity:0}.shrinkToIcon > div{height:0!important;width:0!important;left:101%!important;opacity:.3}</style>`.replace('{url}', url));
-				document.querySelector('#surveykong-overlay').querySelector('iframe').contentWindow.focus();
-				document.addEventListener('click', function (evt) {
-					if (evt.target.hasAttribute('data-surveykong-overlay-close')) {
-						window.postMessage({message: 'removeOverlay'},'*');
-					}
-				});
-			}
 		}
 		
 		function injectReminderIcon () {
@@ -149,7 +178,7 @@
 				}
 				
 				window.SK.rich = function (evt) {
-					SK.showSurvey();
+					SK.showSurvey('{{ campaignStats.campaign.uid }}');
 				
 					var xhr = new XMLHttpRequest(),
 						params = 'cuid={{ campaignStats.campaign.uid }}';
@@ -168,32 +197,9 @@
 			}
 		}
 		
-		window.addEventListener('message', function(event) {
-			if (event.data.message == 'removeOverlay') {
-				try{document.getElementById('surveykong-overlay').remove()}
-				catch{}
-				activeEl.focus();
-			}
-			else if (event.data.message == 'shrinkToIcon') {
-				try{document.querySelector('#surveykong-overlay').classList.add('shrinkToIcon')}
-				catch{}
-			}
-			else if (event.data.message == 'sizeSurveyIframe') {
-				try{document.getElementById('surveykong-overlay-survey').style.height = (event.data.height+85)+'px'}
-				catch{}
-			}
-			else if (event.data.message == 'sendUrl') {
-				try{document.querySelector('#surveykong-overlay-survey iframe').contentWindow.postMessage({message:'parentUrl',url:window.location.href}, '*')}
-				catch{}
-			}
-			else if (event.data.message == 'injectReminder') {
-				injectReminderIcon();
-			}
-		});
-		
 		injectOnReady(function () {
 			if (!document.getElementById('surveykong-buttons-con')) {
-				appendToBody('<div id="surveykong-buttons-con" style="position:fixed;z-index:9999999999999;font-family:IBM Plex Sans,helvetica neue,helvetica,sans-serif;display:flex;"></div>');
+				appendToBody('<div id="surveykong-buttons-con" style="position:fixed;z-index:99999998;font-family:IBM Plex Sans,helvetica neue,helvetica,sans-serif;display:flex;"></div>');
 				moveAndShowButton(document.getElementById('surveykong-buttons-con'));
 			}
 		});
@@ -213,14 +219,27 @@
 		
 		{% if 'show_survey' == campaignStats.interceptStatus  %}			
 			
-			document.addEventListener('mouseleave', function (evt) {
-				if (!shown && evt.pageY - window.scrollY <= 0) {
-					SK.showSurvey();
+			function showAndSetFlag () {
+				if (!shown) {
+					SK.showSurvey('{{ campaignStats.campaign.uid }}');
 					shown = true;
+				}
+			}
+			
+			{# Bindings #}
+			document.addEventListener('mouseleave', function (evt) {
+				if (evt.pageY - window.scrollY <= 0) {
+					showAndSetFlag();
 				}
 			});
 			
-			{# TODO: Does page delay auto-inject for intercept? or just invite type? #}
+			document.addEventListener('mouseout', function (evt) {
+				if (evt.pageY - window.scrollY <= 0) {
+					showAndSetFlag();
+				}
+			});
+			
+			window.SK.showSurveyWithLogic = showAndSetFlag;
 			
 		{% elif 'show_reminder' == campaignStats.interceptStatus %}
 			
@@ -249,7 +268,7 @@
 		
 		{% if 'show_survey' == campaignStats.interceptStatus %}
 		
-			injectOnReady(SK.showSurvey);
+			injectOnReady(SK.showInvite);
 		
 		{% endif %}
 	
@@ -265,7 +284,7 @@
 		
 		function injectSurveyButton () {
 			if (!document.getElementById('surveykong-survey-button')) {
-				document.getElementById('surveykong-buttons-con').innerHTML += `<a id="surveykong-survey-button" href="#" onclick="SK.showButtonSurvey();return false;" style="display:block;background-color:{{ buttonCampaign.button.background_color }};color:{{ buttonCampaign.button.text_color }};padding:.5rem;text-decoration:none;">{{ buttonCampaign.button.text }}</a>`;
+				document.getElementById('surveykong-buttons-con').innerHTML += `<a id="surveykong-survey-button" href="#" onclick="SK.showSurvey('{{ buttonCampaign.uid }}');return false;" style="display:block;background-color:{{ buttonCampaign.button.background_color }};color:{{ buttonCampaign.button.text_color }};padding:.5rem;text-decoration:none;">{{ buttonCampaign.button.text }}</a>`;
 			}
 		}
 		
@@ -306,7 +325,7 @@
 			document.getElementById('surveykong-admin-panel').classList.add('show')
 		}
 		else if (event.data.message == 'forceIntercept') {
-			SK.showSurvey(true);
+			SK.showSurvey('{{ campaignStats.campaign.uid }}',true);
 			shown = true;
 		}
 	});

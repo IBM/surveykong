@@ -19,7 +19,6 @@
 		function formOnsubmitHandler (evt) {
 			var err = false;
 			
-			debugger;
 			document.querySelectorAll('.custom-draggable-items > div').forEach(function (row) {
 				var hasValue = 0
 				row.querySelectorAll('input[type="text"]').forEach(function (inputField) {
@@ -47,6 +46,7 @@
 								'anchor_text_beginning',
 								'anchor_text_end',
 								'answers',
+								'include_other_specify_answer',
 							],
 							hide: [
 								'character_limit',
@@ -64,6 +64,7 @@
 								'answers', 
 								'character_limit', 
 								'default_answer',
+								'include_other_specify_answer',
 								'layout',
 								'message_text',
 							],
@@ -77,6 +78,21 @@
 								'answers', 
 								'character_limit', 
 								'default_answer',
+								'include_other_specify_answer',
+								'layout',
+								'message_text',
+								'placeholder_text',
+							],
+						},
+						{
+							values: ['hidden'],
+							show: ['default_answer'],
+							hide: [
+								'anchor_text_beginning', 
+								'anchor_text_end', 
+								'answers', 
+								'character_limit', 
+								'include_other_specify_answer',
 								'layout',
 								'message_text',
 								'placeholder_text',
@@ -84,7 +100,7 @@
 						},
 						{
 							values: ['select','selectmultiple'],
-							show: ['placeholder_text','answers', ],
+							show: ['placeholder_text','answers', 'include_other_specify_answer',],
 							hide: [
 								'anchor_text_beginning', 
 								'anchor_text_end', 
@@ -102,6 +118,7 @@
 								'anchor_text_end', 
 								'answers', 
 								'default_answer',
+								'include_other_specify_answer',
 								'layout',
 								'message_text',
 							],
@@ -115,6 +132,7 @@
 								'answers', 
 								'character_limit', 
 								'default_answer',
+								'include_other_specify_answer',
 								'layout',
 								'placeholder_text',							
 							],
@@ -153,7 +171,6 @@
 					}
 					else {
 						item.triggers.forEach(function (triggerData) {
-							debugger;
 							if (triggerData.values == fieldVal) {
 								triggerData.hide.forEach(function (hideField) {
 									show(hideField+'-row', false);
@@ -265,10 +282,18 @@
 			
 			{% for field in form.visible_fields %}
 				{% if field.name != 'answers' %}
-					{% include 'partials/form_field_horizontal.html' with field=field %}
+					<!-- exclude "other" option, we put it in the answers section below -->
+					{% if field.name != 'include_other_specify_answer' %}
+						{% include 'partials/form_field_horizontal.html' with field=field %}
+					{% endif %}
 				{% else %}
 					<div class="mb4" id="answers-row">
-						<div class="b">Answers</div>
+						<div class="b mb3">Answers</div>
+						<div class="flex w-100 mw7">
+							<div style="flex: 0 0 24px" class="mr3"></div>
+							<div class="w-40 b">Label</div>
+							<div class="w-40 ml3 pl2 b">Value</div>
+						</div>
 						{% for answer in thisModelItem.answers %}
 							{% include 'partials/question_answer_dyn_group.html' with answerNumber=forloop.counter %}
 						{% endfor %}
@@ -276,6 +301,7 @@
 						{% if not thisModelItem.answers %}
 							{% include 'partials/question_answer_dyn_group.html' with answerNumber=9999 %}
 						{% endif %}
+						<div class="mt3 ml4 pl2">{% include 'partials/form_field_horizontal.html' with field=form.include_other_specify_answer %}</div>
 					</div>
 				{% endif %}
 			{% endfor %}
