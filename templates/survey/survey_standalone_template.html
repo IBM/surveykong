@@ -15,7 +15,7 @@
 		<meta name="geo.country" content="WW">
 		<meta name="dcterms.date" content="2021-06-01">
 
-		<title>{% block browserTitle %}SurveyKong - {{ campaign.survey.title }} {% endblock %}</title>
+		<title>{% block browserTitle %}SurveyKong - {{ campaign.survey.title|default:'Survey' }} {% endblock %}</title>
 
 		{% include 'partials/base_design_css_files.inc' %}
 		
