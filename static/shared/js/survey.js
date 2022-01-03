@@ -114,7 +114,9 @@
 			
 			// Find required fields that aren't hidden and check if they are validly selected.
 			// If any not, trigger submit to do native form error checking and notification.
-			var valid = true;
+			var valid = true,
+				foundPage = false;
+			
 			$(viewingPage).find(':not(".dn") [required]').each(function() {
 				if (valid == true && !this.checkValidity()) {
 					valid = false;
@@ -129,10 +131,14 @@
 				$(viewingPage).nextAll('.custom-survey-page').each(function () {
 					if (pageHasVisibleQustions(this)) {
 						showPage(this);
+						foundPage = true;
+						return false;
 					}
 				});
-				// Fallback when there are no next pages.
-				evt.target.closest('form').querySelector('#custom-submit-button button').click();
+				// Fallback when there are no next pages to show.
+				if (!foundPage) {
+					evt.target.closest('form').querySelector('#custom-submit-button button').click();
+				}
 			}
 		});
 		

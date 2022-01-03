@@ -157,6 +157,7 @@ def api_submit_response(request):
 		campaign.setUserStatus(request.session['uuid'], 'submitted')
 		response.sendSlackNotification()
 	except Exception as ex:
+		print(f'Error: api_submit_response couldn\'t submit response: {ex}')
 		return JsonResponse({'results': {'message': f'{ex}'}}, status=400)
 	
 	try:
