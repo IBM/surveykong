@@ -245,7 +245,7 @@ def project_config_javascript(request, uid):
 	#  manually trigger a campaign survey.
 	activeCampaignsData = {}
 	for campaign in Campaign.objects.filter(project=project, active=True):
-		stats = campaign.getStats()
+		stats = campaign.getStats(request)
 		activeCampaignsData[campaign.uid] = stats
 		
 	context = {

@@ -629,7 +629,15 @@ class Campaign(models.Model):
 		return userInfo, created
 		
 	
-	def getStats(self):
+	def getUserInfoFlags(self, request):
+		try:
+			userInfo = CampaignUserInfo.objects.get(uuid=request.session['uuid'],campaign = self)
+			return userInfo.getUserFlags()
+		except:
+			return None
+		
+		
+	def getStats(self, request):
 		'''
 		Returns stats ONLY. Used in project config JS as a JSON object that pages' JS
 		can look at and see stats and make their own rules for if/when to manually trigger
@@ -646,6 +654,7 @@ class Campaign(models.Model):
 			'responseCount': self.response_count,
 			'responseCountLimit': self.response_count_limit,
 			'standaloneSubmittedPercent': self.getStandaloneSubmittedPercent(),
+			'userInfo': self.getUserInfoFlags(request),
 		}
 	
 		return data
@@ -974,6 +983,14 @@ class CampaignUserInfo(models.Model):
 		
 	def __str__(self):
 		return '{} : {}'.format(self.intercept_shown_at, self.campaign)
+		
+	
+	def getUserFlags(self):
+		return {
+			'interceptShown': True if self.intercept_shown_at else False,
+			'emailedLink': True if self.email_link_at else False,
+			'submitted': True if self.submitted_at else False,
+		}
 		
 			
 class Profile(models.Model):
