@@ -120,7 +120,7 @@
 					<tr data-campaign-id="{{ item.id }}">
 						<td class=""><a href="{% url 'survey:admin_campaign_edit' id=item.id %}" class="{{ templateHelpers.classes.link }} green hover-dark-green">{{ templateHelpers.html.icons.edit|safe }}</a></td>
 						<td class=""><code>{{ item.uid|truncatechars:8 }}</a></td>
-						<td class=""><a href="{% url 'survey:admin_project_list' %}?filter={{ item.project.name }}" class="{{ templateHelpers.classes.link }}">{{ item.project.getDisplayName }}</a></td>
+						<td class=""><a href="{% url 'survey:admin_project_list' %}?filter={{ item.project.name }}" class="{{ templateHelpers.classes.link }}">{{ item.custom_project_name|default:item.project.getDisplayName }}</a></td>
 						<td class=""><a href="{% url 'survey:admin_survey_list' %}?filter={{ item.survey.name }}" class="{{ templateHelpers.classes.link }}">{{ item.survey.name }}</a></td>
 						<td class="">{{ item.survey_trigger_type|capfirst|default:'URL only' }}</td>
 						<td class="">{{ item.survey.survey_type|capfirst }}</a></td>
@@ -129,9 +129,10 @@
 							{% endif %}</td>
 						<td class="tc">{% if item.uid %}
 						<a href="{% url 'survey:survey_standalone_display' uid=item.uid %}" target="_blank" aria-label="View standalone survey" class="hint hint--top hint--medium ph2 {{ templateHelpers.classes.link }}">{{ templateHelpers.html.icons.newWindow|safe }}</a>{% endif %}</td>
-						<td data-order="{% if item.enabled %}1{% else %}0{% endif %}"class="tc"><label class="bo-switch" aria-label="Toggle on/off"><input type="checkbox" {% if item.enabled %}checked{% endif %}><span class="bo-switch-slider"></span></label></td>
+						<td data-order="{% if item.enabled %}1{% else %}0{% endif %}" class="tc"><label class="bo-switch" aria-label="Toggle on/off"><input type="checkbox" {% if item.enabled %}checked{% endif %}><span class="bo-switch-slider"></span></label></td>
 						<td class="">{% if item.survey_trigger_type == 'button' %}<a href="{% url 'survey:admin_button_list' %}?filter={{ item.button.name }}" class="{{ templateHelpers.classes.link }}">{{ item.button.name }}</a>{% endif %}</td>
 						<td class="w3"><div class="flex items-center justify-end"><a href="{% url 'survey:campaign_responses_list' %}?uid={{ item.uid }}" class="hint--medium hint--top-left ph2 {{ templateHelpers.classes.link }} custom-response-count" aria-label="View responses">{{ item.response_campaign.count }}</a><a class="hint--medium hint--top-left red ph2 {{ templateHelpers.classes.link }}" href="#" onclick="SK.deleteAllResponses({{ item.id }});SK.responsesToZero(this);return false;" aria-label="Delete all responses and resets all stats back to zero. This is IRREVERSIBLE!">{{ templateHelpers.html.icons.trash|safe }}</a></div></td>
+						<td class="w3" data-order="{{ item.response_campaign.count }}"><div class="flex items-center justify-end"><a href="{% url 'survey:campaign_responses_list' %}?uid={{ item.uid }}" class="hint--medium hint--top-left ph2 {{ templateHelpers.classes.link }} custom-response-count" aria-label="View responses">{{ item.response_campaign.count }}</a><a class="hint--medium hint--top-left red ph2 {{ templateHelpers.classes.link }}" href="#" onclick="SK.deleteAllResponses({{ item.id }});SK.responsesToZero(this);return false;" aria-label="Delete all responses and resets all stats back to zero. This is IRREVERSIBLE!">{{ templateHelpers.html.icons.trash|safe }}</a></div></td>
 						<td class="tr">{{ item.unique_visitor_count }}</td>
 						<td class="tr">{{ item.intercept_shown_count }}</td>
 						<td class="">{{ item.latest_response_date }}</td>

@@ -1073,7 +1073,7 @@ def admin_page_delete(request):
 ##
 @user_passes_test(helpers.hasAdminAccess)
 def admin_surveybuilder_list(request):
-	surveys = Survey.objects.all().order_by('name').prefetch_related('page_survey__question_order_page__question').select_related('language').annotate(campaignCount=Count('campaign_survey',distinct=True))
+	surveys = Survey.objects.all().order_by(Lower('name')).prefetch_related('page_survey__question_order_page__question').select_related('language').annotate(campaignCount=Count('campaign_survey',distinct=True))
 	
 	for survey in surveys:
 		# For each page, call function that returns sorted standard survey + custom campaign questions.

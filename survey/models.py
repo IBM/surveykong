@@ -98,6 +98,9 @@ class Button(models.Model):
 
 
 	def save(self, *args, **kwargs):
+		'''
+		Set the background color if none, and set a11y text color black/white automatically.
+		'''
 		if not self.background_color:
 			self.background_color = '#1D3649'
 			
@@ -122,24 +125,6 @@ class Domain(models.Model):
 		return self.name
 	
 	
-	@staticmethod
-	def getOrCreate(name, lead):
-		scriptUser = getScriptUser()
-		try:
-			domain, created = Domain.objects.get_or_create(
-				name = name,
-				defaults = {
-					'created_by': scriptUser,
-					'updated_by': scriptUser,
-					'lead': lead,
-				}
-			)
-		except:
-			domain = None
-			
-		return domain
-	
-		
 ##
 ## Project preset chainable queries.
 ##
@@ -191,29 +176,18 @@ class Project(models.Model):
 	
 
 	def getDisplayName(self):
+		'''
+		Returns the alternate display name if it was set, otherwise the real project name.
+		'''
 		return self.display_name if self.display_name else self.name
 	
 	
-	@staticmethod
-	def getOrCreate(name, domain=None, contact=None):
-		scriptUser = getScriptUser()
-		try:
-			project, created = Project.objects.get_or_create(
-				name = name,
-				defaults = {
-					'created_by': scriptUser,
-					'updated_by': scriptUser,
-					'contact': contact,
-					'domain': domain
-				}
-			)
-		except:
-			project = None
-			
-		return project
-
-	
-	def getActiveMatchingInterceptCampaign(self, url):
+	def getActiveMatchingInterceptCampaign(self, url=None):
+		'''
+		Find the first active INTERCEPT campaign for the project that doesn't have a URL match.
+		Next try and find one that matches the page's URL (arg) with the campaign match condition.
+		If a specific URL match one was found, return that. Else return the non-URL-specific campaign.
+		'''
 		activeCampaigns = Campaign.objects.filter(project=self, survey_trigger_type='intercept', active=True).select_related('survey', 'survey_invite')
 		
 		# Get an active one that doesn't have URL match. This is the default.
@@ -221,39 +195,46 @@ class Project(models.Model):
 		
 		# Now loop thru ones with URL matches and see if there's a match 
 		#  that would override a default non-URL matched campaign and use it instead.
-		match = False
-		for urlMatchCampaign in activeCampaigns.exclude(url_match_string=''):
-			url = url.replace('https://','')
-			stringToMatch = urlMatchCampaign.url_match_string.replace('https://','')
-			
-			if urlMatchCampaign.url_match_condition == 'startsWith':
-				if url.startswith(stringToMatch):
-					match = True
-			elif urlMatchCampaign.url_match_condition == 'contains':
-				if stringToMatch in url:
-					match = True
-			elif urlMatchCampaign.url_match_condition == 'exactMatch':
-				if url == stringToMatch:
-					match = True
-			elif urlMatchCampaign.url_match_condition == 'endsWith':
-				if url.endswith(stringToMatch):
-					match = True
-			
-			# If match and include, then we found one to use, so stop.
-			if match and urlMatchCampaign.url_match_action == 'include':
-				campaign = urlMatchCampaign
-				break
-			# If match and exclude, then the URL shouldn't be used on that campaign, so keep going.
-			# If excluding URLs and this URL is not excluded for this campaign (no match),
-			#   then this is the campaign to use.
-			if urlMatchCampaign.url_match_action == 'exclude' and not match:
-				campaign = urlMatchCampaign
-				break
+		if url:
+			match = False
+			for urlMatchCampaign in activeCampaigns.exclude(url_match_string=''):
+				url = url.replace('https://','')
+				stringToMatch = urlMatchCampaign.url_match_string.replace('https://','')
 				
+				if urlMatchCampaign.url_match_condition == 'startsWith':
+					if url.startswith(stringToMatch):
+						match = True
+				elif urlMatchCampaign.url_match_condition == 'contains':
+					if stringToMatch in url:
+						match = True
+				elif urlMatchCampaign.url_match_condition == 'exactMatch':
+					if url == stringToMatch:
+						match = True
+				elif urlMatchCampaign.url_match_condition == 'endsWith':
+					if url.endswith(stringToMatch):
+						match = True
+				
+				# If match and include, then we found one to use, so stop.
+				if match and urlMatchCampaign.url_match_action == 'include':
+					campaign = urlMatchCampaign
+					break
+				# If match and exclude, then the URL shouldn't be used on that campaign, so keep going.
+				# If excluding URLs and this URL is not excluded for this campaign (no match),
+				#   then this is the campaign to use.
+				if urlMatchCampaign.url_match_action == 'exclude' and not match:
+					campaign = urlMatchCampaign
+					break
+					
 		return campaign
 		
 	
 	def getActiveMatchingButtonCampaign(self, url):
+		'''
+		Same as intercept campaign URL match above, but for BUTTON campaign.
+		Find the first active BUTTON campaign for the project that doesn't have a URL match.
+		Next try and find one that matches the page's URL (arg) with the campaign match condition.
+		If a specific URL match one was found, return that. Else return the non-URL-specific campaign.
+		'''
 		activeCampaigns = Campaign.objects.filter(project=self, survey_trigger_type='button', active=True).select_related('button')
 		
 		# Get an active one that doesn't have URL match. This is the default.
@@ -320,6 +301,10 @@ class Survey(models.Model):
 	
 	
 	def getQuestions(self):
+		'''
+		Returns all questions associated with this survey via pages and page question orders.
+		This does NOT filter out question_orders that are campaign specific (question_order_campaign__isnull=False). So that as-needed per query use.
+		'''
 		try:
 			return Question.objects.filter(question_order_question__page__survey=self)
 		except:
@@ -365,7 +350,7 @@ class SurveyThankyou(models.Model):
 class Campaign(models.Model):
 	'''
 	Logic:
-	Intercept: Get campaigns that are intercepts that match URL that are active.
+	Intercept: Get campaigns that are intercepts that match URL (if any) that are active.
 	Then, check for the user: If intercept.stats.activeCampaign = true, return JS for it.
 	Button: Get campaigns that are button that match URL that are active.
 	If any button, return JS to show button.
@@ -441,13 +426,16 @@ class Campaign(models.Model):
 	
 	
 	def save(self, *args, **kwargs):
+		# Create the auto-generated unique key name.
 		self.key = self.getKey()
-		
 		super(Campaign, self).save(*args, **kwargs)
 	
 	
 	def customPreSave(self, *args, **kwargs):
-		# In/active flag is programatically determined. 
+		'''
+		If there's no UID yet, generate one.
+		Set the active state (looks at response count, and dates and enable/disables campaign.
+		'''
 		if not self.uid:
 			self.uid = 'b'+ get_random_string(24)
 		
@@ -469,7 +457,7 @@ class Campaign(models.Model):
 	
 	def deleteResponsesAndReset(self):
 		'''
-		Delete all responses, set all counters to zero, set date to Jan 1 2020,
+		Delete all responses, set all counters to zero, set date to Jan 1 2020, delete all user flags.
 		'''
 		self.response_campaign.all().delete()
 		self.response_count = 0
@@ -477,14 +465,10 @@ class Campaign(models.Model):
 		self.resetUserStatusFlags()
 	
 
-	def getQuestions(self):
-		try:
-			return list(campaign.survey.page_survey.values('question_order_page__question', 'question_order_page__question__question_text'))
-		except:
-			return None
-	
-	
 	def isPastResponseLimit(self):
+		'''
+		Check if the # of responses is >= the limit. Used in setActiveState logic.
+		'''
 		try:
 			if self.response_count >= self.response_count_limit:
 				return True
@@ -495,8 +479,11 @@ class Campaign(models.Model):
 	
 	
 	def storeResponse(self, uuid, request):
-		# Process POSTed response.
-		# Create the raw data and add it and save.
+		'''
+		Process POSTed response for the user.
+		Create the raw data, and save with reponse object.
+		Update campaign counts and disable if we're at/past the response limit set.
+		'''
 		omitFields = ['display_type', 'survey_type', 'csrfmiddlewaretoken', 'url', 'cuid']
 		
 		fieldsOnly = {}
@@ -543,9 +530,11 @@ class Campaign(models.Model):
 		return surveyResponse
 	
 	
-	# Set the in/active state for the campaign based on response limit and start/end dates.
 	def setActiveState(self):
-		# Hard stops: If it's disabled or past response count limit, dates don't matter
+		'''
+		Set the in/active state for the campaign based on response limit and start/end dates.
+		Hard stops: If it's disabled or past response count limit, dates don't matter.
+		'''
 		if not self.enabled:
 			self.active = False
 			return
@@ -554,9 +543,14 @@ class Campaign(models.Model):
 			self.active = False
 			return
 			
-		# If we make it here, do logic based on start/stop dates.
+		# If there's no limit and start/stop dates, there's no reason for it to be inactive.
+		if not self.start_date and not self.stop_date:
+			self.active = True
+			return
+			
 		today = datetime.today().date()
 		
+		# If we make it here, do logic based on start/stop dates if they exist.
 		# Currently active, try and deactivate.
 		if self.active:
 			try:
@@ -585,7 +579,21 @@ class Campaign(models.Model):
 				pass
 	
 	
+	@staticmethod
+	def setActiveStateAllCampaigns():
+		'''
+		Cron job API function, run daily to enable/disable campaigns based on dates set.
+		'''
+		for c in Campaign.objects.exclude(start_date__isnull=True, stop_date__isnull=True):
+			c.setActiveState()
+			c.save()
+		
+		
 	def getInterceptShownPercent(self):
+		'''
+		Returns % of visitors we've shown the intercept to. Used in determining if we should show
+		 a campaign to a user.
+		'''
 		try:
 			return int(self.intercept_shown_count / self.unique_visitor_count * 100)
 		except:
@@ -593,6 +601,10 @@ class Campaign(models.Model):
 	
 	
 	def getStandaloneSubmittedPercent(self):
+		'''
+		Used in admin debug box on standalone survey page. 
+		Questionable if this is even useful.
+		'''
 		try:
 			return round(self.response_count / self.unique_visitor_count * 100, 2)
 		except:
@@ -600,6 +612,10 @@ class Campaign(models.Model):
 	
 	
 	def getCreateUserInfo(self, request):
+		'''
+		Get or create helper for campaign user info.
+		Deletes and creates new one if it's past the every ### days for the campaign.
+		'''
 		userInfo, created = CampaignUserInfo.objects.get_or_create(
 			uuid = request.session['uuid'],
 			campaign = self,
@@ -630,6 +646,9 @@ class Campaign(models.Model):
 		
 	
 	def getUserInfoFlags(self, request):
+		'''
+		Used in main gig as flags to decide if we need to do nothing, show, or show reminder.
+		'''
 		try:
 			userInfo = CampaignUserInfo.objects.get(uuid=request.session['uuid'],campaign = self)
 			return userInfo.getUserFlags()
@@ -726,6 +745,9 @@ class Campaign(models.Model):
 	
 	
 	def setUserStatus(self, uuid, type):
+		'''
+		Set the user's status for this campaign based on inbound type.
+		'''
 		userInfo = CampaignUserInfo.objects.get(uuid=uuid, campaign=self)
 
 		if type == 'submitted':
@@ -748,6 +770,9 @@ class Campaign(models.Model):
 	
 	
 	def removeUserInfo(self, uuid):
+		'''
+		Delete the user's entry for this campaign.
+		'''
 		try:
 			CampaignUserInfo.objects.get(uuid=uuid, campaign=self).delete()
 		except Exception as ex:
@@ -755,6 +780,9 @@ class Campaign(models.Model):
 		
 	
 	def emailLink(self, email):
+		'''
+		Send a link to the standalone survey version to the given email address.
+		'''
 		from templatetags.common_templatetags import getTemplateHelpers
 		templateHelpers = getTemplateHelpers(None)
 		logo = templateHelpers['html']['icons']['logo']
@@ -793,6 +821,9 @@ class Page(models.Model):
 
 
 	def getAllQuestionOrders(self, campaign):
+		'''
+		Get all question orders for the survey, as well as custom ones that are campaign-specific.
+		'''
 		normalQuestions = self.question_order_page.filter(campaign__isnull=True)
 		customQuestions = None
 		

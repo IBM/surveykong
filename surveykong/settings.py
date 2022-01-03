@@ -227,7 +227,7 @@ LOGIN_URL = '/survey/signin/'
 # Redirected after hijacking a user.
 LOGIN_REDIRECT_URL = '/'
 
-X_FRAME_OPTIONS = 'SAMEORIGIN'
+#X_FRAME_OPTIONS = 'SAMEORIGIN'
 #SECURE_REFERRER_POLICY = 'unsafe-url' # Default: 'same-origin'
 
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'

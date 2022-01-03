@@ -31,6 +31,10 @@ import survey.helpers as helpers
 ##	/survey/
 ##
 def home(request):
+	# All 403s send user to home page, so add 'admin' check here to display 403 error.
+	if not request.user.hasAdminAccess():
+		return render(request, '403.html', {}, status=403)
+		
 	context = {
 		'latestCampaigns': Campaign.objects.all().order_by('-created_at')[:3],
 		'mostActiveCampaigns': Campaign.objects.all().order_by('-response_count')[:3],
@@ -91,7 +95,7 @@ def survey_standalone_display(request, uid):
 	
 
 ##
-##	/survey/iframe/<id>/
+##	/survey/iframe/display/<id>/
 ##
 @login_exempt
 @xframe_options_exempt
@@ -150,6 +154,9 @@ def survey_iframe_display(request):
 @login_exempt
 @xframe_options_exempt
 def survey_iframe_invite(request, uid):
+	'''
+	Special intercept that has an invite screen.
+	'''
 	campaign = get_object_or_404(Campaign, uid=uid)
 	
 	context = {
@@ -170,21 +177,21 @@ def survey_iframe_invite(request, uid):
 ##
 ##	/survey/campaigns/responses/
 ##
+@user_passes_test(helpers.hasAdminAccess)
 def campaign_responses_list(request):
+	'''
+	Admin-only view. All pages here are admin only.
+	'''
 	try:
 		campaign = Campaign.objects.get(uid=request.GET.get('uid', None))
-		questions = campaign.getQuestions()
 		responses = campaign.response_campaign.all()
 	except:
 		campaign = None
-		questions = None
 		responses = None		
 		
-	# FUTURE USE: Get questions so user can select which columns to show.
 	context = {
 		'campaigns': Campaign.objects.filter(response_campaign__isnull=False).distinct().order_by('key'),
 		'campaign': campaign,
-		'questions': questions,
 		'responses': responses,
 		'leftNavHighlight': 'responses',
 	}
@@ -225,8 +232,13 @@ def project_config_javascript(request, uid):
 	Get the stats for the user for the campaign (lottery logic) and JS decides what to do (show or not)
 	'''
 	t0 = time.time()
+	try:
+		pageUrl = request.POST.get('url')
+	except:
+		pageUrl = None
+	
 	project = get_object_or_404(Project, uid=uid)
-	interceptCampaign = project.getActiveMatchingInterceptCampaign(request.POST.get('url', ''))
+	interceptCampaign = project.getActiveMatchingInterceptCampaign(pageUrl)
 	interceptCampaignStats = None
 	setLotteryCookie = False
 	
@@ -239,7 +251,7 @@ def project_config_javascript(request, uid):
 	except:
 		interceptCampaignStats = None
 	
-	buttonCampaign = project.getActiveMatchingButtonCampaign(request.POST.get('url', ''))
+	buttonCampaign = project.getActiveMatchingButtonCampaign(pageUrl)
 	
 	# Generate some stats as JS object for the page to see/use if they want their own rules to 
 	#  manually trigger a campaign survey.
@@ -289,6 +301,9 @@ def project_config_javascript(request, uid):
 ##
 @login_exempt
 def iframe_embed_test(request):
+	'''
+	Sample test page when testing an intercept camapign, on campaign list page.
+	'''
 	response = render(request, 'survey/test_implementation.html', {})
 	return response
 	

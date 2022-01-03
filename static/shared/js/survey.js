@@ -23,7 +23,7 @@
 				document.getElementById('custom-parent-page-data').innerHTML += '<input type="hidden" name="' + key + '" value="' + nameValuePairs[key] + '">';
 			}
 			// Have to dispatch event else event listener below won't work.
-			document.getElementById('custom-survey-form').dispatchEvent(new Event('submit'));
+			document.querySelector('#custom-submit-button button').click();
 		}
 	});
 	
@@ -96,13 +96,27 @@
 		adjustPaging();
 	}
 	
+	
+	function pageHasVisibleQustions (pageEl) {
+		var visibleQuestioncCount = $(pageEl).find('.custom-question-con').not('.dn').length;
+		if (visibleQuestioncCount > 0) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	
+	
 	function setupPagingButtons () {
 		nextButton.addEventListener('click', function (evt) {
 			evt.preventDefault();
 			
 			// Find required fields that aren't hidden and check if they are validly selected.
 			// If any not, trigger submit to do native form error checking and notification.
-			var valid = true;
+			var valid = true,
+				foundPage = false;
+			
 			$(viewingPage).find(':not(".dn") [required]').each(function() {
 				if (valid == true && !this.checkValidity()) {
 					valid = false;
@@ -112,31 +126,32 @@
 			})
 			
 			if (valid) {
-				// If the next page doesn't have any visible questions, 
-				//  and there's a next page, go to that one.
-				// Else just go to next one.
-				var nextPage = viewingPage.nextElementSibling,
-					pageToShow = nextPage;
-					
-				if ($(nextPage).find('.custom-question-con').not('.dn').length === 0 && nextPage.classList.contains('custom-survey-page')) {
-					pageToShow = nextPage.nextElementSibling;
+				// Find the next page that has visible question and go to it.
+				// else if none, we just submit it.
+				$(viewingPage).nextAll('.custom-survey-page').each(function () {
+					if (pageHasVisibleQustions(this)) {
+						showPage(this);
+						foundPage = true;
+						return false;
+					}
+				});
+				// Fallback when there are no next pages to show.
+				if (!foundPage) {
+					evt.target.closest('form').querySelector('#custom-submit-button button').click();
 				}
-				showPage(pageToShow);
 			}
 		});
+		
 		previousButton.addEventListener('click', function (evt) {
 			evt.preventDefault();
 			
-			// If the previous page doesn't have any visible questions, 
-			//  and there's a previous page, go to that one.
-			// Else just go to previous one.
-			var prevPage = viewingPage.previousElementSibling,
-				pageToShow = prevPage;
-				
-			if ($(prevPage).find('.custom-question-con').not('.dn').length === 0 && prevPage.classList.contains('custom-survey-page')) {
-				pageToShow = prevPage.previousElementSibling;
-			}
-			showPage(pageToShow);
+			// Find the previous page that has visible question and go to it.
+			// else if none, nothing
+			$(viewingPage).prevAll('.custom-survey-page').each(function () {
+				if (pageHasVisibleQustions(this)) {
+					showPage(this);
+				}
+			});			
 		});
 	}
 	
@@ -160,15 +175,13 @@
 	
 	
 	function setupQuestionDependency () {
-		function toggleQuestion (selectedVal, targetValues, targetAction, childCon) {
+		function toggleQuestion (selectedValuesArr, targetValuesArr, targetAction, childCon) {
 			// If it's a match, do the action,
 			// Otherwise do the opposite of the action.
-			selectedVal = isNaN(selectedVal) == false ? parseFloat(selectedVal) : selectedVal;
+			// Find if any value in the target matches a selected value.
+			intersection = selectedValuesArr.filter(element => targetValuesArr.includes(element));
 			
-			// Target comes thru as possible CSV, so split it.
-			targetValuesArr = targetValues.split(',');
-			
-			if (targetValuesArr.includes(selectedVal)) {
+			if (intersection.length > 0) {
 				if (targetAction === 'show') {
 					showQuestion(childCon, true);
 				}
@@ -240,13 +253,35 @@
 				targetAction = $(this).data('parent-answer-action');
 				
 			parentCon.on("change", "select, input", function (evt) {
-				toggleQuestion ($(evt.target).val(), targetValues, targetAction, childCon);
+				// If the parent field is a checkbox, we need to pass all selected vals.
+				var parentField = evt.target,
+					selectedValues = $(parentField).val();
+				
+				if (parentField.type && parentField.type === 'checkbox') {
+					var checkedVals = parentCon.find(':checkbox:checked').map(function() {
+						return this.value;
+					}).get();
+					selectedValues = checkedVals.join(",");
+				}
+				
+				// If it's an array, convert it to a string CSV to normalize it.
+				if (Array.isArray(selectedValues)) {
+					selectedValues = selectedValues.join(',');
+				}
+				
+				// Convert string CSVs to arrays, setting #s to be numbers not strings.
+				targetValuesArr = targetValues.split(',').map(function(item) {
+					return isNaN(item) ? item : Number(item);
+				});
+				selectedValuesArr = selectedValues.split(',').map(function(item) {
+					return isNaN(item) ? item : Number(item);
+				});
+				
+				toggleQuestion(selectedValuesArr, targetValuesArr, targetAction, childCon);
 			});
 			// Run onload to set questions
-			toggleQuestion ('_', targetValues, targetAction, childCon);
+			toggleQuestion(['none'], ['empty'], targetAction, childCon);
 		});
-		
-		
 		
 	}
 	

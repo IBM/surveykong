@@ -237,14 +237,14 @@
 						<div class="mt3"><strong>Without</strong> rules/logic</div>
 						<ul class="mw7 lh-copy">
 							<li class="mb2">This campaign should <strong>NOT</strong> be set to "limit one submission", else the survey will display "you've taken this already" when it loads if the user has already taken it withing the specified time period.</li>
-							<li class="mb2">Call this JS function: <code class="ml2 f6 dark-red">BH.showSurvey('{{ thisModelItem.uid }}');</code>
+							<li class="mb2">Call this JS function: <code class="ml2 f6 dark-red">SK.showSurvey('{{ thisModelItem.uid }}');</code>
 							<li class="mb2">"already took it", or any "inactive" logic is applied and will display a message to the user</li>
-							<li class="mb2 lh-title">Stats for each campaign of a project are available in the BeeHeard namespace JS. This allows pages to optionally use stats to determine if they want to manually trigger the campaign or not. You can see stats for all of the project's active campaigns by running viewing this JS variable on the page: <code class="ml2 f6 dark-red">BH.activeCampaignsData;</code>
+							<li class="mb2 lh-title">Stats for each campaign of a project are available in the SurveyKong namespace JS. This allows pages to optionally use stats to determine if they want to manually trigger the campaign or not. You can see stats for all of the project's active campaigns by running viewing this JS variable on the page: <code class="ml2 f6 dark-red">SK.activeCampaignsData;</code>
 						</ul>
 						
 						<div class="mt3"><strong>With</strong> rules/logic:</div>
 						<ul class="mw7 mb4 lh-copy">
-							<li class="mb2">Simply call this JS function: <code class="ml2 f6 dark-red">BH.showSurveyWithLogic();</code></li>
+							<li class="mb2">Simply call this JS function: <code class="ml2 f6 dark-red">SK.showSurveyWithLogic();</code></li>
 							<li class="mb2">All logic for the campaign will be applied and determine if it will show or not</li>
 						</ul>
 					</div>
@@ -252,7 +252,7 @@
 				{% elif thisModelItem.survey_trigger_type == 'button' %}
 					<ul class="mw7 mb4 lh-copy">
 						<li class="mb2">This campaign should <strong>NOT</strong> be set to "limit one submission", else the survey will display "you've taken this already" when it loads if the user has already taken it withing the specified time period.</li>
-						<li class="mb2">Call this JS function: <code class="ml2 f6 dark-red">BH.showSurvey('{{ thisModelItem.uid }}');</code></li>
+						<li class="mb2">Call this JS function: <code class="ml2 f6 dark-red">SK.showSurvey('{{ thisModelItem.uid }}');</code></li>
 						<li class="mb2">"already took it", or any "inactive" logic is applied and will display a message to the user</li>
 					</ul>
 				{% endif %}

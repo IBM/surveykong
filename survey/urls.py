@@ -18,7 +18,6 @@ urlpatterns = [
 	
 	## Pages
 	url(r'^$', home, name='home'), 
-	url(r'^campaign/responses/$', campaign_responses_list, name='campaign_responses_list'),
 	url(r'^preconfig/(?P<uid>[\w-]+).js$', preconfig_javascript, name='preconfig_javascript'),
 	url(r'^projectconfig/(?P<uid>[\w-]+).js$', project_config_javascript, name='project_config_javascript'),
 	url(r'^display/(?P<uid>[\w-]+)/$', survey_standalone_display, name='survey_standalone_display'),
@@ -46,13 +45,13 @@ urlpatterns = [
 	url(r'^api/user/add/$', api_user_add, name='api_user_add'),
 	
 	
-	
-	
 	## APIs crons.
 	url(r'^api/setactivestates/$', api_set_active_states, name='api_set_active_states'),
 		
 	
 	## Admin URLs
+	url(r'^campaign/responses/$', campaign_responses_list, name='campaign_responses_list'),
+		
 	url(r'^admin/$', admin_home, name='admin_home'),
 	url(r'^admin/adminaccess/$', admin_adminaccess, name='admin_adminaccess'),
 	
