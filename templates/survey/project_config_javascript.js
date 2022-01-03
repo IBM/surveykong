@@ -33,7 +33,20 @@
 		activeEl = document.activeElement;
 		showSurvey("{% url 'survey:survey_iframe_display' %}?cuid="+cuid+(b?'&force=y':''));
 	};
-			
+	
+	function showSurvey (url) {
+		if (!document.getElementById('beeheard-overlay')) {
+			appendToBody(`<div data-beeheard-overlay-close id="beeheard-overlay" style="align-items: center;background: rgba(0,0,0,.7);display: flex;height: 100%;left: 0;position: fixed;top: 0;width: 100%;z-index: 99999999999999999999;"><div id="beeheard-overlay-survey" style="background: #fff;max-height: 90vh;height: 90vh;max-width: 576px;width: 90vw;transition: all .4s cubic-bezier(0.4,1,0.5,1);left: 50%;position: absolute;transform: translate3d(-50%,0,0);"><iframe frameborder="0" marginwidth="0" marginheight="0" scrolling="yes" width="100%" height="100%" src="{% if not debug %}https://beeheard.dal1a.cirrus.ibm.com{% endif %}{url}"></iframe></div></div><style>.shrinkToIcon{opacity:0}.shrinkToIcon > div{height:0!important;width:0!important;left:101%!important;opacity:.3}</style>`.replace('{url}', url));
+			document.querySelector('#beeheard-overlay').querySelector('iframe').contentWindow.focus();
+			document.addEventListener('click', function (evt) {
+				if (evt.target.hasAttribute('data-beeheard-overlay-close')) {
+					window.postMessage({message: 'removeOverlay'},'*');
+				}
+			});
+		}
+	}
+	
+		
 	{% if flags.hasInvite %}
 	
 		window.SK.showInvite = function () {
@@ -115,18 +128,6 @@
 					break;
 			}
 			el.style.cssText += styles;
-		}
-		
-		function showSurvey (url) {
-			if (!document.getElementById('surveykong-overlay')) {
-				appendToBody(`<div data-surveykong-overlay-close id="surveykong-overlay" style="align-items: center;background: rgba(0,0,0,.7);display: flex;height: 100%;left: 0;position: fixed;top: 0;width: 100%;z-index: 99999999999999999999;"><div id="surveykong-overlay-survey" style="background: #fff;max-height: 90vh;height: 90vh;max-width: 576px;width: 90vw;transition: all .4s cubic-bezier(0.4,1,0.5,1);left: 50%;position: absolute;transform: translate3d(-50%,0,0);"><iframe frameborder="0" marginwidth="0" marginheight="0" scrolling="yes" width="100%" height="100%" src="{% if not debug %}https://REPLACE_ME.com{% endif %}{url}"></iframe></div></div><style>.shrinkToIcon{opacity:0}.shrinkToIcon > div{height:0!important;width:0!important;left:101%!important;opacity:.3}</style>`.replace('{url}', url));
-				document.querySelector('#surveykong-overlay').querySelector('iframe').contentWindow.focus();
-				document.addEventListener('click', function (evt) {
-					if (evt.target.hasAttribute('data-surveykong-overlay-close')) {
-						window.postMessage({message: 'removeOverlay'},'*');
-					}
-				});
-			}
 		}
 		
 		function injectReminderIcon () {
