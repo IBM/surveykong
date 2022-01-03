@@ -101,20 +101,6 @@
 				}
 			});
 			
-			// Include custom page vars as hidden fields.
-			window.addEventListener('message', function (event) {
-				if (event.data.message == 'customFormData') {
-					var nameValuePairs = event.data.customFormData;
-					
-					document.getElementById('custom-parent-page-data').innerHTML = '';
-					
-					for (var key in nameValuePairs) {
-						document.getElementById('custom-parent-page-data').innerHTML += '<input type="hidden" name="' + key + '" value="' + nameValuePairs[key] + '">';
-					}
-				}
-			});
-			
-			
 			function showMessageAndCloseModal (msg) {
 				document.getElementById('custom-content').innerHTML = '<div>' + msg + '</div>';
 				setTimeout(function () {

@@ -19,7 +19,6 @@
 		function formOnsubmitHandler (evt) {
 			var err = false;
 			
-			debugger;
 			document.querySelectorAll('.custom-draggable-items > div').forEach(function (row) {
 				var hasValue = 0
 				row.querySelectorAll('input[type="text"]').forEach(function (inputField) {
@@ -172,7 +171,6 @@
 					}
 					else {
 						item.triggers.forEach(function (triggerData) {
-							debugger;
 							if (triggerData.values == fieldVal) {
 								triggerData.hide.forEach(function (hideField) {
 									show(hideField+'-row', false);

@@ -12,9 +12,35 @@
 	}
 	
 	
+	// Listen for parent to send custom form vars and create each as hidden fields.
+	window.addEventListener('message', function (event) {
+		if (event.data.message == 'customFormData') {
+			var nameValuePairs = event.data.customFormData;
+			
+			document.getElementById('custom-parent-page-data').innerHTML = '';
+			
+			for (var key in nameValuePairs) {
+				document.getElementById('custom-parent-page-data').innerHTML += '<input type="hidden" name="' + key + '" value="' + nameValuePairs[key] + '">';
+			}
+			// Have to dispatch event else event listener below won't work.
+			document.getElementById('custom-survey-form').dispatchEvent(new Event('submit'));
+		}
+	});
+	
+	
+	var checkedCustomVars = false;
 	function setupSurveySubmit () {
 		document.getElementById('custom-survey-form').addEventListener('submit', function (evt) {
 			evt.preventDefault();
+			
+			// If in iframe and we haven't fetched custom data yet, fetch it.
+			// The event listener (above) for the return message triggers submit again after
+			//   it injects custom name/value pairs.
+			if (!checkedCustomVars && window !== top) {
+				checkedCustomVars = true;
+				window.parent.postMessage({message:'sendCustomFormData'},'*');
+				return;
+			}
 			
 			document.getElementById('custom-processing').removeAttribute('style');
 

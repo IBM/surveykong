@@ -38,9 +38,8 @@
 	{# If there's an intercept waiting (based on logic) it gets overridden and calls 'showSurvey' #}
 	window.SK.showSurveyWithLogic = function () {};
 	
-	window.SK.addCustomFormData = function (data) {
-		try{document.querySelector('#beeheard-overlay-survey iframe').contentWindow.postMessage({message:'customFormData',customFormData:data}, '*')}
-		catch{}
+	window.BH.addCustomFormData = function (data) {
+		window.BH.customFormData = data;
 	};
 	
 	
@@ -76,6 +75,10 @@
 		}
 		else if (event.data.message == 'injectReminder') {
 			injectReminderIcon();
+		}
+		else if (event.data.message == 'sendCustomFormData') {
+			try{document.querySelector('#beeheard-overlay-survey iframe').contentWindow.postMessage({message:'customFormData',customFormData:BH.customFormData}, '*')}
+			catch{}
 		}
 	});
 	
