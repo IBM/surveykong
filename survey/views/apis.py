@@ -15,6 +15,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.crypto import get_random_string
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 from middleware.login_required import login_exempt
 
@@ -142,6 +143,7 @@ def api_adminaccess(request):
 ##
 ##	/survey/api/submit/<POST>
 ##
+@xframe_options_exempt
 @login_exempt
 def api_submit_response(request):
 	try:

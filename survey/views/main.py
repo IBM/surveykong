@@ -95,7 +95,7 @@ def survey_standalone_display(request, uid):
 	
 
 ##
-##	/survey/iframe/<id>/
+##	/survey/iframe/display/<id>/
 ##
 @login_exempt
 @xframe_options_exempt

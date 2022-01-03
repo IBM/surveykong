@@ -23,7 +23,7 @@
 				document.getElementById('custom-parent-page-data').innerHTML += '<input type="hidden" name="' + key + '" value="' + nameValuePairs[key] + '">';
 			}
 			// Have to dispatch event else event listener below won't work.
-			document.getElementById('custom-survey-form').dispatchEvent(new Event('submit'));
+			document.querySelector('#custom-submit-button button').click();
 		}
 	});
 	
