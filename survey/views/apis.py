@@ -240,14 +240,20 @@ def api_campaign_take_later(request):
 	'''
 	When the elect to take it later, set their status so on page load we know
 	to show a little reminder icon.
+	If setting fails because it can't find it, create user status then set it.
 	'''
 	try:
 		campaign = Campaign.objects.get(uid=request.POST.get('cuid'))
 		campaign.setUserStatus(request.session['uuid'], 'take_later')
-	except Exception as ex:
-		cuid = campaign.uid if campaign else 'none'
-		uuid = request.session['uuid'] if request.session['uuid'] else 'none'
-		print(f'Error: api_campaign_take_later failed - CUID:{cuid}:, UID :{uuid}: - {ex}')
+	except:
+		try:
+			userInfo, created = campaign.getCreateUserInfo(request)
+			campaign.setUserStatus(request.session['uuid'], 'intercept_shown')
+			campaign.setUserStatus(request.session['uuid'], 'take_later')
+		except Exception as ex:
+			cuid = campaign.uid if campaign else 'none'
+			uuid = request.session['uuid'] if request.session['uuid'] else 'none'
+			print(f'Error: api_campaign_take_later failed - CUID:{cuid}:, UID :{uuid}: - {ex}')
 
 	response = JsonResponse({'results': {'message': 'Success.'}}, status=200)
 	response["Access-Control-Allow-Origin"] = "*"

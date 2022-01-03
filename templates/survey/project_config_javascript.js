@@ -238,6 +238,9 @@
 					showAndSetFlag();
 				}
 			});
+			window.addEventListener('blur', function (evt) {
+				showAndSetFlag();
+			});
 			
 			window.SK.showSurveyWithLogic = showAndSetFlag;
 			
