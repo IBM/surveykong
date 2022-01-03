@@ -47,6 +47,7 @@
 								'anchor_text_beginning',
 								'anchor_text_end',
 								'answers',
+								'include_other_specify_answer',
 							],
 							hide: [
 								'character_limit',
@@ -64,6 +65,7 @@
 								'answers', 
 								'character_limit', 
 								'default_answer',
+								'include_other_specify_answer',
 								'layout',
 								'message_text',
 							],
@@ -77,6 +79,21 @@
 								'answers', 
 								'character_limit', 
 								'default_answer',
+								'include_other_specify_answer',
+								'layout',
+								'message_text',
+								'placeholder_text',
+							],
+						},
+						{
+							values: ['hidden'],
+							show: ['default_answer'],
+							hide: [
+								'anchor_text_beginning', 
+								'anchor_text_end', 
+								'answers', 
+								'character_limit', 
+								'include_other_specify_answer',
 								'layout',
 								'message_text',
 								'placeholder_text',
@@ -84,7 +101,7 @@
 						},
 						{
 							values: ['select','selectmultiple'],
-							show: ['placeholder_text','answers', ],
+							show: ['placeholder_text','answers', 'include_other_specify_answer',],
 							hide: [
 								'anchor_text_beginning', 
 								'anchor_text_end', 
@@ -102,6 +119,7 @@
 								'anchor_text_end', 
 								'answers', 
 								'default_answer',
+								'include_other_specify_answer',
 								'layout',
 								'message_text',
 							],
@@ -115,6 +133,7 @@
 								'answers', 
 								'character_limit', 
 								'default_answer',
+								'include_other_specify_answer',
 								'layout',
 								'placeholder_text',							
 							],
@@ -265,7 +284,10 @@
 			
 			{% for field in form.visible_fields %}
 				{% if field.name != 'answers' %}
-					{% include 'partials/form_field_horizontal.html' with field=field %}
+					<!-- exclude "other" option, we put it in the answers section below -->
+					{% if field.name != 'include_other_specify_answer' %}
+						{% include 'partials/form_field_horizontal.html' with field=field %}
+					{% endif %}
 				{% else %}
 					<div class="mb4" id="answers-row">
 						<div class="b">Answers</div>
@@ -276,6 +298,7 @@
 						{% if not thisModelItem.answers %}
 							{% include 'partials/question_answer_dyn_group.html' with answerNumber=9999 %}
 						{% endif %}
+						<div class="mt3 ml4 pl2">{% include 'partials/form_field_horizontal.html' with field=form.include_other_specify_answer %}</div>
 					</div>
 				{% endif %}
 			{% endfor %}

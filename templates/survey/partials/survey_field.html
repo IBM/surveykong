@@ -1,4 +1,4 @@
-<div id="q_{{ question.short_name }}_container" class="mb4 pb3 w-100" {% if question.parent_question %}data-parent-question="{{ question.parent_question.short_name }}" data-parent-answer="{{ question.parent_answer }}" data-parent-answer-action="{{ question.parent_answer_action }}"{% endif %}>
+<div id="q_{{ question.short_name }}_container" class="mb4 pb3 w-100 {% if question.parent_question and question.parent_answer_action == 'show' %}dn{% endif %}" {% if question.parent_question %}data-parent-question="{{ question.parent_question.short_name }}" data-parent-answer="{{ question.parent_answer }}" data-parent-answer-action="{{ question.parent_answer_action }}"{% endif %}>
 	{% if question.type == 'message' %}
 		<div class="lh-copy mw7">{{ question.message_text|safe }}</div>
 	
@@ -16,6 +16,12 @@
 									<label for="id_{{ question.short_name }}_{{ forloop.counter}}"><span class="db mt1">{{ answer.1 }}</span></label>
 								</div>
 							{% endfor %}
+							{% if question.include_other_specify_answer %}
+								<div class="bo-checkboxradio f6">
+									<input type="radio" name="{{ question.short_name }}" id="id_{{ question.short_name }}_99" value="other" {% if question.required %}required{% endif %}>
+									<label for="id_{{ question.short_name }}_99"><span class="db mt1">Other</span></label>
+								</div>
+							{% endif %}
 						</div>
 						{% if question.anchor_text_beginning or question.anchor_text_end %}
 							<div class="mt2 flex justify-between fw4 f6 gray">
@@ -30,6 +36,18 @@
 								<label for="id_{{ question.short_name }}_{{ forloop.counter}}">{{ answer.1 }}</label>
 							</div>
 						{% endfor %}
+						{% if question.include_other_specify_answer %}
+							<div class="mt2 mb2 bo-checkboxradio f6">
+								<input type="radio" name="{{ question.short_name }}" id="id_{{ question.short_name }}_99" value="other" {% if question.required %}required{% endif %}>
+								<label for="id_{{ question.short_name }}_99">Other</label>
+							</div>
+						{% endif %}
+					{% endif %}
+					{% if question.include_other_specify_answer %}
+						<div id="q_{{ question.short_name }}_other_container" class="dn mt3" data-parent-question="{{ question.short_name }}" data-parent-answer="other" data-parent-answer-action="show">
+							<label for="id_{{ question.short_name }}_other" class="f6 db lh-copy b mb1">Please specify "Other"</label>
+							<input id="id_{{ question.short_name }}_other" type="text" value="" name="{{ question.short_name }}_other">
+						</div>
 					{% endif %}
 				</fieldset>
 			
@@ -50,36 +68,63 @@
 						<div class="flex justify-between tc label-under f6">
 							{% for answer in question.answers %}
 								<div class="bo-checkboxradio f6">
-									<input type="checkbox" name="{{ question.short_name }}[]" id="id_{{ question.short_name }}_{{ forloop.counter}}" value="{{ answer.0 }}">
+									<input type="checkbox" name="{{ question.short_name }}-mv" id="id_{{ question.short_name }}_{{ forloop.counter}}" value="{{ answer.0 }}">
 									<label for="id_{{ question.short_name }}_{{ forloop.counter}}"><span class="db mt1">{{ answer.1 }}</span></label>
 								</div>
 							{% endfor %}
+							{% if question.include_other_specify_answer %}
+								<div class="bo-checkboxradio f6">
+									<input type="checkbox" name="{{ question.short_name }}-mv" id="id_{{ question.short_name }}_99" value="other">
+									<label for="id_{{ question.short_name }}_99"><span class="db mt1">Other</span></label>
+								</div>
+							{% endif %}
 							{% if question.anchor_text_beginning or question.anchor_text_end %}
-							<div class="mt2 flex justify-between fw4 f6 gray">
-								<div>{{ question.anchor_text_beginning }}</div>
-								<div>{{ question.anchor_text_end }}</div>
-							</div>
-						{% endif %}
+								<div class="mt2 flex justify-between fw4 f6 gray">
+									<div>{{ question.anchor_text_beginning }}</div>
+									<div>{{ question.anchor_text_end }}</div>
+								</div>
+							{% endif %}
 						</div>
 					{% else %}
 						{% for answer in question.answers %}
 							<div class="{% if not forloop.last %}mb2 {% endif %}bo-checkboxradio f6">
-								<input type="checkbox" name="{{ question.short_name }}[]" id="id_{{ question.short_name }}_{{ forloop.counter}}" value="{{ answer.0 }}">
+								<input type="checkbox" name="{{ question.short_name }}-mv" id="id_{{ question.short_name }}_{{ forloop.counter}}" value="{{ answer.0 }}">
 								<label for="id_{{ question.short_name }}_{{ forloop.counter}}">{{ answer.1 }}</label>
 							</div>
 						{% endfor %}
+						{% if question.include_other_specify_answer %}
+							<div class="mt2 bo-checkboxradio f6">
+								<input type="checkbox" name="{{ question.short_name }}-mv" id="id_{{ question.short_name }}_99" value="other">
+								<label for="id_{{ question.short_name }}_99">Other</label>
+							</div>
+						{% endif %}
+					{% endif %}
+					{% if question.include_other_specify_answer %}
+						<div id="q_{{ question.short_name }}_other_container" class="dn mt3" data-parent-question="{{ question.short_name }}" data-parent-answer="other" data-parent-answer-action="show">
+							<label for="id_{{ question.short_name }}_other" class="f6 db lh-copy b mb1">Please specify "Other"</label>
+							<input id="id_{{ question.short_name }}_other" type="text" value="" name="{{ question.short_name }}_other">
+						</div>
 					{% endif %}
 				</fieldset>
 		
 			{% elif question.type == 'select' or question.type == 'selectmultiple' %}
 				<div>
-					<select id="id_{{ question.short_name }}" name="{{ question.short_name }}{% if question.type == 'selectmultiple' %}[]{% endif %}" {% if question.type == 'selectmultiple' %}multiple{% endif %} data-placeholder="Select" {% if question.required %}required{% endif %}>
+					<select id="id_{{ question.short_name }}" name="{{ question.short_name }}{% if question.type == 'selectmultiple' %}-mv{% endif %}" {% if question.type == 'selectmultiple' %}multiple{% endif %} data-placeholder="Select" {% if question.required %}required{% endif %}>
 						<option value=""></option>
 					{% for answer in question.answers %}
 						<option value="{{ answer.0 }}">{{ answer.1 }}</option>
 					{% endfor %}
+					{% if question.include_other_specify_answer %}
+						<option value="other">Other</option>
+					{% endif %}
 					</select>
 				</div>
+				{% if question.include_other_specify_answer %}
+					<div id="q_{{ question.short_name }}_other_container" class="dn mt3" data-parent-question="{{ question.short_name }}" data-parent-answer="other" data-parent-answer-action="show">
+						<label for="id_{{ question.short_name }}_other" class="f6 db lh-copy b mb1">Please specify "Other"</label>
+						<input id="id_{{ question.short_name }}_other" type="text" value="" name="{{ question.short_name }}_other">
+					</div>
+				{% endif %}
 			
 			{% elif question.type == 'number' %}
 				<div><input id="id_{{ question.short_name }}" type="number" value="" name="{{ question.short_name }}" placeholder="{{ question.placeholder_text|default:'e.g. &nbsp;4' }}" {% if question.required %}required{% endif %}></div>

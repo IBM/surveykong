@@ -25,7 +25,7 @@
 			function populateScriptTag () {
 				$('table').on('dblclick', 'td', function (evt) {
 					var v = evt.target.innerText,
-						templ = '<scr'+'ipt async src="https://REPLACE_ME.com/survey/config/uid.js"></scr'+'ipt>';
+						templ = '<scr'+'ipt async src="https://REPLACE_ME.com/survey/preconfig/uid.js"></scr'+'ipt>';
 					document.getElementById('custom-embed-script').value = templ.replace('uid',v);
 				});
 				
@@ -54,7 +54,7 @@
 		
 		<div class="mb3">
 			<div class="mb2">Double-click any UID below to populate the script tag and provide it to the project team</div>
-			<div class="w-100 mw7"><input id="custom-embed-script" type="text" readonly value='<script async src="https://REPLACE_ME.com/survey/config/uid.js"></script>'></div>
+			<div class="w-100 mw7"><input id="custom-embed-script" type="text" readonly value='<script async src="https://REPLACE_ME.com/survey/preconfig/uid.js"></script>'></div>
 		</div>
 		
 		

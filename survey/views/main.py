@@ -16,6 +16,7 @@ from django.shortcuts import get_object_or_404, render, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.crypto import get_random_string
+from django.views.decorators.csrf import csrf_exempt
 
 from middleware.login_required import login_exempt
 
@@ -173,10 +174,30 @@ def campaign_responses_list(request):
 	
 	
 ##
-##	/survey/config/<uid>.js
+##	/survey/preconfig/<uid>.js
 ##
 @login_exempt
 @xframe_options_exempt
+def preconfig_javascript(request, uid):
+	'''
+	Return JS that does ajax request, sending origin to project_config.
+	'''
+	context = {
+		'projectUid': uid,
+	}
+	
+	responseText = render_to_string('survey/preconfig_javascript.js', context=context, request=request)
+	responseText = responseText.replace('\n','').replace('\t','')
+	response = HttpResponse(responseText, content_type='text/javascript')
+	return response
+	
+
+##
+##	/survey/projectconfig/<uid>.js
+##
+@login_exempt
+@xframe_options_exempt
+@csrf_exempt
 def project_config_javascript(request, uid):
 	'''
 	If there's an active intercept campaign, and they don't have the lottery cookie:
@@ -184,7 +205,7 @@ def project_config_javascript(request, uid):
 	'''
 	t0 = time.time()
 	project = get_object_or_404(Project, uid=uid)
-	interceptCampaign = project.getActiveMatchingInterceptCampaign(request.META['HTTP_REFERER'])
+	interceptCampaign = project.getActiveMatchingInterceptCampaign(request.META.get('HTTP_ORIGIN', ''))
 	interceptCampaignStats = None
 	setLotteryCookie = False
 	
@@ -218,6 +239,12 @@ def project_config_javascript(request, uid):
 	responseText = render_to_string('survey/project_config_javascript.js', context=context, request=request)
 	responseText = responseText.replace('\n','').replace('\t','').replace('[timer]', str(round((time.time()-t0)*1000)))
 	response = HttpResponse(responseText, content_type='text/javascript')
+	try:
+		reqDomain = request.META['HTTP_ORIGIN']
+	except:
+		reqDomain = '*'
+	response['Access-Control-Allow-Origin'] = reqDomain
+	response['Access-Control-Allow-Credentials'] = 'true'
 	
 	# Campaign Session tracker.
 	if interceptCampaignStats and interceptCampaignStats['setSessionCookie']:

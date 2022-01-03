@@ -327,7 +327,7 @@ def api_campaigns(request):
 	
 
 ##
-##	/survey/removecampiagnuserinfo/
+##	/survey/removecampaignuserinfo/
 ##
 def api_remove_campaign_user_info(request):
 	'''

@@ -214,14 +214,14 @@ class Project(models.Model):
 
 	
 	def getActiveMatchingInterceptCampaign(self, url):
-		activeCamapigns = Campaign.objects.filter(project=self, survey_trigger_type='intercept', active=True).select_related('survey', 'survey_invite')
+		activeCampaigns = Campaign.objects.filter(project=self, survey_trigger_type='intercept', active=True).select_related('survey', 'survey_invite')
 		
 		# Get an active one that doesn't have URL match. This is the default.
-		campaign = activeCamapigns.filter(url_match_regex='').first()
+		campaign = activeCampaigns.filter(url_match_regex='').first()
 		
 		# Now loop thru ones with URL matches and see if there's a match 
 		#  that would override a default non-URL matched campaign and use it instead.
-		for urlMatchCampaign in activeCamapigns.exclude(url_match_regex=''):
+		for urlMatchCampaign in activeCampaigns.exclude(url_match_regex=''):
 			url = url.replace('https://','')
 			begin = '^' if urlMatchCampaign.url_match_condition == 'startswith' else ''
 			end = '$' if urlMatchCampaign.url_match_condition == 'endswith' else ''
@@ -349,7 +349,7 @@ class Campaign(models.Model):
 	start_date = models.DateField(null=True, blank=True, help_text='Campaign will be active starting at Midnight on this date.')
 	stop_date = models.DateField(null=True, blank=True, help_text='Campaign will deactivate at 11:59pm on this date.')
 	
-	response_count_limit = models.PositiveIntegerField(null=True, blank=True, help_text='Disable the camapign when this many responses are received.')
+	response_count_limit = models.PositiveIntegerField(null=True, blank=True, help_text='Disable the campaign when this many responses are received.')
 	
 	# Stats.
 	# Set in storeResponse.
@@ -373,6 +373,7 @@ class Campaign(models.Model):
 	
 	def save(self, *args, **kwargs):
 		self.key = self.getKey()
+		
 		super(Campaign, self).save(*args, **kwargs)
 	
 	
@@ -436,10 +437,10 @@ class Campaign(models.Model):
 				continue
 			
 			# [] at end of field name denotes it's a multi-value field and we have to use getlist on those.
-			if key[-2:] != '[]':
+			if key[-3:] != '-mv':
 				fieldsOnly[key] = val
 			else:
-				fieldsOnly[key[:-2]] = request.POST.getlist(key) 
+				fieldsOnly[key[:-3]] = request.POST.getlist(key) 
 		
 		surveyResponse = Response.objects.create(
 			campaign = self,
@@ -575,7 +576,7 @@ class Campaign(models.Model):
 		# Get/create user entry for the campaign.
 		userInfo, created = self.getCreateUserInfo(request)
 		
-		# Increment unique visitor_count if user was first view to the camapign.
+		# Increment unique visitor_count if user was first view to the campaign.
 		if created:
 			self.unique_visitor_count = CampaignUserInfo.objects.filter(campaign=self).count()
 			self.save()
@@ -732,6 +733,7 @@ class Question(models.Model):
 	anchor_text_beginning = models.CharField(max_length=50, blank=True)
 	anchor_text_end = models.CharField(max_length=50, blank=True)
 	answers = ArrayField(ArrayField(models.CharField(max_length=255, blank=True)), blank=True, null=True)
+	include_other_specify_answer = models.BooleanField(default=False, help_text='This will add an \'Other\' option and automatically show a textarea write-in for the user to specify their answer')
 	default_answer = models.CharField(max_length=96, blank=True)
 	
 	parent_question = models.ForeignKey('Question', related_name='question_parent_question', null=True, blank=True, help_text='Select the question who\'s answer should show/hide this question', on_delete=models.SET_NULL)

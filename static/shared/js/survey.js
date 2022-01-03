@@ -139,10 +139,10 @@
 		
 		function showQuestion (container, b) {
 			if (b) {
-				$(container).slideDown();
+				$(container).slideDown('fast');
 			}
 			else {
-				$(container).slideUp();
+				$(container).slideUp('fast');
 			}
 		}
 		
@@ -162,6 +162,7 @@
 			parentCon.on("change", "select, input", function (evt) {
 				toggleQuestion ($(evt.target).val(), targetVal, targetAction, childCon);
 			});
+			// Run onload to set questions
 			toggleQuestion ('_', targetVal, targetAction, childCon);
 		});
 		
