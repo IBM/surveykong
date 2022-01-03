@@ -83,8 +83,15 @@ class ProjectAdmin(admin.ModelAdmin):
 		'contact',
 		'comments',
 	)
-	list_filter = ('created_at', 'updated_at', 'active')
-	raw_id_fields = ('created_by', 'updated_by', 'domain', 'contact')
+	list_filter = (
+		'created_by',
+		'created_at',
+		'updated_by',
+		'updated_at',
+		'active',
+		'domain',
+		'contact',
+	)
 	search_fields = ('name',)
 	date_hierarchy = 'created_at'
 
@@ -200,7 +207,9 @@ class CampaignAdmin(admin.ModelAdmin):
 		'comments',
 	)
 	list_filter = (
+		'created_by',
 		'created_at',
+		'updated_by',
 		'updated_at',
 		'enabled',
 		'active',
@@ -217,21 +226,13 @@ class CampaignAdmin(admin.ModelAdmin):
 		'stop_date',
 		'latest_response_date',
 	)
-	raw_id_fields = (
-		'created_by',
-		'updated_by',
-		'project',
-		'survey',
-		'survey_invite',
-		'survey_thankyou',
-		'button',
-	)
 	date_hierarchy = 'created_at'
 
 
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
 	list_display = ('id', 'survey', 'page_number')
+	list_filter = ('survey',)
 
 
 @admin.register(Question)
@@ -259,14 +260,12 @@ class QuestionAdmin(admin.ModelAdmin):
 		'parent_answer_action',
 	)
 	list_filter = ('required', 'shared', 'include_other_specify_answer')
-	raw_id_fields = ('parent_question',)
 	search_fields = ('name',)
 
 
 @admin.register(QuestionOrder)
 class QuestionOrderAdmin(admin.ModelAdmin):
 	list_display = ('id', 'campaign', 'page', 'question', 'question_number')
-	raw_id_fields = ('campaign', 'page', 'question')
 
 
 @admin.register(Response)
@@ -279,8 +278,7 @@ class ResponseAdmin(admin.ModelAdmin):
 		'uuid',
 		'raw_data',
 	)
-	list_filter = ('created_at',)
-	raw_id_fields = ('campaign',)
+	list_filter = ('created_at', 'campaign')
 	date_hierarchy = 'created_at'
 
 
@@ -299,20 +297,19 @@ class CampaignUserInfoAdmin(admin.ModelAdmin):
 		'reset_date',
 	)
 	list_filter = (
+		'campaign',
 		'intercept_shown_at',
 		'take_later_at',
 		'email_link_at',
 		'submitted_at',
 		'reset_date',
 	)
-	raw_id_fields = ('campaign',)
 
 
 @admin.register(Profile)
 class ProfileAdmin(admin.ModelAdmin):
 	list_display = ('id', 'inactive', 'user', 'full_name', 'image')
-	list_filter = ('inactive',)
-	raw_id_fields = ('user',)
+	list_filter = ('inactive', 'user')
 
 
 @admin.register(BannerNotification)
@@ -342,3 +339,4 @@ class ReleaseNoteAdmin(admin.ModelAdmin):
 		'date',
 	)
 	date_hierarchy = 'created_at'
+	
