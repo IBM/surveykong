@@ -1,4 +1,4 @@
-<div id="q_{{ question.short_name }}_container" class="mb4 pb3 w-100 {% if question.parent_question and question.parent_answer_action == 'show' %}dn{% endif %}" {% if question.parent_question %}data-parent-question="{{ question.parent_question.short_name }}" data-parent-answer="{{ question.parent_answer }}" data-parent-answer-action="{{ question.parent_answer_action }}"{% endif %}>
+<div id="q_{{ question.short_name }}_container" class="custom-question-con mb4 pb3 w-100 {% if question.parent_question and question.parent_answer_action == 'show' %}dn{% endif %}" {% if question.parent_question %}data-parent-question="{{ question.parent_question.short_name }}" data-parent-answer="{{ question.parent_answer }}" data-parent-answer-action="{{ question.parent_answer_action }}"{% endif %}>
 	{% if question.type == 'message' %}
 		<div class="lh-copy mw7">{{ question.message_text|safe }}</div>
 	
@@ -44,7 +44,7 @@
 						{% endif %}
 					{% endif %}
 					{% if question.include_other_specify_answer %}
-						<div id="q_{{ question.short_name }}_other_container" class="dn mt3" data-parent-question="{{ question.short_name }}" data-parent-answer="other" data-parent-answer-action="show">
+						<div id="q_{{ question.short_name }}_autoother_container" class="dn mt3" data-parent-question="{{ question.short_name }}" data-parent-answer="other" data-parent-answer-action="show">
 							<label for="id_{{ question.short_name }}_other" class="f6 db lh-copy b mb1">Please specify "Other"</label>
 							<input id="id_{{ question.short_name }}_other" type="text" value="" name="{{ question.short_name }}_other">
 						</div>
@@ -100,7 +100,7 @@
 						{% endif %}
 					{% endif %}
 					{% if question.include_other_specify_answer %}
-						<div id="q_{{ question.short_name }}_other_container" class="dn mt3" data-parent-question="{{ question.short_name }}" data-parent-answer="other" data-parent-answer-action="show">
+						<div id="q_{{ question.short_name }}_autoother_container" class="dn mt3" data-parent-question="{{ question.short_name }}" data-parent-answer="other" data-parent-answer-action="show">
 							<label for="id_{{ question.short_name }}_other" class="f6 db lh-copy b mb1">Please specify "Other"</label>
 							<input id="id_{{ question.short_name }}_other" type="text" value="" name="{{ question.short_name }}_other">
 						</div>
@@ -120,7 +120,7 @@
 					</select>
 				</div>
 				{% if question.include_other_specify_answer %}
-					<div id="q_{{ question.short_name }}_other_container" class="dn mt3" data-parent-question="{{ question.short_name }}" data-parent-answer="other" data-parent-answer-action="show">
+					<div id="q_{{ question.short_name }}_autoother_container" class="dn mt3" data-parent-question="{{ question.short_name }}" data-parent-answer="other" data-parent-answer-action="show">
 						<label for="id_{{ question.short_name }}_other" class="f6 db lh-copy b mb1">Please specify "Other"</label>
 						<input id="id_{{ question.short_name }}_other" type="text" value="" name="{{ question.short_name }}_other">
 					</div>

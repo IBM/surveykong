@@ -212,6 +212,12 @@
 					shown = true;
 				}
 			});
+			document.addEventListener('mouseout', function (evt) {
+				if (!shown && evt.pageY - window.scrollY <= 0) {
+					BH.showSurvey('{{ campaignStats.campaign.uid }}');
+					shown = true;
+				}
+			});
 			
 			{# TODO: Does page delay auto-inject for intercept? or just invite type? #}
 			

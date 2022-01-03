@@ -43,36 +43,31 @@
 			}
 			
 			
-			function setupHitApi () {
-				$('.custom-hit-api').on('click', function (evt) {
-					evt.preventDefault();
-					
-					$.ajax({
-						url: evt.currentTarget.dataset.href,
-						type: 'post',
-						data: {
-							csrfmiddlewaretoken: '{{ csrf_token }}',
-							campaign: evt.currentTarget.dataset.id,
-						},
-						success: function () {
-							if (evt.currentTarget.dataset.callback) {
-								SK[evt.currentTarget.dataset.callback](evt);
-							}
-						},
-					})
-					
+			function deleteAllResponses (id, callback) {
+				$.ajax({
+					url: "{% url 'survey:api_delete_campaign_responses' %}",
+					type: 'post',
+					data: {
+						csrfmiddlewaretoken: '{{ csrf_token }}',
+						campaign: id,
+					},
+					success: function () {
+						if (callback) {
+							window['callback']();
+						}
+					},
 				});
 			}
+			SK.deleteAllResponses = deleteAllResponses;
 			
 			
-			function responsesToZero (evt) {
-				$(evt.target).closest('td').find('.custom-response-count').html('0');
+			function responsesToZero (el) {
+				$(el).closest('td').find('.custom-response-count').html('0');
 			}
 			SK.responsesToZero = responsesToZero
 		
 		
 			$(function () {
-				setupHitApi();
 				doFilter();
 				setupToggleSwitches();
 			});
@@ -136,7 +131,7 @@
 						<a href="{% url 'survey:survey_standalone_display' uid=item.uid %}" target="_blank" aria-label="View standalone survey" class="hint hint--top hint--medium ph2 {{ templateHelpers.classes.link }}">{{ templateHelpers.html.icons.newWindow|safe }}</a>{% endif %}</td>
 						<td data-order="{% if item.enabled %}1{% else %}0{% endif %}"class="tc"><label class="bo-switch" aria-label="Toggle on/off"><input type="checkbox" {% if item.enabled %}checked{% endif %}><span class="bo-switch-slider"></span></label></td>
 						<td class="">{% if item.survey_trigger_type == 'button' %}<a href="{% url 'survey:admin_button_list' %}?filter={{ item.button.name }}" class="{{ templateHelpers.classes.link }}">{{ item.button.name }}</a>{% endif %}</td>
-						<td class="w3"><div class="flex items-center justify-end"><a href="{% url 'survey:campaign_responses_list' %}?uid={{ item.uid }}" class="hint--medium hint--top-left ph2 {{ templateHelpers.classes.link }} custom-response-count" aria-label="View responses">{{ item.response_campaign.count }}</a><a class="hint--medium hint--top-left red ph2 {{ templateHelpers.classes.link }} custom-hit-api" href="#" data-href="{% url 'survey:api_delete_campaign_responses' %}" data-id="{{ item.id }}" data-callback="responsesToZero" aria-label="Delete all responses. This is IRREVERSIBLE!">{{ templateHelpers.html.icons.trash|safe }}</a></div></td>
+						<td class="w3"><div class="flex items-center justify-end"><a href="{% url 'survey:campaign_responses_list' %}?uid={{ item.uid }}" class="hint--medium hint--top-left ph2 {{ templateHelpers.classes.link }} custom-response-count" aria-label="View responses">{{ item.response_campaign.count }}</a><a class="hint--medium hint--top-left red ph2 {{ templateHelpers.classes.link }}" href="#" onclick="SK.deleteAllResponses({{ item.id }});SK.responsesToZero(this);return false;" aria-label="Delete all responses and resets all stats back to zero. This is IRREVERSIBLE!">{{ templateHelpers.html.icons.trash|safe }}</a></div></td>
 						<td class="tr">{{ item.unique_visitor_count }}</td>
 						<td class="tr">{{ item.intercept_shown_count }}</td>
 						<td class="">{{ item.latest_response_date }}</td>
