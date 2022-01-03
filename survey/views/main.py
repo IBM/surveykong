@@ -178,18 +178,14 @@ def survey_iframe_invite(request, uid):
 def campaign_responses_list(request):
 	try:
 		campaign = Campaign.objects.get(uid=request.GET.get('uid', None))
-		questions = campaign.getQuestions()
 		responses = campaign.response_campaign.all()
 	except:
 		campaign = None
-		questions = None
 		responses = None		
 		
-	# FUTURE USE: Get questions so user can select which columns to show.
 	context = {
 		'campaigns': Campaign.objects.filter(response_campaign__isnull=False).distinct().order_by('key'),
 		'campaign': campaign,
-		'questions': questions,
 		'responses': responses,
 		'leftNavHighlight': 'responses',
 	}
@@ -231,7 +227,7 @@ def project_config_javascript(request, uid):
 	'''
 	t0 = time.time()
 	project = get_object_or_404(Project, uid=uid)
-	interceptCampaign = project.getActiveMatchingInterceptCampaign(request.POST.get('url', ''))
+	interceptCampaign = project.getActiveMatchingInterceptCampaign(request.POST.get('url'))
 	interceptCampaignStats = None
 	setLotteryCookie = False
 	

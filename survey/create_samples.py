@@ -5,6 +5,72 @@ from .models import *
 from .helpers import createNewUser
 
 
+def getOrCreateDomain(name, lead):
+	scriptUser = getScriptUser()
+	try:
+		domain, created = Domain.objects.get_or_create(
+			name = name,
+			defaults = {
+				'created_by': scriptUser,
+				'updated_by': scriptUser,
+				'lead': lead,
+			}
+		)
+	except:
+		domain = None
+		
+	return domain
+
+def getOrCreateProject(name, domain=None, contact=None):
+	scriptUser = getScriptUser()
+	try:
+		project, created = Project.objects.get_or_create(
+			name = name,
+			defaults = {
+				'created_by': scriptUser,
+				'updated_by': scriptUser,
+				'contact': contact,
+				'domain': domain
+			}
+		)
+	except:
+		project = None
+		
+	return project
+
+
+
+
+def importLuxProjects():
+	'''
+	Clear all projects and domains and import from local file export from LUX
+	'''
+	from .models import Project, Domain, Profile
+	Project.objects.all().delete()
+	Domain.objects.all().delete()
+	f = open('docs/lux projects export.json')
+	projects = json.load(f)
+	
+	for p in projects:
+		try:
+			domain_lead = createNewUser(p['domain__lead__username'])
+		except:
+			domain_lead = None
+		
+		try:
+			project_contact = createNewUser(p['contact__username'])
+		except: 
+			project_contact = None
+			
+		if p['domain__name']:
+			domain = getOrCreateDomain(p['domain__name'], domain_lead)
+		else:
+			domain = None
+		
+		if p['name']:
+			project = getOrCreateProject(p['name'], domain=domain, contact=project_contact)
+
+
 def createSampleSurveys():
 	user = getScriptUser()
 	

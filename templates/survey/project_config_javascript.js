@@ -38,17 +38,17 @@
 	{# If there's an intercept waiting (based on logic) it gets overridden and calls 'showSurvey' #}
 	window.SK.showSurveyWithLogic = function () {};
 	
-	window.BH.addCustomFormData = function (data) {
-		window.BH.customFormData = data;
+	window.SK.addCustomFormData = function (data) {
+		window.SK.customFormData = data;
 	};
 	
 	
 	function showSurvey (url) {
-		if (!document.getElementById('beeheard-overlay')) {
-			appendToBody(`<div data-beeheard-overlay-close id="beeheard-overlay" style="align-items: center;background: rgba(0,0,0,.7);display: flex;height: 100%;left: 0;position: fixed;top: 0;width: 100%;z-index: 99999999999999999999;"><div id="beeheard-overlay-survey" style="background: #fff;max-height: 90vh;height: 90vh;max-width: 576px;width: 90vw;transition: all .4s cubic-bezier(0.4,1,0.5,1);left: 50%;position: absolute;transform: translate3d(-50%,0,0);"><iframe frameborder="0" marginwidth="0" marginheight="0" scrolling="yes" width="100%" height="100%" src="{% if not debug %}https://beeheard.dal1a.cirrus.ibm.com{% endif %}{url}"></iframe></div></div><style>.shrinkToIcon{opacity:0}.shrinkToIcon > div{height:0!important;width:0!important;left:101%!important;opacity:.3}</style>`.replace('{url}', url));
-			document.querySelector('#beeheard-overlay').querySelector('iframe').contentWindow.focus();
+		if (!document.getElementById('surveykong-overlay')) {
+			appendToBody(`<div data-surveykong-overlay-close id="surveykong-overlay" style="align-items: center;background: rgba(0,0,0,.7);display: flex;height: 100%;left: 0;position: fixed;top: 0;width: 100%;z-index: 99999999999999999999;"><div id="surveykong-overlay-survey" style="background: #fff;max-height: 90vh;height: 90vh;max-width: 576px;width: 90vw;transition: all .4s cubic-bezier(0.4,1,0.5,1);left: 50%;position: absolute;transform: translate3d(-50%,0,0);"><iframe frameborder="0" marginwidth="0" marginheight="0" scrolling="yes" width="100%" height="100%" src="{% if not debug %}https://surveykong.dal1a.cirrus.ibm.com{% endif %}{url}"></iframe></div></div><style>.shrinkToIcon{opacity:0}.shrinkToIcon > div{height:0!important;width:0!important;left:101%!important;opacity:.3}</style>`.replace('{url}', url));
+			document.querySelector('#surveykong-overlay').querySelector('iframe').contentWindow.focus();
 			document.addEventListener('click', function (evt) {
-				if (evt.target.hasAttribute('data-beeheard-overlay-close')) {
+				if (evt.target.hasAttribute('data-surveykong-overlay-close')) {
 					window.postMessage({message: 'removeOverlay'},'*');
 				}
 			});
@@ -57,27 +57,27 @@
 	
 	window.addEventListener('message', function(event) {
 		if (event.data.message == 'removeOverlay') {
-			try{document.getElementById('beeheard-overlay').remove()}
+			try{document.getElementById('surveykong-overlay').remove()}
 			catch{}
 			activeEl.focus();
 		}
 		else if (event.data.message == 'shrinkToIcon') {
-			try{document.querySelector('#beeheard-overlay').classList.add('shrinkToIcon')}
+			try{document.querySelector('#surveykong-overlay').classList.add('shrinkToIcon')}
 			catch{}
 		}
 		else if (event.data.message == 'sizeSurveyIframe') {
-			try{document.getElementById('beeheard-overlay-survey').style.height = (event.data.height+85)+'px'}
+			try{document.getElementById('surveykong-overlay-survey').style.height = (event.data.height+85)+'px'}
 			catch{}
 		}
 		else if (event.data.message == 'sendUrl') {
-			try{document.querySelector('#beeheard-overlay-survey iframe').contentWindow.postMessage({message:'parentUrl',url:window.location.href}, '*')}
+			try{document.querySelector('#surveykong-overlay-survey iframe').contentWindow.postMessage({message:'parentUrl',url:window.location.href}, '*')}
 			catch{}
 		}
 		else if (event.data.message == 'injectReminder') {
 			injectReminderIcon();
 		}
 		else if (event.data.message == 'sendCustomFormData') {
-			try{document.querySelector('#beeheard-overlay-survey iframe').contentWindow.postMessage({message:'customFormData',customFormData:BH.customFormData}, '*')}
+			try{document.querySelector('#surveykong-overlay-survey iframe').contentWindow.postMessage({message:'customFormData',customFormData:SK.customFormData}, '*')}
 			catch{}
 		}
 	});

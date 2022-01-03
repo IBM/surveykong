@@ -297,7 +297,7 @@ def api_campaign_remove_take_later(request):
 ##
 @login_exempt
 def api_set_active_states(request):
-	runInBackground(Campaign.setActiveStateAllCampaigns)
+	Campaign.setActiveStateAllCampaigns()
 	return JsonResponse({'results':'Success.'}, status=200)
 	
 	
@@ -309,6 +309,7 @@ def api_set_active_states(request):
 def api_campaign_email_link(request):
 	'''
 	When they elect to take later and email them a link.
+	If we can't get a campaign user status, create one.
 	'''
 	try:
 		campaign = Campaign.objects.get(uid=request.POST.get('cuid','None'))
@@ -316,7 +317,13 @@ def api_campaign_email_link(request):
 		email = request.POST.get('email')
 		runInBackground(campaign.emailLink, {'email':email})
 	except Exception as ex:
-		print(f'Error: email link api_campaign_email_link failed - {ex}')
+		try:
+			userInfo, created = campaign.getCreateUserInfo(request)
+			campaign.setUserStatus(request.session['uuid'], 'email_link')
+			email = request.POST.get('email')
+			runInBackground(campaign.emailLink, {'email':email})
+		except Exception as ex:
+			print(f'Error: email link api_campaign_email_link failed - {ex}')
 	
 	response = JsonResponse({'results': {'message': 'Success.'}}, status=200)
 	response["Access-Control-Allow-Origin"] = "*"
