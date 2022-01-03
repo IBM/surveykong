@@ -126,6 +126,8 @@ class SurveyInviteAdmin(admin.ModelAdmin):
 		'updated_at',
 		'name',
 		'message',
+		'yes_button_text',
+		'no_button_text',
 	)
 	list_filter = ('created_by', 'created_at', 'updated_by', 'updated_at')
 	search_fields = ('name',)
@@ -140,10 +142,19 @@ class SurveyThankyouAdmin(admin.ModelAdmin):
 		'created_at',
 		'updated_by',
 		'updated_at',
+		'feedback_default',
+		'vote_default',
 		'name',
 		'message',
 	)
-	list_filter = ('created_by', 'created_at', 'updated_by', 'updated_at')
+	list_filter = (
+		'created_by',
+		'created_at',
+		'updated_by',
+		'updated_at',
+		'feedback_default',
+		'vote_default',
+	)
 	search_fields = ('name',)
 	date_hierarchy = 'created_at'
 
@@ -161,6 +172,7 @@ class CampaignAdmin(admin.ModelAdmin):
 		'uid',
 		'key',
 		'project',
+		'custom_project_name',
 		'survey',
 		'slack_notification_url',
 		'survey_trigger_type',
@@ -172,6 +184,9 @@ class CampaignAdmin(admin.ModelAdmin):
 		'visitor_percent',
 		'limit_one_submission',
 		'limit_one_submission_days',
+		'url_match_action',
+		'url_match_condition',
+		'url_match_string',
 		'seconds_on_page_delay',
 		'repeat_visitors_only',
 		'page_view_count',
@@ -217,13 +232,13 @@ class CampaignAdmin(admin.ModelAdmin):
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
 	list_display = ('id', 'survey', 'page_number')
-	list_filter = ('survey',)
 
 
 @admin.register(Question)
 class QuestionAdmin(admin.ModelAdmin):
 	list_display = (
 		'id',
+		'name',
 		'short_name',
 		'question_text',
 		'question_text_past_tense',
@@ -237,17 +252,21 @@ class QuestionAdmin(admin.ModelAdmin):
 		'anchor_text_beginning',
 		'anchor_text_end',
 		'answers',
+		'include_other_specify_answer',
 		'default_answer',
 		'parent_question',
 		'parent_answer',
 		'parent_answer_action',
 	)
-	list_filter = ('required', 'shared')
+	list_filter = ('required', 'shared', 'include_other_specify_answer')
+	raw_id_fields = ('parent_question',)
+	search_fields = ('name',)
 
 
 @admin.register(QuestionOrder)
 class QuestionOrderAdmin(admin.ModelAdmin):
-	list_display = ('id', 'page', 'campaign', 'question', 'question_number')
+	list_display = ('id', 'campaign', 'page', 'question', 'question_number')
+	raw_id_fields = ('campaign', 'page', 'question')
 
 
 @admin.register(Response)
@@ -261,6 +280,7 @@ class ResponseAdmin(admin.ModelAdmin):
 		'raw_data',
 	)
 	list_filter = ('created_at',)
+	raw_id_fields = ('campaign',)
 	date_hierarchy = 'created_at'
 
 

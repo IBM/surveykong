@@ -239,7 +239,7 @@ def project_config_javascript(request, uid):
 	except:
 		interceptCampaignStats = None
 	
-	buttonCampaign = Campaign.objects.filter(project=project, survey_trigger_type='button', active=True).select_related('button').first()
+	buttonCampaign = project.getActiveMatchingButtonCampaign(request.POST.get('url', ''))
 	
 	# Generate some stats as JS object for the page to see/use if they want their own rules to 
 	#  manually trigger a campaign survey.
@@ -261,13 +261,12 @@ def project_config_javascript(request, uid):
 		}
 	}
 	
-	#print(json.dumps(context['flags'], indent=4))
-	
 	#content = render(request, 'survey/project_config_javascript.js', context)
 	#response = HttpResponse(content, content_type='text/javascript')
 	responseText = render_to_string('survey/project_config_javascript.js', context=context, request=request)
 	responseText = responseText.replace('\n','').replace('\t','').replace('[timer]', str(round((time.time()-t0)*1000)))
 	response = HttpResponse(responseText, content_type='text/javascript')
+	
 	try:
 		reqDomain = request.META['HTTP_ORIGIN']
 	except:

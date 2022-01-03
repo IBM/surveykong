@@ -238,7 +238,7 @@ def api_campaign_take_later(request):
 		campaign = Campaign.objects.get(uid=request.POST.get('cuid'))
 		campaign.setUserStatus(request.session['uuid'], 'take_later')
 	except Exception as ex:
-		print(f'Error: Take later api_campaign_take_later failed. UID :{request.session["uuid"]}: - {ex}')
+		print(f'Error: Take later api_campaign_take_later failed. CUID:{campaign.uid}:, UID :{request.session["uuid"]}: - {ex}')
 
 	response = JsonResponse({'results': {'message': 'Success.'}}, status=200)
 	response["Access-Control-Allow-Origin"] = "*"

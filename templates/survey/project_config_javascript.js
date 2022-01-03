@@ -34,6 +34,16 @@
 		showSurvey("{% url 'survey:survey_iframe_display' %}?cuid="+cuid+(b?'&force=y':''));
 	};
 	
+	{# PUBLIC API. Does nothing by default. #}
+	{# If there's an intercept waiting (based on logic) it gets overridden and calls 'showSurvey' #}
+	window.SK.showSurveyWithLogic = function () {};
+	
+	window.SK.addCustomFormData = function (data) {
+		try{document.querySelector('#beeheard-overlay-survey iframe').contentWindow.postMessage({message:'customFormData',customFormData:data}, '*')}
+		catch{}
+	};
+	
+	
 	function showSurvey (url) {
 		if (!document.getElementById('beeheard-overlay')) {
 			appendToBody(`<div data-beeheard-overlay-close id="beeheard-overlay" style="align-items: center;background: rgba(0,0,0,.7);display: flex;height: 100%;left: 0;position: fixed;top: 0;width: 100%;z-index: 99999999999999999999;"><div id="beeheard-overlay-survey" style="background: #fff;max-height: 90vh;height: 90vh;max-width: 576px;width: 90vw;transition: all .4s cubic-bezier(0.4,1,0.5,1);left: 50%;position: absolute;transform: translate3d(-50%,0,0);"><iframe frameborder="0" marginwidth="0" marginheight="0" scrolling="yes" width="100%" height="100%" src="{% if not debug %}https://beeheard.dal1a.cirrus.ibm.com{% endif %}{url}"></iframe></div></div><style>.shrinkToIcon{opacity:0}.shrinkToIcon > div{height:0!important;width:0!important;left:101%!important;opacity:.3}</style>`.replace('{url}', url));
@@ -206,20 +216,27 @@
 		
 		{% if 'show_survey' == campaignStats.interceptStatus  %}			
 			
-			document.addEventListener('mouseleave', function (evt) {
-				if (!shown && evt.pageY - window.scrollY <= 0) {
+			function showAndSetFlag () {
+				if (!shown) {
 					SK.showSurvey('{{ campaignStats.campaign.uid }}');
 					shown = true;
 				}
-			});
-			document.addEventListener('mouseout', function (evt) {
-				if (!shown && evt.pageY - window.scrollY <= 0) {
-					BH.showSurvey('{{ campaignStats.campaign.uid }}');
-					shown = true;
+			}
+			
+			{# Bindings #}
+			document.addEventListener('mouseleave', function (evt) {
+				if (evt.pageY - window.scrollY <= 0) {
+					showAndSetFlag();
 				}
 			});
 			
-			{# TODO: Does page delay auto-inject for intercept? or just invite type? #}
+			document.addEventListener('mouseout', function (evt) {
+				if (evt.pageY - window.scrollY <= 0) {
+					showAndSetFlag();
+				}
+			});
+			
+			window.SK.showSurveyWithLogic = showAndSetFlag;
 			
 		{% elif 'show_reminder' == campaignStats.interceptStatus %}
 			

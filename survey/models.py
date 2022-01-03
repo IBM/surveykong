@@ -252,6 +252,46 @@ class Project(models.Model):
 				
 		return campaign
 		
+	
+	def getActiveMatchingButtonCampaign(self, url):
+		activeCampaigns = Campaign.objects.filter(project=self, survey_trigger_type='button', active=True).select_related('button')
+		
+		# Get an active one that doesn't have URL match. This is the default.
+		campaign = activeCampaigns.filter(url_match_string='').first()
+		
+		# Now loop thru ones with URL matches and see if there's a match 
+		#  that would override a default non-URL matched campaign and use it instead.
+		match = False
+		for urlMatchCampaign in activeCampaigns.exclude(url_match_string=''):
+			url = url.replace('https://','')
+			stringToMatch = urlMatchCampaign.url_match_string.replace('https://','')
+			
+			if urlMatchCampaign.url_match_condition == 'startsWith':
+				if url.startswith(stringToMatch):
+					match = True
+			elif urlMatchCampaign.url_match_condition == 'contains':
+				if stringToMatch in url:
+					match = True
+			elif urlMatchCampaign.url_match_condition == 'exactMatch':
+				if url == stringToMatch:
+					match = True
+			elif urlMatchCampaign.url_match_condition == 'endsWith':
+				if url.endswith(stringToMatch):
+					match = True
+			
+			# If match and include, then we found one to use, so stop.
+			if match and urlMatchCampaign.url_match_action == 'include':
+				campaign = urlMatchCampaign
+				break
+			# If match and exclude, then the URL shouldn't be used on that campaign, so keep going.
+			# If excluding URLs and this URL is not excluded for this campaign (no match),
+			#   then this is the campaign to use.
+			if urlMatchCampaign.url_match_action == 'exclude' and not match:
+				campaign = urlMatchCampaign
+				break
+				
+		return campaign
+	
 
 class Survey(models.Model):
 	created_by = models.ForeignKey(User, related_name='survey_created_by', on_delete=models.PROTECT)
@@ -294,6 +334,8 @@ class SurveyInvite(models.Model):
 	
 	name = models.CharField(max_length=128, unique=True)
 	message = models.TextField(max_length=512, help_text='Message to display. HTML is allowed at your own risk.')
+	yes_button_text = models.CharField(max_length=128, default='Yes I\'ll take a brief survey')
+	no_button_text = models.CharField(max_length=128, default='No thanks')
 	
 	class Meta:
 		ordering = ['name']

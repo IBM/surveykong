@@ -16,6 +16,7 @@
 		
 		<form id="custom-survey-form" action="{% url 'survey:api_submit_response' %}" method="post">
 			<input type="hidden" name="display_type" value="{{ campaignStats.campaign.survey_trigger_type }}">
+			<div id="custom-parent-page-data"></div>
 			
 			<div id="custom-form-error-message" class="dn mb4 red b"></div>
 					
@@ -93,11 +94,23 @@
 	
 	<script>
 	
-		(function () {
-			window.addEventListener('message', function(event) {
+		(function ($) {
+			window.addEventListener('message', function (event) {
 				if (event.data.message == 'parentUrl') {
 					document.getElementById('custom-url').value = event.data.url;
+				}
+			});
+			
+			// Include custom page vars as hidden fields.
+			window.addEventListener('message', function (event) {
+				if (event.data.message == 'customFormData') {
+					var nameValuePairs = event.data.customFormData;
 					
+					document.getElementById('custom-parent-page-data').innerHTML = '';
+					
+					for (var key in nameValuePairs) {
+						document.getElementById('custom-parent-page-data').innerHTML += '<input type="hidden" name="' + key + '" value="' + nameValuePairs[key] + '">';
+					}
 				}
 			});
 			
@@ -165,7 +178,7 @@
 				window.parent.postMessage({message: 'sendUrl'},'*');
 			}
 			
-		})();
+		})(jQuery);
 	
 	</script>
 	

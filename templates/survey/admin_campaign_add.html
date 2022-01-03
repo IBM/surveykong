@@ -115,7 +115,6 @@
 					document.getElementById('custom-questions-hidden-values').innerHTML += '<input type="hidden" name="cqo_' + pageId + '_' + qnum + '_' + questionId + '">';
 					
 				});
-				debugger;
 				
 				document.querySelectorAll('.custom-fieldset > div').forEach(function (row) {
 					var hasValue = 0
@@ -230,14 +229,37 @@
 		
 			{% csrf_token %}
 			
-			<div class="b">To manually trigger this campaign:</div>
-			<ul class="mw7 mb4">
-				<li class="mb2">This campaign "visitor percent" must be set to 100% and <strong>NOT</strong> "limit one submission" else campaign logic will be used when showing the survey</li>
-				<li class="mb2">The project config JS must still be used on the page</li>
-				<li class="mb2">Using JS, call this function: <code class="ml2 f6 dark-red">SK.showSurvey('{{ thisModelItem.uid }}');</code>
-				<li class="mb2 lh-title">Stats for each campaign of a project are available in the SurveyKong namespace JS. This allows pages to optionally use stats to determine if they want to manually trigger the campaign or not. You can see stats for all of the project's active campaigns by running viewing this JS variable on the page: <code class="ml2 f6 dark-red">SK.activeCampaignsData;</code>
-			</ul>
-				
+			<div class="b">To manually trigger this {{ thisModelItem.survey_trigger_type }} campaign</div>
+			
+			{% if thisModelItem.id %}
+				{% if thisModelItem.survey_trigger_type == 'intercept' %}
+					<div class="ml4">
+						<div class="mt3"><strong>Without</strong> rules/logic</div>
+						<ul class="mw7 lh-copy">
+							<li class="mb2">This campaign should <strong>NOT</strong> be set to "limit one submission", else the survey will display "you've taken this already" when it loads if the user has already taken it withing the specified time period.</li>
+							<li class="mb2">Call this JS function: <code class="ml2 f6 dark-red">BH.showSurvey('{{ thisModelItem.uid }}');</code>
+							<li class="mb2">"already took it", or any "inactive" logic is applied and will display a message to the user</li>
+							<li class="mb2 lh-title">Stats for each campaign of a project are available in the BeeHeard namespace JS. This allows pages to optionally use stats to determine if they want to manually trigger the campaign or not. You can see stats for all of the project's active campaigns by running viewing this JS variable on the page: <code class="ml2 f6 dark-red">BH.activeCampaignsData;</code>
+						</ul>
+						
+						<div class="mt3"><strong>With</strong> rules/logic:</div>
+						<ul class="mw7 mb4 lh-copy">
+							<li class="mb2">Simply call this JS function: <code class="ml2 f6 dark-red">BH.showSurveyWithLogic();</code></li>
+							<li class="mb2">All logic for the campaign will be applied and determine if it will show or not</li>
+						</ul>
+					</div>
+					
+				{% elif thisModelItem.survey_trigger_type == 'button' %}
+					<ul class="mw7 mb4 lh-copy">
+						<li class="mb2">This campaign should <strong>NOT</strong> be set to "limit one submission", else the survey will display "you've taken this already" when it loads if the user has already taken it withing the specified time period.</li>
+						<li class="mb2">Call this JS function: <code class="ml2 f6 dark-red">BH.showSurvey('{{ thisModelItem.uid }}');</code></li>
+						<li class="mb2">"already took it", or any "inactive" logic is applied and will display a message to the user</li>
+					</ul>
+				{% endif %}
+					
+				<div class="bb bw1 gray mv4"></div>
+					
+			{% endif %}
 			
 			{% for field in form.visible_fields %}
 				{% include 'partials/form_field_horizontal.html' with field=field %}				
