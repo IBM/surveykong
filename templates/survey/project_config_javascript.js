@@ -46,6 +46,29 @@
 		}
 	}
 	
+	window.addEventListener('message', function(event) {
+		if (event.data.message == 'removeOverlay') {
+			try{document.getElementById('beeheard-overlay').remove()}
+			catch{}
+			activeEl.focus();
+		}
+		else if (event.data.message == 'shrinkToIcon') {
+			try{document.querySelector('#beeheard-overlay').classList.add('shrinkToIcon')}
+			catch{}
+		}
+		else if (event.data.message == 'sizeSurveyIframe') {
+			try{document.getElementById('beeheard-overlay-survey').style.height = (event.data.height+85)+'px'}
+			catch{}
+		}
+		else if (event.data.message == 'sendUrl') {
+			try{document.querySelector('#beeheard-overlay-survey iframe').contentWindow.postMessage({message:'parentUrl',url:window.location.href}, '*')}
+			catch{}
+		}
+		else if (event.data.message == 'injectReminder') {
+			injectReminderIcon();
+		}
+	});
+	
 		
 	{% if flags.hasInvite %}
 	
@@ -160,29 +183,6 @@
 				};
 			}
 		}
-		
-		window.addEventListener('message', function(event) {
-			if (event.data.message == 'removeOverlay') {
-				try{document.getElementById('surveykong-overlay').remove()}
-				catch{}
-				activeEl.focus();
-			}
-			else if (event.data.message == 'shrinkToIcon') {
-				try{document.querySelector('#surveykong-overlay').classList.add('shrinkToIcon')}
-				catch{}
-			}
-			else if (event.data.message == 'sizeSurveyIframe') {
-				try{document.getElementById('surveykong-overlay-survey').style.height = (event.data.height+85)+'px'}
-				catch{}
-			}
-			else if (event.data.message == 'sendUrl') {
-				try{document.querySelector('#surveykong-overlay-survey iframe').contentWindow.postMessage({message:'parentUrl',url:window.location.href}, '*')}
-				catch{}
-			}
-			else if (event.data.message == 'injectReminder') {
-				injectReminderIcon();
-			}
-		});
 		
 		injectOnReady(function () {
 			if (!document.getElementById('surveykong-buttons-con')) {
