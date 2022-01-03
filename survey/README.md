@@ -13,7 +13,7 @@ From the top down:
 - Projects have survey campaigns
 - Campaigns have responses
 
-From the bottom up: When a response to a survey comes in (a web form submission) we know what campaign it is for. A campaign belongs to a project (ex: VotE intercept campaign for w3 Home page), and to group projects, a project belongs to a domain. A domain serves little-to-no-purpose in BeeHeard.
+From the bottom up: When a response to a survey comes in (a web form submission) we know what campaign it is for. A campaign belongs to a project (ex: VotE intercept campaign for w3 Home page), and to group projects, a project belongs to a domain. A domain serves little-to-no-purpose in SurveyKong.
 
 As a visual:
 
@@ -106,6 +106,16 @@ If we have an active `type == intercept` campaign, the second step of logic goes
 4. Is the visitor "shown" % under the % of traffic we're supposed to show it to (show it)
 
 If there is no campaign matched for a URL or they've already taken the campaign, there is no check for another one they haven't taken. There can only be 1 active campaign matched and checked.
+
+
+# Survey display
+
+The `project_config_javascript` view (`config.js`) is dynamically generated and contains JS with several global functions/methods and logic that determines what to do on the page.
+
+If there is an intercept survey to show, the JS adds a mouseout (top) and keyboard blur event listener. 
+If there is a feedback/button survey to show, the JS injects a button (survey trigger) on the right side (or other set side) of the browser viewport. 
+
+When either of those events happen or the button is clicked, the JS injects an iframe on the page in a modal window. The iframe is the survey. The iframe survey posts to itself via the API and then shows the "thank you" message.
 
 
 
