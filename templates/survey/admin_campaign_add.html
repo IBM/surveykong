@@ -1,0 +1,247 @@
+{% extends adminTemplate %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}Admin - Add a new {{ modelMeta.verbose_name }}{% endblock %}
+
+{% block pageTitle %} Add a new {{ modelMeta.verbose_name }} {% endblock %}
+
+{% block pageSubtitle %} {% endblock %}
+
+{% block extraFiles %}
+	
+	
+	<script>
+		
+		(function ($) {
+			
+			var showHideData = [
+				{
+					'field': 'survey_trigger_type',
+					'triggers': [
+						{
+							values: [''],
+							show: [],
+							hide: [
+								'button',
+								'survey_invite',
+								'mouseout_trigger',
+								'visitor_percent',
+								'seconds_on_page_delay',
+								'page_view_count',
+								'repeat_visitors_only',
+							],
+						},
+						{
+							values: ['intercept'],
+							show: [
+								'survey_invite',
+								'mouseout_trigger',
+								'visitor_percent',
+								'seconds_on_page_delay',
+								'page_view_count',
+								'repeat_visitors_only',
+							],
+							hide: [
+								'button',
+							],
+						},
+						{
+							values: ['button'],
+							show: [
+								'button',
+							],
+							hide: [
+								'survey_invite',
+								'mouseout_trigger',
+								'visitor_percent',
+								'seconds_on_page_delay',
+								'page_view_count',
+								'repeat_visitors_only',
+							],
+						},
+					]
+					
+				}
+			];
+				
+			function setupShowHideFields () {
+				showHideData.forEach(function (item) {
+					$('#id_'+item.field).on('change', function (evt) {
+						var val = evt.target.value;
+						item.triggers.forEach(function (triggerData) {
+							if (triggerData.values.includes(val)) {
+								triggerData.hide.forEach(function (hideField) {
+									show(hideField+'-row', false);
+								});
+								triggerData.show.forEach(function (showField) {
+									show(showField+'-row', true);
+								});
+							}
+						});
+					});
+				})
+			}
+			
+			
+			function show (ids, b) {
+				if (typeof ids === 'string') {
+					ids = [ids];
+				}
+				ids.forEach(function (id) {
+					if (b) {
+						document.getElementById(id).classList.remove('dn');
+					}
+					else {
+						document.getElementById(id).classList.add('dn');
+					}
+				});
+			}
+			
+			
+			function formOnsubmitHandler (evt) {
+				var err = false;
+				
+				// Dynamically create hidden fields posted with the name as the selected values:
+				//   pageID_quest#_questionID
+				document.getElementById('custom-questions-hidden-values').innerHTML = '';
+				
+				document.querySelectorAll('.custom-fieldset > div').forEach(function (row) {
+					var pageId = row.querySelector('[name="question_page"]').value,
+						qnum = row.querySelector('[name="question_number"]').value,
+						questionId = row.querySelector('[name="question_question"]').value;
+						
+					document.getElementById('custom-questions-hidden-values').innerHTML += '<input type="hidden" name="cqo_' + pageId + '_' + qnum + '_' + questionId + '">';
+					
+				});
+				debugger;
+				
+				document.querySelectorAll('.custom-fieldset > div').forEach(function (row) {
+					var hasValue = 0
+					row.querySelectorAll('input[type="text"]').forEach(function (inputField) {
+						if (inputField.value.length > 0) {hasValue++}
+					});
+					if (hasValue === 1) {err = true}
+				});
+				if (err) {
+					evt.preventDefault();
+					alert("All custom questions must have a question number.");
+				}
+				
+			}
+			
+			
+			function customRemoveItem (el) {
+				var $el = $(el);
+					
+				if ($('.custom-fieldset').length > 1) {
+					$el.closest('.custom-fieldset').slideUp(function () {
+						$el.closest('.custom-fieldset').remove();
+					});
+				}
+				else {
+					$el.closest('.custom-fieldset').find('input').val('');
+					$el.closest('.custom-fieldset').find('select').val('').trigger('change');
+				}
+			}
+			BH.customRemoveItem = customRemoveItem;
+		
+		
+			function customAddItem (el) {
+				var $el = $(el),
+					$clickedRow = $el.closest('.custom-fieldset'),
+					$newRow;
+				
+				// Kill select2 on clicked row, then clone, then init on both last and new last.
+				$clickedRow.find('select').select2('destroy');
+				
+				$newRow = $clickedRow.clone().css({'display':'none'})
+				$newRow.find('select').val('').trigger('change');
+				$newRow.find('input').val('');
+				$newRow.insertAfter($clickedRow).slideDown(function () {
+					$clickedRow.find('select').select2();
+					$newRow.find('select').select2();
+				});
+			}
+			BH.customAddItem = customAddItem;
+			
+			
+			$(function () {
+				document.querySelector('.custom-modelform').addEventListener('submit', formOnsubmitHandler);
+				setupShowHideFields();
+				showHideData.forEach(function (item) {
+					$('#id_'+item.field).trigger('change');
+				});
+			});
+		
+		})(jQuery);
+			
+	</script>
+	
+	
+	
+{% endblock %}
+
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		
+		{# form posts to same URL displaying it. #}
+		<form class="custom-modelform w-100 mb4" action="" method="post">
+			<div id="custom-questions-hidden-values"></div>
+			{% include 'partials/form_error_messages.html' with form=form %}
+		
+			{% csrf_token %}
+			
+			{% for field in form.visible_fields %}
+				{% include 'partials/form_field_horizontal.html' with field=field %}				
+			{% endfor %}
+			
+			<div class="mb4" id="answers-row">
+				<div class="b mb2">Custom questions</div>
+				<div class="mb3 f6 mw7 lh-copy">Set which page, question # (on that page), and question to dynamically insert into the selected survey at run-time.<br><strong>e.g.</strong><br>If you want a custom question in-between #2 and 3, set the question number to 2.5 (or anything between 2.0 and 3.0).<br>If you want the question before #1, set it to anything less than 1.<br>If you want the question as the last one on the page, set it to any # higher than the last question #.</div>
+				<div class="mb2 flex items-center">
+					<div style="flex: 0 0 50px;" class="mr1 b">Page</div>
+					<div style="flex: 0 0 80px;" class="mr1 b">Ques. #</div>
+					<div class="b">Question</div>
+				</div>
+				
+				{% for questionOrder in customQuestions %}
+					{% include 'survey/partials/custom_campaign_question_dyn_group.html' %}
+				{% endfor %}
+				
+				{% if not customQuestions %}
+					{% include 'survey/partials/custom_campaign_question_dyn_group.html'%}
+				{% endif %}
+			</div>
+		
+			<button class="mt4 w4 mr4-ns dib-ns db {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }} ">Save</button>
+		
+			{% if form.hidden_fields %}
+				<div class="b mt5 mb3">Read-only fields</div>
+				
+				<style>
+					.custom-readonly-fields .custom-form-horizontal-label + * {
+						cursor: not-allowed;
+					}
+				</style>
+				<div class="custom-readonly-fields mb5">
+					{% for field in form.hidden_fields %}
+						{% include 'partials/form_field_horizontal_readonly.html' with field=field %}
+					{% endfor %}
+				</div>
+			{% endif %}
+		
+		</form>
+	
+		{% block deleteButton %}{% endblock %}
+		
+		{% include 'partials/add_user_overlay.html' %}
+		
+	</div>
+		
+{% endblock %}
+

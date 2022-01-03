@@ -661,6 +661,16 @@ class Page(models.Model):
 		return f'{self.survey} - page {self.page_number}'
 
 
+	def getAllQuestionOrders(self, campaign):
+		normalQuestions = self.question_order_page.filter(campaign__isnull=True)
+		customQuestions = self.question_order_page.filter(campaign=campaign)
+		
+		allQuestions = normalQuestions | customQuestions
+		allQuestions.order_by('question_number')
+		
+		return allQuestions
+		
+
 class Question(models.Model):
 	short_name = models.SlugField(max_length=48, help_text='This is used in the response data to identify this question. No spaces allowed: Use underscores')
 	question_text = models.CharField(max_length=255, blank=True)
@@ -715,6 +725,12 @@ class Question(models.Model):
 
 
 class QuestionOrder(models.Model):
+	'''
+	Question orders on a page. If no campaign, they are on every survey.
+	If there is a campaign, then they only get included when that campaign is using the survey.
+	Essentially: merge 'generic' and 'campaign specific' questionOrders, and sorting.
+	'''
+	campaign = models.ForeignKey(Campaign, related_name='question_order_campaign', null=True, blank=True, on_delete=models.CASCADE)
 	page = models.ForeignKey(Page, related_name='question_order_page', on_delete=models.CASCADE)
 	question = models.ForeignKey(Question, related_name='question_order_question', on_delete=models.CASCADE)
 	question_number = models.FloatField(default=1)
@@ -723,10 +739,10 @@ class QuestionOrder(models.Model):
 		ordering = ['page', 'question_number']
 		
 	def __str__(self):
-		displayName = self.question.question_text if self.question.question_text else self.question.short_name
+		displayName = self.question.question_text if self.question.question_text else f'self.question.short_name - self.question.message_text[:60]'
 		return f'{self.page} - {displayName}'
-
-
+		
+	
 class Response(models.Model):
 	'''
 	raw_data gets exported via API and table. Example:

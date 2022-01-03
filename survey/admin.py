@@ -162,10 +162,10 @@ class CampaignAdmin(admin.ModelAdmin):
 		'key',
 		'project',
 		'survey',
-		'survey_invite',
-		'survey_thankyou',
 		'slack_notification_url',
 		'survey_trigger_type',
+		'survey_invite',
+		'survey_thankyou',
 		'button',
 		'mouseout_trigger',
 		'url_accessible',
@@ -185,9 +185,7 @@ class CampaignAdmin(admin.ModelAdmin):
 		'comments',
 	)
 	list_filter = (
-		'created_by',
 		'created_at',
-		'updated_by',
 		'updated_at',
 		'enabled',
 		'active',
@@ -203,6 +201,15 @@ class CampaignAdmin(admin.ModelAdmin):
 		'start_date',
 		'stop_date',
 		'latest_response_date',
+	)
+	raw_id_fields = (
+		'created_by',
+		'updated_by',
+		'project',
+		'survey',
+		'survey_invite',
+		'survey_thankyou',
+		'button',
 	)
 	date_hierarchy = 'created_at'
 
@@ -240,7 +247,7 @@ class QuestionAdmin(admin.ModelAdmin):
 
 @admin.register(QuestionOrder)
 class QuestionOrderAdmin(admin.ModelAdmin):
-	list_display = ('id', 'page', 'question', 'question_number')
+	list_display = ('id', 'page', 'campaign', 'question', 'question_number')
 
 
 @admin.register(Response)
@@ -253,7 +260,7 @@ class ResponseAdmin(admin.ModelAdmin):
 		'uuid',
 		'raw_data',
 	)
-	list_filter = ('created_at', 'campaign')
+	list_filter = ('created_at',)
 	date_hierarchy = 'created_at'
 
 
@@ -315,4 +322,3 @@ class ReleaseNoteAdmin(admin.ModelAdmin):
 		'date',
 	)
 	date_hierarchy = 'created_at'
-	

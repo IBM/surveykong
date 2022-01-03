@@ -349,7 +349,7 @@ def admin_campaign_add(request):
 	# Needs special presave.
 	thisModel = Campaign
 	thisModelForm = globals()[thisModel._meta.object_name + 'Form']
-	thisViewTemplate = 'admin_common_add.html'
+	thisViewTemplate = 'survey/admin_campaign_add.html'
 	adminTemplate = 'survey/page_template_admin.html'
 	thisModelListUrl = reverse(f'survey:admin_{thisModel._meta.model_name}_list')
 	
@@ -366,9 +366,9 @@ def admin_campaign_add(request):
 		'form': None,
 		'modelMeta': thisModel._meta,
 		'newItemName': thisModel._meta.verbose_name,
+		'questions': Question.objects.all(),
 		'adminTemplate': adminTemplate,
 		'leftNavHighlight': thisModel._meta.verbose_name_plural,
-		'customJsPath': 'shared/js/admin_campaign.js',
 	}
 
 	if request.method == 'GET':
@@ -390,16 +390,39 @@ def admin_campaign_add(request):
 			post.save()
 			form.save_m2m()
 			
-			# If it's a success and they want JSON back, return the ID and label as JSON,
-			#  otherwise we redirect to the list page with a message.
-			if request.POST.get('returntype', None) == 'json':
-				response = JsonResponse({
-					'id': post.id,
-					'name': post.__str__()
-				}, status=200)
-			else:
-				helpers.setPageMessage(request, 'success', f'{capfirst(thisModel._meta.verbose_name)} was added successfully')
+			# Now create the survey pages and orders with questions.	
+			try:
+				campaign = post
+				
+				# Delete all custom questionorders for this campaign and create them with posted data.
+				QuestionOrder.objects.filter(campaign=campaign).delete()
+				
+				for fieldName in request.POST:
+					if fieldName.startswith('cqo'):
+						nameArr = fieldName.split('_')
+						pageNum = nameArr[1]
+						questionNum = nameArr[2]
+						questionId = nameArr[3]
+						
+						# If there was a valid question ID passed (non-blank), create question order.
+						try:
+							question = Question.objects.get(id=questionId)
+							surveyPage = Page.objects.get(survey=campaign.survey, page_number=pageNum)
+							QuestionOrder.objects.create(
+								campaign = campaign,
+								page = surveyPage,
+								question_number = questionNum,
+								question = question,
+								
+							)
+						except Exception as ex:
+							print(f'{ex}')
+				
+				helpers.setPageMessage(request, 'success', 'Campaign was saved successfully')
 				response = redirect(thisModelListUrl)
+			except Exception as ex:
+				helpers.setPageMessage(request, 'error', f'There was a problem saving the campaign: {ex}')
+				response = render(request, thisViewTemplate, context)
 		else:
 			response = render(request, thisViewTemplate, context)
 			
@@ -415,7 +438,7 @@ def admin_campaign_edit(request, id):
 	allowDelete=True
 	thisModelItem = get_object_or_404(thisModel, id=id)
 	thisModelForm = globals()[thisModel._meta.object_name + 'Form']
-	thisViewTemplate = 'admin_common_edit.html'
+	thisViewTemplate = 'survey/admin_campaign_edit.html'
 	adminTemplate = 'survey/page_template_admin.html'
 	addItemTemplate = 'admin_common_add.html'
 	thisModelListUrl = reverse(f'survey:admin_{thisModel._meta.model_name}_list')
@@ -439,6 +462,8 @@ def admin_campaign_edit(request, id):
 		'modelMeta': thisModel._meta,
 		'thisModelItem': thisModelItem,
 		'itemName': thisModelItem.uid,
+		'questions': Question.objects.all(),
+		'customQuestions': QuestionOrder.objects.filter(campaign=thisModelItem),
 		'adminTemplate': adminTemplate,
 		'addItemTemplate': addItemTemplate,
 		'thisModelDeleteUrl': thisModelDeleteUrl,
@@ -465,8 +490,39 @@ def admin_campaign_edit(request, id):
 			post.save()
 			form.save_m2m()
 			
-			helpers.setPageMessage(request, 'success', f'{capfirst(thisModel._meta.verbose_name)} was edited successfully')
-			response = redirect(thisModelListUrl)
+			# Now create the survey pages and orders with questions.	
+			try:
+				campaign = post
+				
+				# Delete all custom questionorders for this campaign and create them with posted data.
+				QuestionOrder.objects.filter(campaign=campaign).delete()
+				
+				for fieldName in request.POST:
+					if fieldName.startswith('cqo'):
+						nameArr = fieldName.split('_')
+						pageNum = nameArr[1]
+						questionNum = nameArr[2]
+						questionId = nameArr[3]
+						
+						# If there was a valid question ID passed (non-blank), create question order.
+						try:
+							question = Question.objects.get(id=questionId)
+							surveyPage = Page.objects.get(survey=campaign.survey, page_number=pageNum)
+							QuestionOrder.objects.create(
+								campaign = campaign,
+								page = surveyPage,
+								question_number = questionNum,
+								question = question,
+								
+							)
+						except Exception as ex:
+							print(f'{ex}')
+				
+				helpers.setPageMessage(request, 'success', 'Campaign was saved successfully')
+				response = redirect(thisModelListUrl)
+			except Exception as ex:
+				helpers.setPageMessage(request, 'error', f'There was a problem saving the campaign: {ex}')
+				response = render(request, thisViewTemplate, context)
 		else:
 			response = render(request, thisViewTemplate, context)
 			

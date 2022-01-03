@@ -53,6 +53,11 @@ def survey_standalone_display(request, uid):
 	try:
 		campaign = Campaign.objects.filter(uid=uid).select_related('survey',).prefetch_related('survey__page_survey','survey__page_survey__question_order_page', 'survey__page_survey__question_order_page__question').first()
 		campaignStats = campaign.getStatsForUser(request)
+		
+		# For each page, call function that returns sorted standard survey + custom campaign questions.
+		campaign.pages = []
+		for page in campaign.survey.page_survey.all():
+			page.questionOrders = page.getAllQuestionOrders(campaign)
 	except:
 		return render(request, '404.html', {}, status=404)
 	
@@ -88,6 +93,11 @@ def survey_iframe_display(request, uid):
 	try:
 		campaign = Campaign.objects.filter(uid=uid).select_related('survey',).prefetch_related('survey__page_survey','survey__page_survey__question_order_page', 'survey__page_survey__question_order_page__question').first()
 		campaignStats = campaign.getStatsForUser(request)
+		
+		# For each page, call function that returns sorted standard survey + custom campaign questions.
+		campaign.pages = []
+		for page in campaign.survey.page_survey.all():
+			page.questionOrders = page.getAllQuestionOrders(campaign)
 	except:
 		return render(request, '404.html', {}, status=404)
 		

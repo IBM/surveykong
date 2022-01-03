@@ -1,0 +1,20 @@
+
+<div id="" class="custom-fieldset mb3">
+	<div class="w-100 mw7 flex items-center">
+		<div class="w-100 flex items-center">
+			<div style="flex: 0 0 50px;" class="mr1"><input name="question_page" type="number" value="{{ questionOrder.page.page_number }}"></div>
+			<div style="flex: 0 0 80px;" class="mr1"><input class="w3" name="question_number" type="number" value="{{ questionOrder.question_number }}" step="any"></div>
+			<div class="w-100 overflow-hidden">
+				<select class="w-100" name="question_question" data-placeholder="Select one">
+					<option value=""></option>
+					{% for question in questions %}
+						<option value="{{ question.id }}" {% if questionOrder.question.id == question.id %}selected{% endif %}>{{ question }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			<span class="ml3 mr3 db hint hint--top-left" style="top:-2px;" aria-label="Add an answer after this one"><a class="dib f2 relative green hover-dark-green" href="#" onclick="BH.customAddItem(this);return false;">+</a></span>
+			<a href="#" onclick="BH.customRemoveItem(this);return false;"><span class="red b f4">❌</span></a>
+		</div>
+	</div>
+	
+</div>
