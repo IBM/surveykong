@@ -38,7 +38,7 @@ def api_responses(request):
 	"campaign" and "since" are required.
 	'''
 	try:
-		campaign = Campaign.objects.get(uid=request.GET['campaign']))
+		campaign = Campaign.objects.get(uid=request.GET['campaign'])
 		sinceDate = timezone.make_aware(datetime.fromtimestamp(int(request.GET['since'])+1))
 	except:
 		response = JsonResponse({'responses':[]}, status=404)
