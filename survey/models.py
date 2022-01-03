@@ -585,6 +585,13 @@ class Campaign(models.Model):
 				pass
 	
 	
+	@staticmethod
+	def setActiveStateAllCampaigns():
+		for c in Campaign.objects.all():
+			c.setActiveState()
+			c.save()
+		
+		
 	def getInterceptShownPercent(self):
 		try:
 			return int(self.intercept_shown_count / self.unique_visitor_count * 100)

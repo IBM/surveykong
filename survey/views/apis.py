@@ -62,7 +62,7 @@ def api_responses(request):
 ##	Creates a user with the passed email and name. Basic.
 ##	Returns the user object ID and user's name (for optional display).
 ##
-@login_required
+@user_passes_test(helpers.hasAdminAccess)
 def api_user_add(request):
 	email = request.POST.get('email')
 	httpCode = 404
@@ -169,6 +169,7 @@ def api_submit_response(request):
 ##
 ##	/survey/api/deleteresponse/
 ##
+@user_passes_test(helpers.hasAdminAccess)
 def api_delete_response(request):
 	try:
 		response = Response.objects.get(id=request.POST.get('response'))
@@ -182,6 +183,7 @@ def api_delete_response(request):
 ##
 ##	/survey/api/deletecampaignresponses/
 ##
+@user_passes_test(helpers.hasAdminAccess)
 def api_delete_campaign_responses(request):
 	try:
 		campaign = Campaign.objects.get(id=request.POST.get('campaign'))
@@ -197,6 +199,7 @@ def api_delete_campaign_responses(request):
 ##
 ##	/survey/api/deletetakenflags/
 ##
+@user_passes_test(helpers.hasAdminAccess)
 def api_delete_taken_flags(request):
 	try:
 		campaign = Campaign.objects.get(id=request.POST.get('campaign'))
@@ -212,6 +215,7 @@ def api_delete_taken_flags(request):
 ##
 ##	/survey/api/campaign/toggleenabled/
 ##
+@user_passes_test(helpers.hasAdminAccess)
 def api_campaign_toggle_enabled(request):
 	try:
 		campaign = Campaign.objects.get(id=request.POST.get('campaign'))
@@ -225,7 +229,7 @@ def api_campaign_toggle_enabled(request):
 	
 	
 ##
-##	/survey/takelater/<id>/
+##	/survey/takelater/
 ##
 @login_exempt
 @csrf_exempt
@@ -238,7 +242,9 @@ def api_campaign_take_later(request):
 		campaign = Campaign.objects.get(uid=request.POST.get('cuid'))
 		campaign.setUserStatus(request.session['uuid'], 'take_later')
 	except Exception as ex:
-		print(f'Error: Take later api_campaign_take_later failed. CUID:{campaign.uid}:, UID :{request.session["uuid"]}: - {ex}')
+		cuid = campaign.uid if campaign else 'none'
+		uuid = request.session['uuid'] if request.session['uuid'] else 'none'
+		print(f'Error: api_campaign_take_later failed - CUID:{cuid}:, UID :{uuid}: - {ex}')
 
 	response = JsonResponse({'results': {'message': 'Success.'}}, status=200)
 	response["Access-Control-Allow-Origin"] = "*"
@@ -264,7 +270,9 @@ def api_campaign_remove_take_later(request):
 		campaign = Campaign.objects.get(uid=request.POST.get('cuid'))
 		campaign.setUserStatus(request.session['uuid'], 'remove_take_later')
 	except Exception as ex:
-		print(f"Error: Take later api_campaign_remove_take_later failed. UID: {request.session['uuid']} | CUID: {request.POST.get('cuid')} | ex: {ex}")
+		cuid = campaign.uid if campaign else 'none'
+		uuid = request.session['uuid'] if request.session['uuid'] else 'none'
+		print(f'Error: api_campaign_remove_take_later failed - CUID:{cuid}:, UID :{uuid}: - {ex}')
 
 	response = JsonResponse({'results': {'message': 'Success.'}}, status=200)
 	try:
@@ -276,14 +284,11 @@ def api_campaign_remove_take_later(request):
 	return response
 	
 ##
-##	/survey/api/setactivestates/ 
+##	/survey/api/setactivestates/
 ##
 @login_exempt
 def api_set_active_states(request):
-	for c in Campaign.objects.allActive():
-		c.setActiveState()
-		c.save()
-		
+	runInBackground(Campaign.setActiveStateAllCampaigns)
 	return JsonResponse({'results':'Success.'}, status=200)
 	
 	

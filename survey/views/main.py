@@ -31,6 +31,10 @@ import survey.helpers as helpers
 ##	/survey/
 ##
 def home(request):
+	# All 403s send user to home page, so add 'admin' check here to display 403 error.
+	if not request.user.hasAdminAccess():
+		return render(request, '403.html', {}, status=403)
+		
 	context = {
 		'latestCampaigns': Campaign.objects.all().order_by('-created_at')[:3],
 		'mostActiveCampaigns': Campaign.objects.all().order_by('-response_count')[:3],
@@ -170,6 +174,7 @@ def survey_iframe_invite(request, uid):
 ##
 ##	/survey/campaigns/responses/
 ##
+@user_passes_test(helpers.hasAdminAccess)
 def campaign_responses_list(request):
 	try:
 		campaign = Campaign.objects.get(uid=request.GET.get('uid', None))
