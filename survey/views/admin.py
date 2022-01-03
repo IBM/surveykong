@@ -333,7 +333,7 @@ def admin_project_delete(request):
 @user_passes_test(helpers.hasAdminAccess)
 def admin_campaign_list(request):
 	thisModel = Campaign
-	queryItems = thisModel.objects.all().order_by('-enabled', 'project__name').select_related('survey', 'project').prefetch_related('response_campaign')
+	queryItems = thisModel.objects.all().order_by('-enabled', 'project__name').select_related('survey', 'project', 'button').prefetch_related('response_campaign')
 	if request.GET.get('question',None):
 		queryItems = thisModel.objects.filter(survey__page_survey__question_order_page__question=request.GET.get('question'))
 		
@@ -695,17 +695,6 @@ def admin_survey_delete(request):
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 ##
 ##	/survey/admin/button/
 ##
@@ -867,7 +856,7 @@ def admin_question_delete(request):
 @user_passes_test(helpers.hasAdminAccess)
 def admin_questionorder_list(request):
 	thisModel = QuestionOrder
-	listItems = thisModel.objects.order_by('page', 'question_number').all().select_related('page', 'question')
+	listItems = thisModel.objects.order_by('page', 'question_number').all().select_related('page', 'question', 'campaign', 'campaign__project', 'campaign__survey')
 	return doCommonListView(request, thisModel, listItems)
 
 
@@ -1150,13 +1139,11 @@ def admin_surveybuilder_add(request):
 			helpers.setPageMessage(request, 'error', f'There was a problem saving survey changes: {ex}')
 			response = render(request, thisViewTemplate, context)
 
-		# Now create the survey pages and orders with questions.	
+		# Now create the survey pages and orders with questions.
+		# Since we are ADDING a new one, there's nothing to check or delete. 
+		# Just add pages and questions.
 		try:
 			survey = post
-			
-			# Delete all questionorders and pages for this survey and create them with posted data.
-			QuestionOrder.objects.filter(page__survey=survey).delete()
-			Page.objects.filter(survey=survey).delete()
 			
 			for fieldName in request.POST:
 				if fieldName.startswith('qo'):
@@ -1197,9 +1184,6 @@ def admin_surveybuilder_edit(request, id):
 		survey = Survey.objects.filter(id=id).prefetch_related('page_survey__question_order_page__question')[0]
 	except:
 		return render(request, '404.html', {}, status=404)
-	
-	for page in survey.page_survey.all():
-		page.questionOrders = page.getAllQuestionOrders(None)
 	
 	thisViewTemplate = 'survey/admin_surveybuilder_edit.html'
 	adminTemplate = 'survey/page_template_admin.html'
@@ -1253,14 +1237,32 @@ def admin_surveybuilder_edit(request, id):
 		
 		# Now create the survey pages and orders with questions.	
 		try:
-			# Delete all questionorders and pages for this survey and create them with posted data.
-			QuestionOrder.objects.filter(page__survey=survey).delete()
-			Page.objects.filter(survey=survey, campaign__isnull=True).delete()
+			postedPageNumbers = list(map(int, request.POST.getlist('pageNumbers')))
+			postedPageNumbers.sort()
+			
+			commonPagesCount = Page.objects.filter(survey=survey, question_order_page__campaign__isnull=True).distinct().count()
+			existingPageNumbers = list(range(1,commonPagesCount+1))
+			
+			# For pages that existed, but were deleted in the edit form, delete the pages.
+			for i in set(existingPageNumbers) - set(postedPageNumbers):
+				try:
+					Page.objects.get(survey=survey, page_number=pageNum).delete()
+				except:
+					pass
+			
+			# For common pages (not ones that were created in campaign custom questions,
+			#  that were posted in the form, delete the questions on them,
+			#  and recreate the orders from the posted data.
+			for pageNum in postedPageNumbers:
+				try:
+					surveyPage = Page.objects.get(survey=survey, page_number=pageNum)
+					QuestionOrder.objects.filter(page=surveyPage, campaign__isnull=True).delete()
+				except:
+					pass
+			
 			
 			for fieldName in request.POST:
 				if fieldName.startswith('qo'):
-					# Pages already exist right now thur "Survey" admin.
-					# Future use, they will create pages in here and will need to create pages first.
 					nameArr = fieldName.split('_')
 					pageNum = nameArr[1][1:]
 					questionNum = nameArr[2][1:]

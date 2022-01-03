@@ -51,6 +51,9 @@
 				<tr>
 					<th class="tl">Survey page</th>
 					<th class="tl">Order</th>
+					<th class="tl">Campaign</th>
+					<th class="tl">Type</th>
+					<th class="tl">Project</th>
 					<th class="tl">Question short name</th>
 					<th class="tl">Question</th>
 					<th class="tl">Type</th>
@@ -63,6 +66,9 @@
 					<tr>
 						<td class=""><a href="{% url 'survey:admin_questionorder_edit' id=item.id %}" class="{{ templateHelpers.classes.link }}">{{ item.page }}</a></td>
 						<td class="">{{ item.question_number|floatformat}}</td>
+						<td class="">{{ item.campaign.uid|truncatechars:8|default:'' }}</td>
+						<td class="">{{ item.campaign.survey.survey_type|default:'' }}</td>
+						<td class="">{{ item.campaign.project.name|default:'' }}</td>
 						<td class="">{{ item.question.short_name }}</td>
 						<td class="">{{ item.question.question_text }}</td>
 						<td class="">{{ item.question.type }}</td>

@@ -145,7 +145,7 @@
 					$el.closest('.custom-fieldset').find('select').val('').trigger('change');
 				}
 			}
-			BH.customRemoveItem = customRemoveItem;
+			SK.customRemoveItem = customRemoveItem;
 		
 		
 			function customAddItem (el) {
@@ -164,7 +164,7 @@
 					$newRow.find('select').select2();
 				});
 			}
-			BH.customAddItem = customAddItem;
+			SK.customAddItem = customAddItem;
 			
 			
 			function setupTriggerType () {
@@ -234,8 +234,8 @@
 			<ul class="mw7 mb4">
 				<li class="mb2">This campaign "visitor percent" must be set to 100% and <strong>NOT</strong> "limit one submission" else campaign logic will be used when showing the survey</li>
 				<li class="mb2">The project config JS must still be used on the page</li>
-				<li class="mb2">Using JS, call this function: <code class="ml2 f6 dark-red">BH.showSurvey('{{ thisModelItem.uid }}');</code>
-				<li class="mb2 lh-title">Stats for each campaign of a project are available in the BeeHeard namespace JS. This allows pages to optionally use stats to determine if they want to manually trigger the campaign or not. You can see stats for all of the project's active campaigns by running viewing this JS variable on the page: <code class="ml2 f6 dark-red">BH.activeCampaignsData;</code>
+				<li class="mb2">Using JS, call this function: <code class="ml2 f6 dark-red">SK.showSurvey('{{ thisModelItem.uid }}');</code>
+				<li class="mb2 lh-title">Stats for each campaign of a project are available in the SurveyKong namespace JS. This allows pages to optionally use stats to determine if they want to manually trigger the campaign or not. You can see stats for all of the project's active campaigns by running viewing this JS variable on the page: <code class="ml2 f6 dark-red">SK.activeCampaignsData;</code>
 			</ul>
 				
 			

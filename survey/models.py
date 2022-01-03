@@ -355,7 +355,7 @@ class Campaign(models.Model):
 	button = models.ForeignKey(Button, related_name='campaign_button', null=True, blank=True, on_delete=models.SET_NULL)
 	mouseout_trigger = models.BooleanField(default=True, help_text='Intercept will display when user\'s mouse leaves the browser window')
 	url_accessible = models.BooleanField(default=True, verbose_name='URL accessible')
-	visitor_percent = models.PositiveIntegerField(default=25, validators=[MinValueValidator(0), MaxValueValidator(100)])
+	visitor_percent = models.PositiveIntegerField(default=100, validators=[MinValueValidator(0), MaxValueValidator(100)])
 	limit_one_submission = models.BooleanField(default=True, help_text='Users will only be allowed to take the survey once, every ## days.')
 	limit_one_submission_days = models.PositiveIntegerField(default=90, help_text='Only used if \'Limit one submission\' is enabled. Allows the user to enter the pool of participants after these many days.')
 	url_match_action = models.CharField(default='', choices=[

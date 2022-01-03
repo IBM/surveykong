@@ -113,10 +113,15 @@
 	
 	
 	function setupQuestionDependency () {
-		function toggleQuestion (selectedVal, targetVal, targetAction, childCon) {
+		function toggleQuestion (selectedVal, targetValues, targetAction, childCon) {
 			// If it's a match, do the action,
 			// Otherwise do the opposite of the action.
-			if (targetVal.includes(selectedVal)) {
+			selectedVal = isNaN(selectedVal) == false ? parseFloat(selectedVal) : selectedVal;
+			
+			// Target comes thru as possible CSV, so split it.
+			targetValuesArr = targetValues.split(',');
+			
+			if (targetValuesArr.includes(selectedVal)) {
 				if (targetAction === 'show') {
 					showQuestion(childCon, true);
 				}
@@ -140,9 +145,11 @@
 		function showQuestion (container, b) {
 			if (b) {
 				$(container).slideDown('fast');
+				setRequired(container, b);
 			}
 			else {
 				$(container).slideUp('fast');
+				setRequired(container, b);
 			}
 		}
 		
@@ -152,18 +159,32 @@
 		}
 		
 		
+		function setRequired (fieldDiv, b) {
+			if ($(fieldDiv).find('label').data('required') == true) {
+				if (b) {
+					$(fieldDiv).find('label[data-required="true"]').addClass('bo-field-required');
+					$(fieldDiv).find('input, select, textarea').prop('required', true);
+				}
+				else {
+					$(fieldDiv).find('label[data-required="true"]').removeClass('bo-field-required');
+					$(fieldDiv).find('input, select, textarea').prop('required', false);
+				}	
+			}
+		}
+		
+		
 		// Now bind each dependent question to it's parent's onchange.
 		$("[data-parent-question]").each(function () {
 			var childCon = $(this),
 				parentCon = $('#q_' + $(this).data('parent-question') + '_container'),
-				targetVal = $(this).data('parent-answer'),
+				targetValues = $(this).data('parent-answer'),
 				targetAction = $(this).data('parent-answer-action');
 				
 			parentCon.on("change", "select, input", function (evt) {
-				toggleQuestion ([$(evt.target).val()], targetVal, targetAction, childCon);
+				toggleQuestion ($(evt.target).val(), targetValues, targetAction, childCon);
 			});
 			// Run onload to set questions
-			toggleQuestion ('_', targetVal, targetAction, childCon);
+			toggleQuestion ('_', targetValues, targetAction, childCon);
 		});
 		
 		

@@ -125,7 +125,7 @@
 					<tr data-campaign-id="{{ item.id }}">
 						<td class=""><a href="{% url 'survey:admin_campaign_edit' id=item.id %}" class="{{ templateHelpers.classes.link }} green hover-dark-green">{{ templateHelpers.html.icons.edit|safe }}</a></td>
 						<td class=""><code>{{ item.uid|truncatechars:8 }}</a></td>
-						<td class=""><a href="{% url 'survey:admin_project_list' %}?filter={{ item.project.name }}" class="{{ templateHelpers.classes.link }}">{{ item.project.name }}</a></td>
+						<td class=""><a href="{% url 'survey:admin_project_list' %}?filter={{ item.project.name }}" class="{{ templateHelpers.classes.link }}">{{ item.project.getDisplayName }}</a></td>
 						<td class=""><a href="{% url 'survey:admin_survey_list' %}?filter={{ item.survey.name }}" class="{{ templateHelpers.classes.link }}">{{ item.survey.name }}</a></td>
 						<td class="">{{ item.survey_trigger_type|capfirst|default:'URL only' }}</td>
 						<td class="">{{ item.survey.survey_type|capfirst }}</a></td>

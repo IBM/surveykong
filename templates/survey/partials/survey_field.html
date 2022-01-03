@@ -4,7 +4,7 @@
 	
 	{% else %}
 		<div class="mw6">
-			<label for="id_{{ question.short_name }}" class="db lh-copy b mb2 pb1 {% if question.required %}bo-field-required{% endif %}">{% if campaign.survey.survey_type == 'vote' and question.question_text_past_tense %}{{ question.question_text_past_tense|safe }}{% else %}{{ question.question_text|safe }}{% endif %}</label>
+			<label {% if question.required %}data-required="true"{% endif %} for="id_{{ question.short_name }}" class="db lh-copy b mb2 pb1 {% if question.required %}bo-field-required{% endif %}">{% if campaign.survey.survey_type == 'vote' and question.question_text_past_tense %}{{ question.question_text_past_tense|safe }}{% else %}{{ question.question_text|safe }}{% endif %}</label>
 		
 			{% if question.type == 'radio' %}
 				<fieldset class="db bw0 pa0 ma0">
