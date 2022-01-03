@@ -56,7 +56,6 @@ def survey_standalone_display(request, uid):
 		campaignStats = campaign.getStatsForUser(request)
 		
 		# For each page, call function that returns sorted standard survey + custom campaign questions.
-		campaign.pages = []
 		for page in campaign.survey.page_survey.all():
 			page.questionOrders = page.getAllQuestionOrders(campaign)
 	except:
@@ -73,9 +72,13 @@ def survey_standalone_display(request, uid):
 		template = 'survey/survey_standalone_display.html'
 	else:
 		template = 'survey/survey_standalone_no_display.html'
-		
+	
+	projectNameToUse = campaign.project.getDisplayName()
+	if campaign.custom_project_name:
+		projectNameToUse = campaign.custom_project_name
+	
 	responseText = render_to_string(template, context=context, request=request)
-	responseText = responseText.replace('{projectname}', campaign.project.getDisplayName())
+	responseText = responseText.replace('{projectname}', projectNameToUse)
 	response = HttpResponse(responseText)
 	
 	helpers.clearPageMessage(request)
@@ -87,16 +90,16 @@ def survey_standalone_display(request, uid):
 ##
 @login_exempt
 @xframe_options_exempt
-def survey_iframe_display(request, uid):
+def survey_iframe_display(request):
 	'''
 	Iframe survey version.
 	'''
 	try:
+		uid = request.GET.get('cuid')
 		campaign = Campaign.objects.filter(uid=uid).select_related('survey',).prefetch_related('survey__page_survey','survey__page_survey__question_order_page', 'survey__page_survey__question_order_page__question').first()
 		campaignStats = campaign.getStatsForUser(request)
 		
 		# For each page, call function that returns sorted standard survey + custom campaign questions.
-		campaign.pages = []
 		for page in campaign.survey.page_survey.all():
 			page.questionOrders = page.getAllQuestionOrders(campaign)
 	except:
@@ -119,8 +122,12 @@ def survey_iframe_display(request, uid):
 	else:
 		template = 'survey/survey_iframe_no_display.html'
 		
+	projectNameToUse = campaignStats['campaign'].project.getDisplayName()
+	if campaignStats['campaign'].custom_project_name:
+		projectNameToUse = campaignStats['campaign'].custom_project_name
+	
 	responseText = render_to_string(template, context=context, request=request)
-	responseText = responseText.replace('{projectname}', campaignStats['campaign'].project.getDisplayName())
+	responseText = responseText.replace('{projectname}', projectNameToUse)
 	response = HttpResponse(responseText)
 	
 	helpers.clearPageMessage(request)
@@ -139,8 +146,12 @@ def survey_iframe_invite(request, uid):
 		'campaign': campaign,
 	}
 	
+	projectNameToUse = campaign.project.getDisplayName()
+	if campaign.custom_project_name:
+		projectNameToUse = campaign.custom_project_name
+	
 	responseText = render_to_string('survey/survey_iframe_invite.html', context=context, request=request)
-	responseText = responseText.replace('{projectname}', campaign.project.getDisplayName())
+	responseText = responseText.replace('{projectname}', projectNameToUse)
 	response = HttpResponse(responseText)
 	
 	return response
@@ -205,7 +216,7 @@ def project_config_javascript(request, uid):
 	'''
 	t0 = time.time()
 	project = get_object_or_404(Project, uid=uid)
-	interceptCampaign = project.getActiveMatchingInterceptCampaign(request.META.get('HTTP_ORIGIN', ''))
+	interceptCampaign = project.getActiveMatchingInterceptCampaign(request.POST.get('url', ''))
 	interceptCampaignStats = None
 	setLotteryCookie = False
 	
@@ -220,10 +231,18 @@ def project_config_javascript(request, uid):
 	
 	buttonCampaign = Campaign.objects.filter(project=project, survey_trigger_type='button', active=True).select_related('button').first()
 	
+	# Generate some stats as JS object for the page to see/use if they want their own rules to 
+	#  manually trigger a campaign survey.
+	activeCampaignsData = {}
+	for campaign in Campaign.objects.filter(project=project, active=True):
+		stats = campaign.getStats()
+		activeCampaignsData[campaign.uid] = stats
+		
 	context = {
 		'campaignStats': interceptCampaignStats,
 		'buttonCampaign': buttonCampaign,
 		'forceIntercept': request.GET.get('forceintercept', None),
+		'activeCampaignsData': json.dumps(activeCampaignsData),
 		'flags': {
 			'hasIntercept': True if interceptCampaignStats and not interceptCampaignStats['hasInvite'] else False,
 			'hasInvite': True if interceptCampaignStats and interceptCampaignStats['hasInvite'] else False,

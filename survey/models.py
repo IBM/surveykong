@@ -217,20 +217,39 @@ class Project(models.Model):
 		activeCampaigns = Campaign.objects.filter(project=self, survey_trigger_type='intercept', active=True).select_related('survey', 'survey_invite')
 		
 		# Get an active one that doesn't have URL match. This is the default.
-		campaign = activeCampaigns.filter(url_match_regex='').first()
+		campaign = activeCampaigns.filter(url_match_string='').first()
 		
 		# Now loop thru ones with URL matches and see if there's a match 
 		#  that would override a default non-URL matched campaign and use it instead.
-		for urlMatchCampaign in activeCampaigns.exclude(url_match_regex=''):
+		match = False
+		for urlMatchCampaign in activeCampaigns.exclude(url_match_string=''):
 			url = url.replace('https://','')
-			begin = '^' if urlMatchCampaign.url_match_condition == 'startswith' else ''
-			end = '$' if urlMatchCampaign.url_match_condition == 'endswith' else ''
-			match = re.search(f'{begin}{urlMatchCampaign.url_match_regex}{end}', url)
+			stringToMatch = urlMatchCampaign.url_match_string.replace('https://','')
 			
-			if match:
+			if urlMatchCampaign.url_match_condition == 'startsWith':
+				if url.startswith(stringToMatch):
+					match = True
+			elif urlMatchCampaign.url_match_condition == 'contains':
+				if stringToMatch in url:
+					match = True
+			elif urlMatchCampaign.url_match_condition == 'exactMatch':
+				if url == stringToMatch:
+					match = True
+			elif urlMatchCampaign.url_match_condition == 'endsWith':
+				if url.endswith(stringToMatch):
+					match = True
+			
+			# If match and include, then we found one to use, so stop.
+			if match and urlMatchCampaign.url_match_action == 'include':
 				campaign = urlMatchCampaign
 				break
-	
+			# If match and exclude, then the URL shouldn't be used on that campaign, so keep going.
+			# If excluding URLs and this URL is not excluded for this campaign (no match),
+			#   then this is the campaign to use.
+			if urlMatchCampaign.url_match_action == 'exclude' and not match:
+				campaign = urlMatchCampaign
+				break
+				
 		return campaign
 		
 
@@ -289,6 +308,8 @@ class SurveyThankyou(models.Model):
 	updated_by = models.ForeignKey(User, related_name='survey_thankyou_updated_by', on_delete=models.PROTECT)
 	updated_at = models.DateTimeField(auto_now=True)
 	
+	feedback_default = models.BooleanField(default=False)
+	vote_default = models.BooleanField(default=False)
 	name = models.CharField(max_length=128, unique=True)
 	message = models.TextField(max_length=512, help_text='Message to display. HTML is allowed at your own risk.')
 	
@@ -320,6 +341,7 @@ class Campaign(models.Model):
 	uid = models.CharField(max_length=25, unique=True, editable=False)
 	key = models.CharField(max_length=128, blank=True, help_text='Auto-generated nice name identifier')
 	project = models.ForeignKey(Project, related_name='campaign_project', on_delete=models.CASCADE)
+	custom_project_name = models.CharField(max_length=128, blank=True, help_text='This will override the project name used in the selected project, for this campaign only/')
 	survey = models.ForeignKey(Survey, related_name='campaign_survey', on_delete=models.CASCADE)
 	slack_notification_url = models.URLField(max_length=255, null=True, blank=True)
 	survey_trigger_type = models.CharField(default='', choices=[
@@ -335,13 +357,18 @@ class Campaign(models.Model):
 	url_accessible = models.BooleanField(default=True, verbose_name='URL accessible')
 	visitor_percent = models.PositiveIntegerField(default=25, validators=[MinValueValidator(0), MaxValueValidator(100)])
 	limit_one_submission = models.BooleanField(default=True, help_text='Users will only be allowed to take the survey once, every ## days.')
-	limit_one_submission_days = models.PositiveIntegerField(default=90, help_text='Allow the user to enter the pool of participants after these many days.')
+	limit_one_submission_days = models.PositiveIntegerField(default=90, help_text='Only used if \'Limit one submission\' is enabled. Allows the user to enter the pool of participants after these many days.')
+	url_match_action = models.CharField(default='', choices=[
+		('exclude','Exclude'),
+		('include','Include'),
+	], max_length=11, blank=True, help_text='Include or exclude URLs that match the condition.')
 	url_match_condition = models.CharField(default='', choices=[
-			('contains','Contains'),
-			('startswith','Starts with'),
-			('endswith','Ends with'),
-		], max_length=11, blank=True)
-	url_match_regex = models.CharField(max_length=255, blank=True)
+		('contains','Contains'),
+		('exactMatch','Exact match'),
+		('startsWith','Starts with'),
+		('endsWith','Ends with'),
+	], max_length=11, blank=True, help_text='How to match the URL against the string')
+	url_match_string = models.CharField(max_length=255, blank=True)
 	
 	seconds_on_page_delay = models.PositiveIntegerField(default=0)
 	repeat_visitors_only = models.BooleanField(default=False, help_text="Only users who have visited the site at least twice (2+ sessions) will be included")
@@ -560,15 +587,37 @@ class Campaign(models.Model):
 		return userInfo, created
 		
 	
-	'''
-	# Returns stats as well as if we should show the survey or not,
-	# and if not, what message to show.
-	# This is the main logic to call.
+	def getStats(self):
+		'''
+		Returns stats ONLY. Used in project config JS as a JSON object that pages' JS
+		can look at and see stats and make their own rules for if/when to manually trigger
+		a campaign survey.
+		Since this is generic "current" stats output, it doesn't not take into account
+		the the current user.
+		'''
+		data = {
+			'visitor_percent': self.visitor_percent,
+			'repeat_visitors_only': self.repeat_visitors_only,
+			'unique_visitor_count': self.unique_visitor_count,
+			'intercept_shown_count': self.intercept_shown_count,
+			'interceptShownPercent': self.getInterceptShownPercent(),
+			'responseCount': self.response_count,
+			'responseCountLimit': self.response_count_limit,
+			'standaloneSubmittedPercent': self.getStandaloneSubmittedPercent(),
+		}
 	
-	# For standalone, this runs on standalone display view.
-	# For intercept, this HAS to run on initial logic for invite. Iframe can't use this logic.
-	'''
+		return data
+	
+	
 	def getStatsForUser(self, request):
+		'''
+		# Returns stats as well as if we should show the survey or not,
+		# and if not, what message to show.
+		# This is the main logic to call.
+		
+		# For standalone, this runs on standalone display view.
+		# For intercept, this HAS to run on initial logic for invite. Iframe can't use this logic.
+		'''
 		activeCampaign = True
 		campaignMessage = ''
 		interceptStatus = 'none'
@@ -683,7 +732,7 @@ class Campaign(models.Model):
 	
 class Page(models.Model):
 	survey = models.ForeignKey(Survey, related_name='page_survey', on_delete=models.CASCADE)
-	page_number = models.PositiveIntegerField(default=1)
+	page_number = models.FloatField(default=1)
 	
 	class Meta:
 		ordering = ['survey', 'page_number']
@@ -703,6 +752,7 @@ class Page(models.Model):
 		
 
 class Question(models.Model):
+	name = models.CharField(max_length=128, help_text='Only used in admin, to easily identify this survey.')
 	short_name = models.SlugField(max_length=48, help_text='This is used in the response data to identify this question. No spaces allowed: Use underscores')
 	question_text = models.CharField(max_length=255, blank=True)
 	question_text_past_tense = models.CharField(max_length=255, blank=True, help_text='This is used for \'take later\' and email campaigns')
@@ -747,8 +797,8 @@ class Question(models.Model):
 		ordering = ['question_text']
 	
 	def __str__(self):
-		displayName = self.question_text if self.question_text else self.message_text[:90]
-		return f'{displayName} - ({self.type}) - {"(required)" if self.required else "(optional)"}'
+		qText = self.question_text if self.question_text else self.message_text[:90]
+		return f'{self.name} - {"(required)" if self.required else "(optional)"} - {qText}'
 		
 		
 	def save(self, *args, **kwargs):

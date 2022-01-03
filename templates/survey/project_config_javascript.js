@@ -20,31 +20,23 @@
 	
 	var activeEl;
 	
+	SK.activeCampaignsData = {{ activeCampaignsData|safe }};
+	
 	{##}
 	{##}
 	{##  Public APIs  #}
 	{##}
 	{##}
 	
-	{% if flags.hasButton %}
+	{# PUBLIC function passes campaign UID to local function to show overlay and embed iframe survey #}
+	window.SK.showSurvey = function (cuid, b) {
+		activeEl = document.activeElement;
+		showSurvey("{% url 'survey:survey_iframe_display' %}?cuid="+cuid+(b?'&force=y':''));
+	};
+			
+	{% if flags.hasInvite %}
 	
-		window.SK.showButtonSurvey = function () {
-			activeEl = document.activeElement;
-			showSurvey("{% url 'survey:survey_iframe_display' uid=buttonCampaign.uid %}");
-		};
-		
-	{% endif %}
-	
-	{% if flags.hasIntercept %}
-	
-		window.SK.showSurvey = function (b) {
-			activeEl = document.activeElement;
-			showSurvey("{% url 'survey:survey_iframe_display' uid=campaignStats.campaign.uid %}"+(b?'?force=y':''));
-		};
-		
-	{% elif flags.hasInvite %}
-	
-		window.SK.showSurvey = function () {
+		window.SK.showInvite = function () {
 			if (!document.getElementById('surveykong-invite-card')) {
 				activeEl = document.activeElement;
 				appendToBody(`<style>#surveykong-invite-card{transform:translate3d(101%,-50%,0);transition:transform .5s cubic-bezier(0.4,1,0.5,1);}#surveykong-invite-card.show{transform:translate3d(0,-50%,0);</style><iframe id="surveykong-invite-card" style="background:#fff;z-index:99999999;position:fixed;top:50%;right:0;width:24rem;box-shadow:-2px 2px 15px rgba(0,0,0,0.7);border: 2px solid gray;border-right:0;" frameborder="0" marginwidth="0" marginheight="0" scrolling="no" title="SurveyKong survey" src="{% if not debug %}https://REPLACE_ME.com{% endif %}{% url 'survey:survey_iframe_invite' uid=campaignStats.campaign.uid %}"></iframe>`);
@@ -112,13 +104,13 @@
 				case 'right':
 					styles = 'right:0;bottom:auto;left:auto;transform-origin:top right;';
 					if (offset < 50) {
-						styles += 'top:'+offset+'%;transform:rotate(90deg) translate3d(100%,0,0);'
+						styles += 'top:'+offset+'%;transform:rotate(-90deg) translate3d(0%,-100%,0);'
 					}
 					else if (offset === 50) {
-						styles += 'top:'+offset+'%;transform:rotate(90deg) translate3d(50%,0,0);'
+						styles += 'top:'+offset+'%;transform:rotate(-90deg) translate3d(50%,-100%,0);'
 					}
 					else {
-						styles += 'top:'+offset+'%;transform:rotate(90deg);'
+						styles += 'top:'+offset+'%;transform:rotate(-90deg) translate3d(100%,-100%,0);'
 					}
 					break;
 			}
@@ -149,7 +141,7 @@
 				}
 				
 				window.SK.rich = function (evt) {
-					SK.showSurvey();
+					SK.showSurvey('{{ campaignStats.campaign.uid }}');
 				
 					var xhr = new XMLHttpRequest(),
 						params = 'cuid={{ campaignStats.campaign.uid }}';
@@ -215,7 +207,7 @@
 			
 			document.addEventListener('mouseleave', function (evt) {
 				if (!shown && evt.pageY - window.scrollY <= 0) {
-					SK.showSurvey();
+					SK.showSurvey('{{ campaignStats.campaign.uid }}');
 					shown = true;
 				}
 			});
@@ -249,7 +241,7 @@
 		
 		{% if 'show_survey' == campaignStats.interceptStatus %}
 		
-			injectOnReady(SK.showSurvey);
+			injectOnReady(SK.showInvite);
 		
 		{% endif %}
 	
@@ -265,7 +257,7 @@
 		
 		function injectSurveyButton () {
 			if (!document.getElementById('surveykong-survey-button')) {
-				document.getElementById('surveykong-buttons-con').innerHTML += `<a id="surveykong-survey-button" href="#" onclick="SK.showButtonSurvey();return false;" style="display:block;background-color:{{ buttonCampaign.button.background_color }};color:{{ buttonCampaign.button.text_color }};padding:.5rem;text-decoration:none;">{{ buttonCampaign.button.text }}</a>`;
+				document.getElementById('surveykong-buttons-con').innerHTML += `<a id="surveykong-survey-button" href="#" onclick="SK.showSurvey('{{ buttonCampaign.uid }}');return false;" style="display:block;background-color:{{ buttonCampaign.button.background_color }};color:{{ buttonCampaign.button.text_color }};padding:.5rem;text-decoration:none;">{{ buttonCampaign.button.text }}</a>`;
 			}
 		}
 		
@@ -306,7 +298,7 @@
 			document.getElementById('surveykong-admin-panel').classList.add('show')
 		}
 		else if (event.data.message == 'forceIntercept') {
-			SK.showSurvey(true);
+			SK.showSurvey('{{ campaignStats.campaign.uid }}',true);
 			shown = true;
 		}
 	});

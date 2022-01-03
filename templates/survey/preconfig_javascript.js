@@ -13,5 +13,5 @@
 	};
 	xhr.open('POST', '{% if not debug %}https://REPLACE_ME.com{% endif %}{% url 'survey:project_config_javascript' uid=projectUid %}');
 	xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-	xhr.send();
+	xhr.send('url='+window.location.href);
 })();

@@ -582,7 +582,6 @@ def admin_survey_add(request):
 		'newItemName': thisModel._meta.verbose_name,
 		'adminTemplate': adminTemplate,
 		'leftNavHighlight': thisModel._meta.verbose_name_plural,
-		'customJsPath': 'shared/js/admin_survey.js',
 	}
 
 	if request.method == 'GET':
@@ -657,7 +656,6 @@ def admin_survey_edit(request, id):
 		'thisModelDeleteUrl': thisModelDeleteUrl,
 		'allowDelete': allowDelete,
 		'leftNavHighlight': thisModel._meta.verbose_name_plural,
-		'customJsPath': 'shared/js/admin_survey.js',
 	}
 
 	if request.method == 'GET':
@@ -793,10 +791,14 @@ def admin_question_list(request):
 		except:
 			pass
 	
+	# Not perfect, but good enough for now.
 	for question in questions:
 		surveys = Survey.objects.filter(page_survey__question_order_page__question=question)
 		question.surveyCount = surveys.count()
-		question.campaignCount = Campaign.objects.filter(survey__in=surveys).count()
+		# Get custom campaign count.
+		question.campaignCount = Campaign.objects.filter(survey__in=surveys,question_order_campaign__question=question).count()
+		if question.campaignCount == 0:
+			question.campaignCount = Campaign.objects.filter(survey__in=surveys,survey__page_survey__question_order_page__question=question).count()
 			
 	context = {
 		'listItems': questions,
@@ -1084,6 +1086,10 @@ def admin_page_delete(request):
 def admin_surveybuilder_list(request):
 	surveys = Survey.objects.all().order_by('name').prefetch_related('page_survey__question_order_page__question').select_related('language').annotate(campaignCount=Count('campaign_survey',distinct=True))
 	
+	for survey in surveys:
+		for page in survey.page_survey.all():
+			page.questionOrders = page.getAllQuestionOrders(None)
+		
 	context = {
 		'surveys': surveys,
 		'leftNavHighlight': 'survey builders',
@@ -1114,7 +1120,7 @@ def admin_surveybuilder_add(request):
 	context = {
 		'breadcrumbs': breadcrumbs,
 		'form': None,
-		'questions': Question.objects.all().only('question_text', 'type'),
+		'questions': Question.objects.all(),
 		'adminTemplate': adminTemplate,
 		'leftNavHighlight': 'survey builders',
 	}
@@ -1188,6 +1194,9 @@ def admin_surveybuilder_edit(request, id):
 	except:
 		return render(request, '404.html', {}, status=404)
 	
+	for page in survey.page_survey.all():
+		page.questionOrders = page.getAllQuestionOrders(None)
+	
 	thisViewTemplate = 'survey/admin_surveybuilder_edit.html'
 	adminTemplate = 'survey/page_template_admin.html'
 	thisModelListUrl = reverse('survey:admin_surveybuilder_list')
@@ -1204,7 +1213,7 @@ def admin_surveybuilder_edit(request, id):
 		'breadcrumbs': breadcrumbs,
 		'form': None,
 		'survey': survey,
-		'questions': Question.objects.all().only('required', 'question_text', 'type'),
+		'questions': Question.objects.all(),
 		'adminTemplate': adminTemplate,
 		'leftNavHighlight': 'survey builders',
 	}

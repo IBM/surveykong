@@ -167,12 +167,46 @@
 			BH.customAddItem = customAddItem;
 			
 			
+			function setupTriggerType () {
+				$('#id_survey_trigger_type').on('change', function (evt) {
+					var val = evt.target.value;
+					if (val === 'button') {
+						$('#id_limit_one_submission').prop('checked', false).trigger('change');
+					}
+					
+				});
+			}
+			
+			
+			function setInitialThankyou () {
+				$('#id_survey').on('change', function (evt) {
+					$.ajax({
+						url: "{% url 'survey:api_get_default_thankyou' %}",
+						type: 'get',
+						data: {
+							'surveyid': evt.target.value
+						},
+						success: function (data) {
+							if (data.thankyouId) {
+								$('#id_survey_thankyou').val(data.thankyouId).trigger('change');
+							}
+						},
+						error: function (response) {
+							// Nada
+						}
+					});
+				});
+			}
+			
+			
 			$(function () {
 				document.querySelector('.custom-modelform').addEventListener('submit', formOnsubmitHandler);
 				setupShowHideFields();
 				showHideData.forEach(function (item) {
 					$('#id_'+item.field).trigger('change');
 				});
+				setupTriggerType();
+				setInitialThankyou();
 			});
 		
 		})(jQuery);
@@ -196,13 +230,23 @@
 		
 			{% csrf_token %}
 			
+			<div class="b">To manually trigger this campaign:</div>
+			<ul class="mw7 mb4">
+				<li class="mb2">This campaign "visitor percent" must be set to 100% and <strong>NOT</strong> "limit one submission" else campaign logic will be used when showing the survey</li>
+				<li class="mb2">The project config JS must still be used on the page</li>
+				<li class="mb2">Using JS, call this function: <code class="ml2 f6 dark-red">BH.showSurvey('{{ thisModelItem.uid }}');</code>
+				<li class="mb2 lh-title">Stats for each campaign of a project are available in the BeeHeard namespace JS. This allows pages to optionally use stats to determine if they want to manually trigger the campaign or not. You can see stats for all of the project's active campaigns by running viewing this JS variable on the page: <code class="ml2 f6 dark-red">BH.activeCampaignsData;</code>
+			</ul>
+				
+			
 			{% for field in form.visible_fields %}
 				{% include 'partials/form_field_horizontal.html' with field=field %}				
 			{% endfor %}
 			
 			<div class="mb4" id="answers-row">
 				<div class="b mb2">Custom questions</div>
-				<div class="mb3 f6 mw7 lh-copy">Set which page, question # (on that page), and question to dynamically insert into the selected survey at run-time.<br><strong>e.g.</strong><br>If you want a custom question in-between #2 and 3, set the question number to 2.5 (or anything between 2.0 and 3.0).<br>If you want the question before #1, set it to anything less than 1.<br>If you want the question as the last one on the page, set it to any # higher than the last question #.</div>
+				<div class="mb3 f6 mw7 lh-copy">Set which page, question # (on that page), and question to dynamically insert into the selected survey at run-time.<br><strong>e.g.</strong><br>If you want a custom question in-between #2 and 3, set the question number to 2.5 (or anything between 2.0 and 3.0).<br>If you want the question before #1, set it to anything less than 1.<br>If you want the question as the last one on the page, set it to any # higher than the last question #.
+					<br>If you want to insert quetions on a page in-between pages in the selected survey, it works the same as questions: Set the page # to 1.5 (or anything between 1.0 and 2.0) to make a custom 2nd page.</div>
 				<div class="mb2 flex items-center">
 					<div style="flex: 0 0 50px;" class="mr1 b">Page</div>
 					<div style="flex: 0 0 80px;" class="mr1 b">Ques. #</div>

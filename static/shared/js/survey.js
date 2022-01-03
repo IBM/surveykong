@@ -116,7 +116,7 @@
 		function toggleQuestion (selectedVal, targetVal, targetAction, childCon) {
 			// If it's a match, do the action,
 			// Otherwise do the opposite of the action.
-			if (selectedVal == targetVal) {
+			if (targetVal.includes(selectedVal)) {
 				if (targetAction === 'show') {
 					showQuestion(childCon, true);
 				}
@@ -160,7 +160,7 @@
 				targetAction = $(this).data('parent-answer-action');
 				
 			parentCon.on("change", "select, input", function (evt) {
-				toggleQuestion ($(evt.target).val(), targetVal, targetAction, childCon);
+				toggleQuestion ([$(evt.target).val()], targetVal, targetAction, childCon);
 			});
 			// Run onload to set questions
 			toggleQuestion ('_', targetVal, targetAction, childCon);

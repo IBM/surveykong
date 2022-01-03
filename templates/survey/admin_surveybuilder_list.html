@@ -33,11 +33,13 @@
 					{% for page in survey.page_survey.all %}
 						<div class="w-50-l mt3 pl4 textcolor">
 							<div class="b mb2">Page {{ page.page_number }}</div>
-							{% for questionOrder in page.question_order_page.all %}
-								<div class="flex mb2 ml3">
-									<div class="mr2">{{ forloop.counter }}.</div>
-									<div>{{ questionOrder.question.question_text|default:'~~message field~~' }} <span class="ml2 gray f6">({{ questionOrder.question.type }})</span></div>
-								</div>
+							{% for questionOrder in page.questionOrders.all %}
+								{% if not questionOrder.campaign %}
+									<div class="flex mb2 ml3">
+										<div class="mr2">{{ forloop.counter }}.</div>
+										<div>{{ questionOrder.question.question_text|default:'~~message field~~' }} <span class="ml2 gray f6">({{ questionOrder.question.type }})</span></div>
+									</div>
+								{% endif %}
 									
 							{% endfor %}
 						</div>
