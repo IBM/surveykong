@@ -35,13 +35,15 @@
 				</script>
 				
 				{% for page in campaign.survey.page_survey.all %}
-					<div class="custom-survey-page {% if forloop.counter == 1 %}custom-showing{% endif %}" data-page="{{ forloop.counter }}">
-						<div class="mb4">
-							{% for questionOrder in page.questionOrders %}
-								{% include 'survey/partials/survey_field.html' with question=questionOrder.question %}
-							{% endfor %}
+					{% if page.questionOrders %}
+						<div class="custom-survey-page {% if forloop.counter == 1 %}custom-showing{% endif %}" data-page="{{ forloop.counter }}">
+							<div class="mb4">
+								{% for questionOrder in page.questionOrders %}
+									{% include 'survey/partials/survey_field.html' with question=questionOrder.question %}
+								{% endfor %}
+							</div>
 						</div>
-					</div>
+					{% endif %}
 				{% endfor %}
 				
 				<div id="custom-survey-buttons">

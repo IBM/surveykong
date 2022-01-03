@@ -184,7 +184,7 @@ def project_config_javascript(request, uid):
 	'''
 	t0 = time.time()
 	project = get_object_or_404(Project, uid=uid)
-	interceptCampaign = Campaign.objects.filter(project=project, survey_trigger_type='intercept', active=True).select_related('survey', 'survey_invite').first()
+	interceptCampaign = project.getActiveMatchingInterceptCampaign(request.META['HTTP_REFERER'])
 	interceptCampaignStats = None
 	setLotteryCookie = False
 	

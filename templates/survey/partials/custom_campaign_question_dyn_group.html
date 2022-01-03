@@ -2,7 +2,7 @@
 <div id="" class="custom-fieldset mb3">
 	<div class="w-100 mw7 flex items-center">
 		<div class="w-100 flex items-center">
-			<div style="flex: 0 0 50px;" class="mr1"><input name="question_page" type="number" value="{{ questionOrder.page.page_number }}"></div>
+			<div style="flex: 0 0 50px;" class="mr1"><input name="question_page" type="number" value="{{ questionOrder.page.page_number|default:'1' }}"></div>
 			<div style="flex: 0 0 80px;" class="mr1"><input class="w3" name="question_number" type="number" value="{{ questionOrder.question_number }}" step="any"></div>
 			<div class="w-100 overflow-hidden">
 				<select class="w-100" name="question_question" data-placeholder="Select one">

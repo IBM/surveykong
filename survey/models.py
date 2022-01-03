@@ -1,3 +1,4 @@
+import re
 import requests
 
 from datetime import datetime, timedelta
@@ -211,6 +212,27 @@ class Project(models.Model):
 			
 		return project
 
+	
+	def getActiveMatchingInterceptCampaign(self, url):
+		activeCamapigns = Campaign.objects.filter(project=self, survey_trigger_type='intercept', active=True).select_related('survey', 'survey_invite')
+		
+		# Get an active one that doesn't have URL match. This is the default.
+		campaign = activeCamapigns.filter(url_match_regex='').first()
+		
+		# Now loop thru ones with URL matches and see if there's a match 
+		#  that would override a default non-URL matched campaign and use it instead.
+		for urlMatchCampaign in activeCamapigns.exclude(url_match_regex=''):
+			url = url.replace('https://','')
+			begin = '^' if urlMatchCampaign.url_match_condition == 'startswith' else ''
+			end = '$' if urlMatchCampaign.url_match_condition == 'endswith' else ''
+			match = re.search(f'{begin}{urlMatchCampaign.url_match_regex}{end}', url)
+			
+			if match:
+				campaign = urlMatchCampaign
+				break
+	
+		return campaign
+		
 
 class Survey(models.Model):
 	created_by = models.ForeignKey(User, related_name='survey_created_by', on_delete=models.PROTECT)
@@ -314,11 +336,19 @@ class Campaign(models.Model):
 	visitor_percent = models.PositiveIntegerField(default=25, validators=[MinValueValidator(0), MaxValueValidator(100)])
 	limit_one_submission = models.BooleanField(default=True, help_text='Users will only be allowed to take the survey once, every ## days.')
 	limit_one_submission_days = models.PositiveIntegerField(default=90, help_text='Allow the user to enter the pool of participants after these many days.')
+	url_match_condition = models.CharField(default='', choices=[
+			('contains','Contains'),
+			('startswith','Starts with'),
+			('endswith','Ends with'),
+		], max_length=11, blank=True)
+	url_match_regex = models.CharField(max_length=255, blank=True)
+	
 	seconds_on_page_delay = models.PositiveIntegerField(default=0)
 	repeat_visitors_only = models.BooleanField(default=False, help_text="Only users who have visited the site at least twice (2+ sessions) will be included")
 	page_view_count = models.PositiveIntegerField(default=0)
 	start_date = models.DateField(null=True, blank=True, help_text='Campaign will be active starting at Midnight on this date.')
 	stop_date = models.DateField(null=True, blank=True, help_text='Campaign will deactivate at 11:59pm on this date.')
+	
 	response_count_limit = models.PositiveIntegerField(null=True, blank=True, help_text='Disable the camapign when this many responses are received.')
 	
 	# Stats.

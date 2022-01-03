@@ -29,39 +29,40 @@
 			</script>
 			
 			{% for page in campaignStats.campaign.survey.page_survey.all %}
-			
-				<div class="custom-survey-page {% if forloop.counter == 1 %}custom-showing{% endif %}" data-page="{{ forloop.counter }}">
-					
-					{% if forloop.counter == 1 and campaignStats.campaign.survey_trigger_type == 'intercept' %}
-						<h1 class="lh-title f4 fw5 mb4 mt0">{{ campaignStats.campaign.survey.title }}</h1>
+				{% if page.questionOrders %}
+					<div class="custom-survey-page {% if forloop.counter == 1 %}custom-showing{% endif %}" data-page="{{ forloop.counter }}">
 						
-						<div class="mb4 f6 pa3 bg-near-white">
-							<div class="flex-ns justify-between">
-								<div class="mw5-ns mb0-ns mb3">
-									<div class="b h1-ns mb4-ns mb2">Catch you at a bad time?</div>
-									<button id="custom-takelater-button" style="padding-top:0;padding-bottom:0;" class="w-100-ns h2 {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenSecButton }}">Remind me later</button>
-								</div>
-								<div class="dn db-ns w3-ns tc self-end">
-									<div class="b f4 self-end mb1">or</div>
-								</div>
-								<div class="w-50-ns">
-									<div class="h1-ns mb2">Expected survey time: <span class="b">2 minutes</span></div>
-									<div class="mb2">Email me a link:</div>
-									<div class="flex items-center relative">
-										<div class="w-100"><input id="custom-email-link-email" style="padding-right: 70px;" class="h2 w5" type="email" value="" placeholder="youremail@domain.com" aria-label="Email address"></div>
-										<button id="custom-email-link-button" style="padding-top:0;padding-bottom:0;" class="absolute right-0 h2 {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenSecButton }}">Send</button>
+						{% if forloop.counter == 1 and campaignStats.campaign.survey_trigger_type == 'intercept' %}
+							<h1 class="lh-title f4 fw5 mb4 mt0">{{ campaignStats.campaign.survey.title }}</h1>
+							
+							<div class="mb4 f6 pa3 bg-near-white">
+								<div class="flex-ns justify-between">
+									<div class="mw5-ns mb0-ns mb3">
+										<div class="b h1-ns mb4-ns mb2">Catch you at a bad time?</div>
+										<button id="custom-takelater-button" style="padding-top:0;padding-bottom:0;" class="w-100-ns h2 {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenSecButton }}">Remind me later</button>
+									</div>
+									<div class="dn db-ns w3-ns tc self-end">
+										<div class="b f4 self-end mb1">or</div>
+									</div>
+									<div class="w-50-ns">
+										<div class="h1-ns mb2">Expected survey time: <span class="b">2 minutes</span></div>
+										<div class="mb2">Email me a link:</div>
+										<div class="flex items-center relative">
+											<div class="w-100"><input id="custom-email-link-email" style="padding-right: 70px;" class="h2 w5" type="email" value="" placeholder="youremail@ibm.com" aria-label="Email address"></div>
+											<button id="custom-email-link-button" style="padding-top:0;padding-bottom:0;" class="absolute right-0 h2 {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenSecButton }}">Send</button>
+										</div>
 									</div>
 								</div>
 							</div>
+						{% endif %}
+						
+						<div class="">
+							{% for questionOrder in page.questionOrders %}
+								{% include 'survey/partials/survey_field.html' with question=questionOrder.question %}
+							{% endfor %}
 						</div>
-					{% endif %}
-					
-					<div class="">
-						{% for questionOrder in page.questionOrders %}
-							{% include 'survey/partials/survey_field.html' with question=questionOrder.question %}
-						{% endfor %}
 					</div>
-				</div>
+				{% endif %}
 			{% endfor %}
 			
 			<div id="custom-survey-buttons">

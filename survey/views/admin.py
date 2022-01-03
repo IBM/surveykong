@@ -407,7 +407,7 @@ def admin_campaign_add(request):
 						# If there was a valid question ID passed (non-blank), create question order.
 						try:
 							question = Question.objects.get(id=questionId)
-							surveyPage = Page.objects.get(survey=campaign.survey, page_number=pageNum)
+							surveyPage, created = Page.objects.get_or_create(survey=campaign.survey, page_number=pageNum)
 							QuestionOrder.objects.create(
 								campaign = campaign,
 								page = surveyPage,
@@ -507,7 +507,7 @@ def admin_campaign_edit(request, id):
 						# If there was a valid question ID passed (non-blank), create question order.
 						try:
 							question = Question.objects.get(id=questionId)
-							surveyPage = Page.objects.get(survey=campaign.survey, page_number=pageNum)
+							surveyPage, created = Page.objects.get_or_create(survey=campaign.survey, page_number=pageNum)
 							QuestionOrder.objects.create(
 								campaign = campaign,
 								page = surveyPage,
