@@ -743,9 +743,14 @@ class Page(models.Model):
 
 	def getAllQuestionOrders(self, campaign):
 		normalQuestions = self.question_order_page.filter(campaign__isnull=True)
-		customQuestions = self.question_order_page.filter(campaign=campaign)
+		customQuestions = None
 		
-		allQuestions = normalQuestions | customQuestions
+		if campaign:
+			customQuestions = self.question_order_page.filter(campaign=campaign)
+			allQuestions = normalQuestions | customQuestions
+		else:
+			allQuestions = normalQuestions
+			
 		allQuestions.order_by('question_number')
 		
 		return allQuestions

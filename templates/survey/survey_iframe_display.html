@@ -28,7 +28,7 @@
 				window.setcc = function (d) {document.getElementById('custom-cc').value=d.country}
 			</script>
 			
-			{% for page in campaignStats.campaign.survey.page_survey.all %}
+			{% for page in pagesWithQuestions %}
 				{% if page.questionOrders %}
 					<div class="custom-survey-page {% if forloop.counter == 1 %}custom-showing{% endif %}" data-page="{{ forloop.counter }}">
 						

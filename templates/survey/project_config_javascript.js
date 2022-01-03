@@ -185,7 +185,7 @@
 		
 		injectOnReady(function () {
 			if (!document.getElementById('surveykong-buttons-con')) {
-				appendToBody('<div id="surveykong-buttons-con" style="position:fixed;z-index:9999999999999;font-family:IBM Plex Sans,helvetica neue,helvetica,sans-serif;display:flex;"></div>');
+				appendToBody('<div id="surveykong-buttons-con" style="position:fixed;z-index:99999998;font-family:IBM Plex Sans,helvetica neue,helvetica,sans-serif;display:flex;"></div>');
 				moveAndShowButton(document.getElementById('surveykong-buttons-con'));
 			}
 		});

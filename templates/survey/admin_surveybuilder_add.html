@@ -183,11 +183,11 @@
 		
 			<div class="custom-pages-group">
 				
-				{% for page in survey.page_survey.all %}
+				{% for page in pagesWithQuestions %}
 					{% include 'partials/surveybuilder_page_dyn_group.html' %}
 				{% endfor %}
 				
-				{% if not survey.page_survey.all %}
+				{% if not pagesWithQuestions %}
 					{% include 'partials/surveybuilder_page_dyn_group.html' %}
 				{% endif %}
 				

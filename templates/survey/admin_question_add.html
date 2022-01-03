@@ -290,7 +290,12 @@
 					{% endif %}
 				{% else %}
 					<div class="mb4" id="answers-row">
-						<div class="b">Answers</div>
+						<div class="b mb3">Answers</div>
+						<div class="flex w-100 mw7">
+							<div style="flex: 0 0 24px" class="mr3"></div>
+							<div class="w-40 b">Label</div>
+							<div class="w-40 ml3 pl2 b">Value</div>
+						</div>
 						{% for answer in thisModelItem.answers %}
 							{% include 'partials/question_answer_dyn_group.html' with answerNumber=forloop.counter %}
 						{% endfor %}

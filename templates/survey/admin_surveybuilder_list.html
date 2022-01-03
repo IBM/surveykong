@@ -30,7 +30,7 @@
 					</div>
 					
 					<div class="flex-l flex-wrap">
-					{% for page in survey.page_survey.all %}
+					{% for page in survey.pagesWithQuestions %}
 						<div class="w-50-l mt3 pl4 textcolor">
 							<div class="b mb2">Page {{ page.page_number }}</div>
 							{% for questionOrder in page.questionOrders.all %}

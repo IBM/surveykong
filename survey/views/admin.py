@@ -783,7 +783,7 @@ def admin_language_delete(request):
 ##
 @user_passes_test(helpers.hasAdminAccess)
 def admin_question_list(request):
-	questions = Question.objects.all()
+	questions = Question.objects.all().prefetch_related('question_order_question', 'question_order_question__page', 'question_order_question__page__survey')
 	
 	if request.GET.get('survey', None):
 		try:
@@ -1087,9 +1087,13 @@ def admin_surveybuilder_list(request):
 	surveys = Survey.objects.all().order_by('name').prefetch_related('page_survey__question_order_page__question').select_related('language').annotate(campaignCount=Count('campaign_survey',distinct=True))
 	
 	for survey in surveys:
+		# For each page, call function that returns sorted standard survey + custom campaign questions.
+		survey.pagesWithQuestions = []
 		for page in survey.page_survey.all():
 			page.questionOrders = page.getAllQuestionOrders(None)
-		
+			if page.questionOrders:
+				survey.pagesWithQuestions.append(page)
+				
 	context = {
 		'surveys': surveys,
 		'leftNavHighlight': 'survey builders',
@@ -1209,10 +1213,18 @@ def admin_surveybuilder_edit(request, id):
 		}
 	)
 
+	# For each page, call function that returns sorted standard survey + custom campaign questions.
+	pagesWithQuestions = []
+	for page in survey.page_survey.all():
+		page.questionOrders = page.getAllQuestionOrders(None)
+		if page.questionOrders:
+			pagesWithQuestions.append(page)
+			
 	context = {
 		'breadcrumbs': breadcrumbs,
 		'form': None,
 		'survey': survey,
+		'pagesWithQuestions': pagesWithQuestions,
 		'questions': Question.objects.all(),
 		'adminTemplate': adminTemplate,
 		'leftNavHighlight': 'survey builders',
@@ -1243,7 +1255,7 @@ def admin_surveybuilder_edit(request, id):
 		try:
 			# Delete all questionorders and pages for this survey and create them with posted data.
 			QuestionOrder.objects.filter(page__survey=survey).delete()
-			Page.objects.filter(survey=survey).delete()
+			Page.objects.filter(survey=survey, campaign__isnull=True).delete()
 			
 			for fieldName in request.POST:
 				if fieldName.startswith('qo'):
