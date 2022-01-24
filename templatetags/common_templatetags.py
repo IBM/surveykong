@@ -46,7 +46,6 @@ def getTemplateHelpers(context):
 
 	commonButton = 'dib pointer ba bw1 ph4 pv3 border-box ' + rounded
 	smallButton = 'dib pointer ba bw1 pv2 ph3 border-box bo-smallbutton ' + rounded
-	surveyTriggerButton = 'f6 dib pointer bw0 pv2 ph3 bg-animate border-box br1'
 	
 	tab = 'bo-tab pointer ph4 pv3 bw0 border-box b hover-white'
 	
@@ -73,7 +72,6 @@ def getTemplateHelpers(context):
 		'classes': {
 			'button': commonButton,
 			'smallButton': smallButton,
-			'surveyTriggerButton': surveyTriggerButton,
 			'bluePriButton': 'b--blue-70 hover-b--dark-blue bg-blue-70 hover-bg-dark-blue white hover-white',
 			'blueSecButton': 'ba bw1 b--blue-70 bg-white hover-bg-dark-blue blue-70 hover-white link custom-animate-all',
 			'greenPriButton': 'b--green bg-green hover-b--dark-green hover-bg-dark-green hover-white white',

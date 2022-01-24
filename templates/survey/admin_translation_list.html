@@ -1,0 +1,64 @@
+{% extends "survey/page_template_admin.html" %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}{{ block.super}} Admin - Translations {% endblock %}
+
+{% block pageTitle %} Translations {% endblock %}
+
+{% block extraFiles %}
+
+	{% include 'partials/tablewidget_files.inc' %}
+	
+	<script>
+	
+		(function ($) {
+			
+			function doFilter () {
+				var filterText = '{{ request.GET.filter }}';
+				if (filterText.length > 0) {
+					$('.dataTables_filter').find('input').val(filterText).trigger('input');
+				}	
+			}
+			
+			$(doFilter);
+		
+		
+		})(jQuery);
+		
+	</script>
+	
+{% endblock %}
+
+
+{% block content %}
+
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		<div class="pb0">Edit an item below or <a class="{{ templateHelpers.classes.hasIcon }} animate" href="{% url 'survey:admin_translation_add' %}"><span class="mr1">add a new translation</span> {{ templateHelpers.html.icons.chevronForward|safe }}</a></div>
+	</div>
+	
+	<div class="{{ templateHelpers.classes.grid }} mv4 mw7">
+		
+		<table {{ templateHelpers.html.tableWidget.fullFeatures|safe }} data-paging="false">
+			<thead>
+				<tr>
+					<th class="tl">Language</th>
+					<th class="tl">Surveys</th>
+				</tr>
+			</thead>
+			
+			<tbody>
+				{% for item in listItems %}
+					<tr class="hover-bg-light-green">
+						<td class=""><a href="{% url 'survey:admin_translation_edit' id=item.id %}" class="{{ templateHelpers.classes.link }}">{{ item.language.name }}</a></td>
+						<td class="tr">{% if item.surveyCount > 0 %}<a href="{% url 'survey:admin_survey_list' %}?filter={{ item.name }}" class="{{ templateHelpers.classes.link }} pl4">{{ item.surveyCount }}</a>{% else %}0{% endif %}</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+	</div>
+	
+
+{% endblock %}

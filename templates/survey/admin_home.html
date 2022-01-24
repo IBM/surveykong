@@ -56,14 +56,17 @@
 			{% url 'survey:admin_project_list' as url %}
 			{% include 'survey/partials/admin_home_item.html' with url=url title='Projects' totalNum=counts.projects description='Projects have campaigns' %}
 
-			{% url 'survey:campaign_responses_list' as url %}
-			{% include 'survey/partials/admin_home_item.html' with url=url title='Responses' totalNum=counts.campaigns description='Duh' %}
-			
 			{% url 'survey:admin_question_list' as url %}
 			{% include 'survey/partials/admin_home_item.html' with url=url title='Questions' totalNum=counts.questions description='Manage all questions' %}
 			
+			{% url 'survey:campaign_responses_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Responses' totalNum=counts.campaigns description='Duh' %}
+			
 			{% url 'survey:admin_surveybuilder_list' as url %}
 			{% include 'survey/partials/admin_home_item.html' with url=url title='Survey builder' totalNum=counts.surveys description='Create and edit surveys' %}
+			
+			{% url 'survey:admin_translation_list' as url %}
+			{% include 'survey/partials/admin_home_item.html' with url=url title='Translations' totalNum=counts.translations description='UI translations' %}
 			
 		</div>
 		

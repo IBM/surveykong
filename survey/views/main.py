@@ -15,8 +15,11 @@ from django.http import HttpResponse, HttpResponseNotAllowed, JsonResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
+from django.utils.cache import patch_vary_headers
 from django.utils.crypto import get_random_string
 from django.views.decorators.csrf import csrf_exempt
+
+from urllib import parse
 
 from middleware.login_required import login_exempt
 
@@ -36,9 +39,9 @@ def home(request):
 		return render(request, '403.html', {}, status=403)
 		
 	context = {
-		'latestCampaigns': Campaign.objects.all().order_by('-created_at')[:3],
-		'mostActiveCampaigns': Campaign.objects.all().order_by('-response_count')[:3],
-		'mostRecentResponses': Response.objects.all().order_by('-created_at')[:3],
+		'latestCampaigns': Campaign.objects.all().select_related('survey', 'project').order_by('-created_at')[:5],
+		'mostActiveCampaigns': Campaign.objects.all().select_related('survey', 'project').order_by('-response_count')[:5],
+		'mostRecentResponses': Response.objects.all().select_related('campaign', 'campaign__survey', 'campaign__project').order_by('-created_at')[:5],
 		'leftNavHighlight': 'dashboard',
 	}
 	
@@ -56,7 +59,7 @@ def survey_standalone_display(request, uid):
 	Standalone survey version.
 	'''
 	try:
-		campaign = Campaign.objects.filter(uid=uid).select_related('survey',).prefetch_related('survey__page_survey','survey__page_survey__question_order_page', 'survey__page_survey__question_order_page__question').first()
+		campaign = Campaign.objects.filter(uid=uid).select_related('survey').prefetch_related('survey__page_survey','survey__page_survey__question_order_page', 'survey__page_survey__question_order_page__question', 'survey__language__translation_language').first()
 		campaignStats = campaign.getStatsForUser(request)
 		
 		pagesWithQuestions = []
@@ -71,6 +74,7 @@ def survey_standalone_display(request, uid):
 	
 	context = {
 		'campaign': campaign,
+		'englishTranslations': Translation.objects.get(language__name='English'),
 		'campaignStats': campaignStats,
 		'currentView': 'standalone',
 		'pagesWithQuestions': pagesWithQuestions,
@@ -105,7 +109,7 @@ def survey_iframe_display(request):
 	'''
 	try:
 		uid = request.GET.get('cuid')
-		campaign = Campaign.objects.filter(uid=uid).select_related('survey',).prefetch_related('survey__page_survey','survey__page_survey__question_order_page', 'survey__page_survey__question_order_page__question').first()
+		campaign = Campaign.objects.filter(uid=uid).select_related('survey',).prefetch_related('survey__page_survey','survey__page_survey__question_order_page', 'survey__page_survey__question_order_page__question', 'survey__language__translation_language').first()
 		campaignStats = campaign.getStatsForUser(request)
 		
 		pagesWithQuestions = []
@@ -126,6 +130,7 @@ def survey_iframe_display(request):
 		
 	context = {
 		'campaignStats': campaignStats,
+		'englishTranslations': Translation.objects.get(language__name='English'),
 		'currentView': 'intercept',
 		'pagesWithQuestions': pagesWithQuestions,
 	}
@@ -217,6 +222,22 @@ def preconfig_javascript(request, uid):
 	responseText = render_to_string('survey/preconfig_javascript.js', context=context, request=request)
 	responseText = responseText.replace('\n','').replace('\t','')
 	response = HttpResponse(responseText, content_type='text/javascript')
+	
+	try:
+		allowOriginValue = request.META['HTTP_ORIGIN']
+	except:
+		try:
+			refUrl = request.META['HTTP_REFERER']
+			refUrlInfo = parse.urlparse(refUrl)
+			allowOriginValue = f'{refUrlInfo.scheme}://{refUrlInfo.netloc}'
+		except:
+			allowOriginValue = '*'
+			
+	response['Access-Control-Allow-Origin'] = allowOriginValue
+	response['Access-Control-Allow-Credentials'] = 'true'
+	
+	patch_vary_headers(response, ["Origin"])
+	
 	return response
 	
 
@@ -241,6 +262,15 @@ def project_config_javascript(request, uid):
 	interceptCampaign = project.getActiveMatchingInterceptCampaign(pageUrl)
 	interceptCampaignStats = None
 	setLotteryCookie = False
+	
+	# If it's Firefox and non-IBM domain, don't allow intercept
+	# Firefox has ibm.com on the list of tracker sites and doesn't send cookies, so for that user,
+	#   it's like they open every page in an incognito window and will get the intercept every page view.
+	try:
+		if 'Firefox' in request.META['HTTP_USER_AGENT'] and not 'ibm.com/' in pageUrl:
+			interceptCampaign = None
+	except:
+		pass
 	
 	# If there's an intercept and they don't have the lottery cookie yet, see if they are a winner.
 	#if interceptCampaign and not request.COOKIES.get(interceptCampaign.uid, None):
@@ -280,11 +310,19 @@ def project_config_javascript(request, uid):
 	response = HttpResponse(responseText, content_type='text/javascript')
 	
 	try:
-		reqDomain = request.META['HTTP_ORIGIN']
+		allowOriginValue = request.META['HTTP_ORIGIN']
 	except:
-		reqDomain = '*'
-	response['Access-Control-Allow-Origin'] = reqDomain
+		try:
+			refUrl = request.META['HTTP_REFERER']
+			refUrlInfo = parse.urlparse(refUrl)
+			allowOriginValue = f'{refUrlInfo.scheme}://{refUrlInfo.netloc}'
+		except:
+			allowOriginValue = '*'
+			
+	response['Access-Control-Allow-Origin'] = allowOriginValue
 	response['Access-Control-Allow-Credentials'] = 'true'
+	
+	patch_vary_headers(response, ["Origin"])
 	
 	# Campaign Session tracker.
 	if interceptCampaignStats and interceptCampaignStats['setSessionCookie']:

@@ -199,7 +199,7 @@
 		
 		injectOnReady(function () {
 			if (!document.getElementById('surveykong-buttons-con')) {
-				appendToBody('<div id="surveykong-buttons-con" style="position:fixed;z-index:99999998;font-family:IBM Plex Sans,helvetica neue,helvetica,sans-serif;display:flex;"></div>');
+				appendToBody('<div id="surveykong-buttons-con" style="position:fixed;z-index:99999998;font-family:IBM Plex Sans,helvetica neue,helvetica,sans-serif;display:flex;align-items:end;"></div>');
 				moveAndShowButton(document.getElementById('surveykong-buttons-con'));
 			}
 		});
@@ -287,7 +287,8 @@
 		
 		function injectSurveyButton () {
 			if (!document.getElementById('surveykong-survey-button')) {
-				document.getElementById('surveykong-buttons-con').innerHTML += `<a id="surveykong-survey-button" href="#" onclick="SK.showSurvey('{{ buttonCampaign.uid }}');return false;" style="display:block;background-color:{{ buttonCampaign.button.background_color }};color:{{ buttonCampaign.button.text_color }};padding:.5rem;text-decoration:none;">{{ buttonCampaign.button.text }}</a>`;
+				document.getElementById('surveykong-buttons-con').innerHTML += `<a id="surveykong-survey-button" href="#" onclick="SK.showSurvey('{{ buttonCampaign.uid }}');return false;" style="display:block;font-size:14px;line-height:14px;border-radius:2px;background-color:{{ buttonCampaign.button.background_color }};color:{{ buttonCampaign.button.text_color }};text-decoration:none;{% if buttonCampaign.button.small_button %}padding:5px 8px;{% else %}padding:10px 8px{% endif %}">{{ buttonCampaign.button.text }}</a>`;
+)
 			}
 		}
 		

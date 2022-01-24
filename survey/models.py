@@ -89,6 +89,7 @@ class Button(models.Model):
 		('left', 'Left'),
 	], default='right', max_length=8)
 	offset = models.PositiveIntegerField(default=50, validators=[MinValueValidator(0), MaxValueValidator(100)], help_text='The top/left button offset, in %')
+	small_button = models.BooleanField(default=False)
 	
 	class Meta:
 		ordering = ['text']
@@ -190,45 +191,22 @@ class Project(models.Model):
 		'''
 		activeCampaigns = Campaign.objects.filter(project=self, survey_trigger_type='intercept', active=True).select_related('survey', 'survey_invite')
 		
+		activeCampaignsWithUrlMatching = activeCampaigns.exclude(url_match_string='', url_match_regex='').order_by('-url_match_regex')
+				
 		# Get an active one that doesn't have URL match. This is the default.
-		campaign = activeCampaigns.filter(url_match_string='').first()
+		campaign = activeCampaigns.filter(url_match_string='', url_match_regex='').first()
 		
-		# Now loop thru ones with URL matches and see if there's a match 
-		#  that would override a default non-URL matched campaign and use it instead.
-		if url:
-			match = False
-			for urlMatchCampaign in activeCampaigns.exclude(url_match_string=''):
-				url = url.replace('https://','')
-				stringToMatch = urlMatchCampaign.url_match_string.replace('https://','')
-				
-				if urlMatchCampaign.url_match_condition == 'startsWith':
-					if url.startswith(stringToMatch):
-						match = True
-				elif urlMatchCampaign.url_match_condition == 'contains':
-					if stringToMatch in url:
-						match = True
-				elif urlMatchCampaign.url_match_condition == 'exactMatch':
-					if url == stringToMatch:
-						match = True
-				elif urlMatchCampaign.url_match_condition == 'endsWith':
-					if url.endswith(stringToMatch):
-						match = True
-				
-				# If match and include, then we found one to use, so stop.
-				if match and urlMatchCampaign.url_match_action == 'include':
-					campaign = urlMatchCampaign
-					break
-				# If match and exclude, then the URL shouldn't be used on that campaign, so keep going.
-				# If excluding URLs and this URL is not excluded for this campaign (no match),
-				#   then this is the campaign to use.
-				if urlMatchCampaign.url_match_action == 'exclude' and not match:
-					campaign = urlMatchCampaign
-					break
-					
+		# Now find one with URL matches and see if there's a match 
+		# If we get one, it overrides the default non-matching one.
+		if url and activeCampaignsWithUrlMatching:
+			urlMatchedCampaign = Project.matchCampaignByUrl(activeCampaignsWithUrlMatching, url)
+			if urlMatchedCampaign:
+				campaign = urlMatchedCampaign
+		
 		return campaign
 		
 	
-	def getActiveMatchingButtonCampaign(self, url):
+	def getActiveMatchingButtonCampaign(self, url=None):
 		'''
 		Same as intercept campaign URL match above, but for BUTTON campaign.
 		Find the first active BUTTON campaign for the project that doesn't have a URL match.
@@ -237,42 +215,66 @@ class Project(models.Model):
 		'''
 		activeCampaigns = Campaign.objects.filter(project=self, survey_trigger_type='button', active=True).select_related('button')
 		
-		# Get an active one that doesn't have URL match. This is the default.
-		campaign = activeCampaigns.filter(url_match_string='').first()
+		activeCampaignsWithUrlMatching = activeCampaigns.exclude(url_match_string='', url_match_regex='').order_by('-url_match_regex')
 		
-		# Now loop thru ones with URL matches and see if there's a match 
-		#  that would override a default non-URL matched campaign and use it instead.
-		match = False
-		for urlMatchCampaign in activeCampaigns.exclude(url_match_string=''):
-			url = url.replace('https://','')
-			stringToMatch = urlMatchCampaign.url_match_string.replace('https://','')
-			
-			if urlMatchCampaign.url_match_condition == 'startsWith':
-				if url.startswith(stringToMatch):
-					match = True
-			elif urlMatchCampaign.url_match_condition == 'contains':
-				if stringToMatch in url:
-					match = True
-			elif urlMatchCampaign.url_match_condition == 'exactMatch':
-				if url == stringToMatch:
-					match = True
-			elif urlMatchCampaign.url_match_condition == 'endsWith':
-				if url.endswith(stringToMatch):
-					match = True
-			
-			# If match and include, then we found one to use, so stop.
-			if match and urlMatchCampaign.url_match_action == 'include':
-				campaign = urlMatchCampaign
-				break
-			# If match and exclude, then the URL shouldn't be used on that campaign, so keep going.
-			# If excluding URLs and this URL is not excluded for this campaign (no match),
-			#   then this is the campaign to use.
-			if urlMatchCampaign.url_match_action == 'exclude' and not match:
-				campaign = urlMatchCampaign
-				break
-				
+		# Get an active one that doesn't have URL match. This is the default.
+		campaign = activeCampaigns.filter(url_match_string='', url_match_regex='').first()
+		
+		# Now find one with URL matches and see if there's a match 
+		# If we get one, it overrides the default non-matching one.
+		if url and activeCampaignsWithUrlMatching:
+			urlMatchedCampaign = Project.matchCampaignByUrl(activeCampaignsWithUrlMatching, url)
+			if urlMatchedCampaign:
+				campaign = urlMatchedCampaign
+		
 		return campaign
 	
+	
+	@staticmethod
+	def matchCampaignByUrl(campaigns, url):
+		campaign = False
+		
+		if url:
+			match = False
+			
+			for urlMatchCampaign in campaigns:
+				url = url.replace('http://','')
+				stringToMatch = urlMatchCampaign.url_match_string.replace('https://','')
+				
+				if urlMatchCampaign.url_match_regex:
+					try:
+						pattern = re.compile(urlMatchCampaign.url_match_regex)
+						if pattern.search(url):
+							campaign = urlMatchCampaign
+							break
+					except:
+						pass
+				else:
+					if urlMatchCampaign.url_match_condition == 'exactMatch':
+						if url == stringToMatch:
+							match = True
+					elif urlMatchCampaign.url_match_condition == 'startsWith':
+						if url.startswith(stringToMatch):
+							match = True
+					elif urlMatchCampaign.url_match_condition == 'contains':
+						if stringToMatch in url:
+							match = True
+					elif urlMatchCampaign.url_match_condition == 'endsWith':
+						if url.endswith(stringToMatch):
+							match = True
+					
+					# If match and include, then we found one to use, so stop.
+					if match and urlMatchCampaign.url_match_action == 'include':
+						campaign = urlMatchCampaign
+						break
+					# If match and exclude, then the URL shouldn't be used on that campaign, so keep going.
+					# If excluding URLs and this URL is not excluded for this campaign (no match),
+					#   then this is the campaign to use.
+					if urlMatchCampaign.url_match_action == 'exclude' and not match:
+						campaign = urlMatchCampaign
+						break
+						
+		return campaign
 
 class Survey(models.Model):
 	created_by = models.ForeignKey(User, related_name='survey_created_by', on_delete=models.PROTECT)
@@ -385,6 +387,9 @@ class Campaign(models.Model):
 	visitor_percent = models.PositiveIntegerField(default=100, validators=[MinValueValidator(0), MaxValueValidator(100)])
 	limit_one_submission = models.BooleanField(default=True, help_text='Users will only be allowed to take the survey once, every ## days.')
 	limit_one_submission_days = models.PositiveIntegerField(default=90, help_text='Only used if \'Limit one submission\' is enabled. Allows the user to enter the pool of participants after these many days.')
+	
+	url_match_regex = models.CharField(max_length=500, blank=True, help_text='Advanced regex matching for URLs. Use EITHER this one field OR the basic versions below.')
+		
 	url_match_action = models.CharField(default='', choices=[
 		('exclude','Exclude'),
 		('include','Include'),
@@ -441,9 +446,9 @@ class Campaign(models.Model):
 		
 		self.setActiveState()
 		
-		# Force 1-take if it's a vote survey. 
-		if self.survey.survey_type == 'vote' and not self.limit_one_submission:
-			self.limit_one_submission = True
+		# # Force 1-take if it's a vote survey. 
+		# if self.survey.survey_type == 'vote' and not self.limit_one_submission:
+		# 	self.limit_one_submission = True
 	
 	
 	def resetUserStatusFlags(self):
@@ -1145,3 +1150,30 @@ class ReleaseNote(models.Model):
 		return '{} : {}'.format(self.release_number, self.date)
 
 
+class Translation(models.Model):
+	created_at = models.DateTimeField(auto_now_add=True)
+	created_by = models.ForeignKey(User, related_name='translation_created_by', on_delete=models.PROTECT)
+	updated_at = models.DateTimeField(auto_now=True)
+	updated_by = models.ForeignKey(User, related_name='translation_updated_by', on_delete=models.PROTECT)
+	
+	language = models.ForeignKey(Language, related_name='translation_language', on_delete=models.PROTECT)
+	previous = models.CharField(max_length=64, null=True, blank=True, help_text='Previous')
+	next = models.CharField(max_length=64, null=True, blank=True, help_text='Next')
+	submit = models.CharField(max_length=64, null=True, blank=True, help_text='Submit')
+	ibm_internal_privacy_statement = models.CharField(max_length=255, null=True, blank=True, help_text='IBM internal privacy statement', verbose_name='IBM internal privacy statement')
+	privacy_statement_url = models.URLField(max_length=255, null=True, blank=True, help_text='(URL for above link)')
+	
+	catch_you_bad_time = models.CharField(max_length=128, null=True, blank=True, help_text='Catch you at a bad time?')
+	remind_me_later = models.CharField(max_length=128, null=True, blank=True, help_text='Remind me later')
+	expected_survey_time = models.CharField(max_length=128, null=True, blank=True, help_text='Expected survey time: 2 minutes')
+	email_me_a_link = models.CharField(max_length=128, null=True, blank=True, help_text='Email me a link')
+	send = models.CharField(max_length=64, null=True, blank=True, help_text='Send')
+	processing = models.CharField(max_length=64, null=True, blank=True, help_text='Processing')
+	
+	class Meta:
+		ordering = ['language']
+		
+	def __str__(self):
+		return self.language.name
+	
+	

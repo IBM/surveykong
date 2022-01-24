@@ -39,6 +39,7 @@
 					<div class="flex custom-menunav">
 						<a href="{% url 'survey:home' %}" class="b ph4 {{ templateHelpers.classes.menunavLink }}" style="width:160px;">SurveyKong</a>
 						<div class="w3 relative" style="background: url({% static 'shared/img/logo.svg' %}) -2px 50% / 40px no-repeat;width:36px;">&nbsp;</div>
+						<a href="{% url 'survey:admin_home' %}" class="{{ templateHelpers.classes.menunavLink }} ml3">Admin center</a>
 						{% if request.user.is_superuser %}
 							<a href="{% url 'admin:index' %}" class="{{ templateHelpers.classes.menunavLink }} ml3">Django admin</a>
 						{% endif %}
@@ -117,6 +118,11 @@
 						<div class="{{ templateHelpers.classes.leftnavText }}">Languages</div>
 					{% else %}
 						<a class="{{ templateHelpers.classes.leftnavLink }}" href="{% url 'survey:admin_language_list' %}">Languages</a>
+					{% endif %}
+					{% if leftNavHighlight == 'translations' %}
+						<div class="{{ templateHelpers.classes.leftnavText }}">Translations</div>
+					{% else %}
+						<a class="{{ templateHelpers.classes.leftnavLink }}" href="{% url 'survey:admin_translation_list' %}">Translations</a>
 					{% endif %}
 					<a class="{{ templateHelpers.classes.leftnavLink }}" href="{% url 'survey:admin_home' %}">more...</a>
 				

@@ -47,20 +47,20 @@
 				<div id="custom-survey-buttons">
 					<div class="bo-fadein mw6 flex items-center justify-between">
 						<div id="custom-previous-button">
-							<a href="#" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }}">Previous</a>
+							<a href="#" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }}">{{ campaign.survey.language.translation_language.first.previous|default:englishTranslations.previous }}</a>
 						</div>
 						
 						<div id="custom-next-button">
-							<a href="#" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }}">Next</a>
+							<a href="#" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }}">{{ campaign.survey.language.translation_language.first.next|default:englishTranslations.next }}</a>
 						</div>
 							
 						<div id="custom-submit-button" class="dn">
 							<div class="flex">
 								<div id="custom-processing" class="flex items-center mr3" style="display:none;">
 									<div class="{{ templateHelpers.classes.spinner }} bw2 w2 h2 dib"></div>
-									<div id="custom-processing-msg" class="dib ml2 f6">Processing</div>
+									<div id="custom-processing-msg" class="dib ml2 f6">{{ campaign.survey.language.translation_language.first.processing|default:englishTranslations.processing }}</div>
 								</div>
-								<button class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenPriButton }}">Submit</button>
+								<button class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenPriButton }}">{{ campaign.survey.language.translation_language.first.submit|default:englishTranslations.submit }}</button>
 							</div>
 						</div>
 					</div>

@@ -226,3 +226,12 @@ class CampaignUserInfoForm(ModelForm):
 		exclude = ['created_by', 'updated_by']
 		widgets = {}
 		
+class TranslationForm(ModelForm):
+	required_css_class = requiredCssClass
+	
+	class Meta:
+		model = Translation
+		readonly_fields = []
+		exclude = ['created_by', 'updated_by']
+		widgets = {}
+	

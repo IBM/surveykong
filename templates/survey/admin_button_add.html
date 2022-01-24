@@ -24,6 +24,7 @@
 				buttonInPlace.innerText = document.querySelector('#id_text').value;
 				buttonInPlace.style.backgroundColor = document.querySelector('#id_background_color').value;
 				buttonInPlace.style.color = generateAccessibleTextColor(document.querySelector('#id_background_color').value);
+				setSmallButton();
 			}
 			
 			
@@ -40,7 +41,7 @@
 			
 			
 			function moveButton () {
-				var styles,
+				var styles = '',
 					pos = document.getElementById('id_position').value,
 					offset = parseInt(document.getElementById('id_offset').value);
 				
@@ -98,12 +99,25 @@
 						break;
 				}
 				
-				buttonInPlace.style.cssText += styles;
+				styles += 'line-height:14px;';
+				buttonInPlace.style.cssText += styles
+				setSmallButton();
 			}
 			
 			
+			function setSmallButton () {
+				if (document.getElementById('id_small_button').checked) {
+					buttonInPlace.style.padding = '5px 8px';
+					button.style.padding = '5px 8px';
+				}
+				else {
+					buttonInPlace.style.padding = '10px 8px';
+					button.style.padding = '10px 8px';
+				}	
+			}
+			
 			function setupPreviewPosition () {
-				$('#id_position').on('change', moveButton);
+				$('#id_position, #id_small_button').on('change', moveButton);
 				document.getElementById('id_offset').addEventListener('input', moveButton);
 			}
 			
@@ -137,9 +151,9 @@
 		
 		<div class="w-40-ns w-100 pl5-ns">
 			<div class="b">Preview</div>
-			<div class="mt3"><button id="custom-preview-button" class="{{ templateHelpers.classes.surveyTriggerButton }}"></button></div>
+			<div class="mt3"><a id="custom-preview-button" style="display:inline-block;font-size:14px;line-height:14px;border-radius:2px;text-decoration:none;"></a></div>
 			
-			<div class="mt3"><button id="custom-button-in-place" class="fixed {{ templateHelpers.classes.surveyTriggerButton }}"></button></div>
+			<div class="mt3"><a id="custom-button-in-place" style="position:fixed;display:block;font-size:14px;line-height:14px;border-radius:2px;text-decoration:none;"></a></div>
 		</div>
 				
 	</div>

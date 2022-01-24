@@ -39,18 +39,18 @@
 							<div class="mb4 f6 pa3 bg-near-white">
 								<div class="flex-ns justify-between">
 									<div class="mw5-ns mb0-ns mb3">
-										<div class="b h1-ns mb4-ns mb2">Catch you at a bad time?</div>
-										<button id="custom-takelater-button" style="padding-top:0;padding-bottom:0;" class="w-100-ns h2 {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenSecButton }}">Remind me later</button>
+										<div class="b h1-ns mb4-ns mb2">{{ campaignStats.campaign.survey.language.translation_language.first.catch_you_bad_time|default:englishTranslations.catch_you_bad_time }}</div>
+										<button id="custom-takelater-button" style="padding-top:0;padding-bottom:0;" class="w-100-ns h2 {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenSecButton }}">{{ campaignStats.campaign.survey.language.translation_language.first.remind_me_later|default:englishTranslations.remind_me_later }}</button>
 									</div>
 									<div class="dn db-ns w3-ns tc self-end">
 										<div class="b f4 self-end mb1">or</div>
 									</div>
 									<div class="w-50-ns">
-										<div class="h1-ns mb2">Expected survey time: <span class="b">2 minutes</span></div>
-										<div class="mb2">Email me a link:</div>
+										<div class="h1-ns mb2">{{ campaignStats.campaign.survey.language.translation_language.first.expected_survey_time|default:englishTranslations.expected_survey_time }}</div>
+										<div class="mb2">{{ campaignStats.campaign.survey.language.translation_language.first.email_me_a_link|default:englishTranslations.email_me_a_link }}:</div>
 										<div class="flex items-center relative">
 											<div class="w-100"><input id="custom-email-link-email" style="padding-right: 70px;" class="h2 w5" type="email" value="" placeholder="youremail@ibm.com" aria-label="Email address"></div>
-											<button id="custom-email-link-button" style="padding-top:0;padding-bottom:0;" class="absolute right-0 h2 {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenSecButton }}">Send</button>
+											<button id="custom-email-link-button" style="padding-top:0;padding-bottom:0;" class="absolute right-0 h2 {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenSecButton }}">{{ campaignStats.campaign.survey.language.translation_language.first.send|default:englishTranslations.send }}</button>
 										</div>
 									</div>
 								</div>
@@ -69,20 +69,20 @@
 			<div id="custom-survey-buttons">
 				<div class="bo-fadein mb3 flex items-center justify-between">
 					<div id="custom-previous-button">
-						<a href="#" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }}">Previous</a>
+						<a href="#" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }}">{{ campaignStats.campaign.survey.language.translation_language.first.previous|default:englishTranslations.previous }}</a>
 					</div>
 					
 					<div id="custom-next-button">
-						<a href="#" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }}">Next</a>
+						<a href="#" class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }}">{{ campaignStats.campaign.survey.language.translation_language.first.next|default:englishTranslations.next }}</a>
 					</div>
 						
 					<div id="custom-submit-button" class="dn">
 						<div class="flex">
 							<div id="custom-processing" class="flex items-center mr3" style="display:none;">
 								<div class="{{ templateHelpers.classes.spinner }} bw2 w2 h2 dib"></div>
-								<div id="custom-processing-msg" class="dib ml2 f6">Processing</div>
+								<div id="custom-processing-msg" class="dib ml2 f6">{{ campaignStats.campaign.survey.language.translation_language.first.processing|default:englishTranslations.processing }}</div>
 							</div>
-							<button class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenPriButton }}">Submit</button>
+							<button class="{{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.greenPriButton }}">{{ campaignStats.campaign.survey.language.translation_language.first.submit|default:englishTranslations.submit }}</button>
 						</div>
 					</div>
 				</div>
@@ -98,6 +98,16 @@
 			window.addEventListener('message', function (event) {
 				if (event.data.message == 'parentUrl') {
 					document.getElementById('custom-url').value = event.data.url;
+					{% if not debug %}
+						if (event.data.url.startsWith('http://localhost') || event.data.url.startsWith('http://127.0.0.1')) {
+							var bts = document.querySelector('#custom-survey-buttons');
+								bt = document.querySelector('#custom-submit-button').querySelector('button');
+							bt.disabled = true;
+							bt.title = 'Form submittion not allowed on non-HTTPS localhost URLs';
+							bts.before(document.createElement("div"));
+							bts.previousSibling.innerHTML = '<div class="f6 mb2 red b">Form submittion not allowed on non-HTTPS localhost URLs</div>';
+						}
+					{% endif %}
 				}
 			});
 			
@@ -108,6 +118,15 @@
 				},450);
 			}
 			
+			
+			function validateEmail (email) {
+				return String(email).toLowerCase()
+				.match(
+					/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+				);
+			}
+			
+
 			{% if campaignStats.campaign.survey_trigger_type == 'intercept' %}
 				document.getElementById('custom-takelater-button').addEventListener('click', function (evt) {
 					evt.preventDefault();
@@ -135,12 +154,21 @@
 				document.getElementById('custom-email-link-button').addEventListener('click', function (evt) {
 					evt.preventDefault();
 					
-					if (document.getElementById('custom-email-link-email').value == '') {
+					var emailValue = document.getElementById('custom-email-link-email').value;
+					
+					
+					if (emailValue == '') {
 						alert('You forgot to put your email address');
 						return;
 					}
+					
+					if (!validateEmail(emailValue)) {
+						alert('Your email address is invalid, please check it and try again');
+						return;
+					}
+					
 					var xhr = new XMLHttpRequest(),
-						params = 'cuid={{ campaignStats.campaign.uid }}&email=' + document.getElementById('custom-email-link-email').value;
+						params = 'cuid={{ campaignStats.campaign.uid }}&email=' + emailValue;
 					xhr.onreadystatechange = function() {
 						if (xhr.readyState == 4 && xhr.status == 200) {
 							document.getElementById('custom-content').innerHTML = '<div>You\'re all set, we just emailed you a link.';
