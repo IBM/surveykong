@@ -1,0 +1,73 @@
+{% extends adminTemplate %}
+{% load static %}
+{% load common_templatetags %}
+
+
+{% block browserTitle %}Admin - Add a new {{ modelMeta.verbose_name }}{% endblock %}
+
+{% block pageTitle %} Add a new {{ modelMeta.verbose_name }} {% endblock %}
+
+{% block pageSubtitle %} {% endblock %}
+
+{% block extraFiles %}
+	
+{% endblock %}
+
+
+{% block content %}
+	
+	<style>
+		.dn {
+			display: none;
+		}
+	</style>
+		
+	<div class="{{ templateHelpers.classes.grid }} mt4">
+		
+		<div class="mb4 mw7"><strong>NOTE:</strong> If you do not have a translation for a term, leave it blank and the English version will be used.</div>
+		
+		<form class="w-100 mb4" action="" method="post">
+			{% include 'partials/form_error_messages.html' with form=form %}
+		
+			{% csrf_token %}
+			
+			{% for field in form.visible_fields %}
+				
+				<div id="{{field.name }}-row" class="flex-ns items-center mb4">
+					<div class="pr3-ns mb3 {{ labelWidthClass|default:'custom-form-horizontal-label' }}">{{ field.label_tag }}</div>
+					<div class="mw6 w-100">{{ field }}<div class="mt2 dark-green">{{ field.help_text|safe }}</div></div>
+				</div>
+				{% if field.errors %}
+					<div class="flex mb3">
+						<div class="pr3-ns {{ labelWidthClass|default:'custom-form-horizontal-label' }}"></div>
+						<div class="dark-red">↑ {{ field.errors.as_text }}</div>
+					</div>
+				{% endif %}
+				
+			{% endfor %}
+		
+			<button class="mt4 w4 mr4-ns dib-ns db {{ templateHelpers.classes.smallButton }} {{ templateHelpers.classes.bluePriButton }} ">Save</button>
+		
+			{% if form.hidden_fields %}
+				<div class="b mt5 mb3">Read-only fields</div>
+				
+				<style>
+					.custom-readonly-fields .custom-form-horizontal-label + * {
+						cursor: not-allowed;
+					}
+				</style>
+				<div class="custom-readonly-fields mb5">
+					{% for field in form.hidden_fields %}
+						{% include 'partials/form_field_horizontal_readonly.html' with field=field %}
+					{% endfor %}
+				</div>
+			{% endif %}
+		
+		</form>
+		
+		{% block deleteButton %}{% endblock %}
+		
+	</div>
+		
+{% endblock %}
+

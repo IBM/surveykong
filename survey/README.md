@@ -118,10 +118,18 @@ If there is a feedback/button survey to show, the JS injects a button (survey tr
 When either of those events happen or the button is clicked, the JS injects an iframe on the page in a modal window. The iframe is the survey. The iframe survey posts to itself via the API and then shows the "thank you" message.
 
 
+# Debugging
+First thing first: Ensure the page has the proper project ID in their script tag, and ensure the page has implemented it properly. Here's how:  Open the browser console (hit F12) and go to the "network" tab. Reload the page and once it's complete, filter the list on "beeheard" and you should see two JS file requests with the project's ID as the file name. If you don't then the page doesn't have BeeHeard on the page (properly).
 
+Second: BeeHeard only works on HTTPS pages. Typically during development, the dev will test on localhost and it will not be HTTPS, therefore it won't work. Ensure the page where the issue is is using HTTPS.
 
-
-
-
-
-
+Next, things to check in BeeHeard admin for the project/campaign:
+- In the project list, does the project show the proper # of campaigns? If not, then fix/add the campaigns as needed.
+- In the campaign list, are the campaigns "enabled"?
+- Edit the campaign and look at the settings:
+	- Are there start/stop dates set and are we outside of those?
+	- Is there a response limit and we're past that?
+	- Is there URL matching? Is it correct?
+	- Is the "feed to LUX" box checked?
+	- Is the "trigger type" correct? (intercept vs. button)
+	- Is the "mouseout" box checked? (or not if it's a manually triggered one)

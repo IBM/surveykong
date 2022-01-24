@@ -147,6 +147,7 @@ def api_adminaccess(request):
 ##
 @xframe_options_exempt
 @login_exempt
+@csrf_exempt
 def api_submit_response(request):
 	'''
 	Surveys post to this URL. Store the response and return message to display.
@@ -162,11 +163,26 @@ def api_submit_response(request):
 		campaign.setUserStatus(request.session['uuid'], 'submitted')
 		response.sendSlackNotification()
 	except Exception as ex:
-		print(f'Error: api_submit_response couldn\'t submit response: {ex}')
-		return JsonResponse({'results': {'message': f'{ex}'}}, status=400)
+		try:
+			userInfo, created = campaign.getCreateUserInfo(request)
+			response = campaign.storeResponse(request.session['uuid'], request)
+			campaign.setUserStatus(request.session['uuid'], 'submitted')
+			response.sendSlackNotification()
+			if campaign.survey.survey_type == 'feedback':
+				response.sendToLux()
+		except Exception as ex:
+			cuid = campaign.uid if campaign else 'none'
+			uuid = request.session['uuid'] if request.session['uuid'] else 'none'
+			print(f'Error: api_submit_response failed - CUID:{cuid}:, UID :{uuid}:, error: - {ex}')
+			return JsonResponse({'results': {'message': f'{ex}'}}, status=400)
 	
 	try:
+		projectNameToUse = campaign.project.getDisplayName()
+		if campaign.custom_project_name:
+			projectNameToUse = campaign.custom_project_name
+		
 		thankyou = campaign.survey_thankyou.message
+		thankyou = thankyou.replace('{projectname}', projectNameToUse)
 	except:
 		thankyou = MISSING_THANKYOU_MESSAGE
 	

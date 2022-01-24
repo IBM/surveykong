@@ -150,6 +150,7 @@
 			$(viewingPage).prevAll('.custom-survey-page').each(function () {
 				if (pageHasVisibleQustions(this)) {
 					showPage(this);
+					return false;
 				}
 			});			
 		});

@@ -229,9 +229,9 @@
 		
 			{% csrf_token %}
 			
-			<div class="b">To manually trigger this {{ thisModelItem.survey_trigger_type }} campaign</div>
-			
 			{% if thisModelItem.id %}
+				<div class="b">To manually trigger this {{ thisModelItem.survey_trigger_type }} campaign</div>
+				
 				{% if thisModelItem.survey_trigger_type == 'intercept' %}
 					<div class="ml4">
 						<div class="mt3"><strong>Without</strong> rules/logic</div>
@@ -262,7 +262,10 @@
 			{% endif %}
 			
 			{% for field in form.visible_fields %}
-				{% include 'partials/form_field_horizontal.html' with field=field %}				
+				{% include 'partials/form_field_horizontal.html' with field=field %}
+				{% if field.name == 'url_match_regex' %}
+					<div class="mv3 b red">Use this ↑ OR ↓ (those 3 fields) to match URLs. DO NOT USE BOTH.</div>
+				{% endif %}
 			{% endfor %}
 			
 			<div class="mb4" id="answers-row">

@@ -8,61 +8,97 @@
 
 {% block extraFiles %}
 
+	<style>
+	
+		@media screen and (min-width: 60em) {
+			.custom-multi-cols {
+				column-count: 3;
+				column-gap: 2rem;
+			}
+		}
+	
+	</style>
+
+	{% include 'partials/tablewidget_files.inc' %}
 	
 {% endblock %}
 
 
 {% block content %}
 
-	<div class="{{ templateHelpers.classes.grid }} mt4">
+	<div class="{{ templateHelpers.classes.grid }} mv4">
 	
-		<div class="flex-l">
-			<div class="w-33-l mr4-l">
-				<div class="b mb4">Latest campaigns</div>
+		<div class="b">Documentation, reference, hints & tips</div>
+		<div class="mt3">- Read the <a class="inline-flex items-center {{ templateHelpers.classes.link }}" href="https://github.ibm.com/blackops/beeheard/tree/dev/survey" target="_blank"><span>survey directory README on Github</span><span class="mt1 ml1">{{ templateHelpers.html.icons.github|safe }}</span></a></div>
+		<div class="mt2">- Video reference guides, tutorials and debugging tips:</div>
+		<ul class="mt2 custom-multi-cols">
+			<li class="mb1"><a class="{{ templateHelpers.classes.link }}" target="_blank" href="https://secure.video.ibm.com/channel/23637008/video/131281373">Overview</a></li>
+			<li class="mb1"><a class="{{ templateHelpers.classes.link }}" target="_blank" href="https://secure.video.ibm.com/channel/23637008/video/131281372">Domains and projects</a></li>
+			<li class="mb1"><a class="{{ templateHelpers.classes.link }}" target="_blank" href="https://secure.video.ibm.com/channel/23637008/video/131281375">Surveys and questions</a></li>
+			<li class="mb1"><a class="{{ templateHelpers.classes.link }}" target="_blank" href="https://secure.video.ibm.com/channel/23637008/video/131281374">Survey display and logic</a></li>
+			<li class="mb1"><a class="{{ templateHelpers.classes.link }}" target="_blank" href="https://secure.video.ibm.com/channel/23637008/video/131281371">Campaigns</a></li>
+			<li class="mb1"><a class="{{ templateHelpers.classes.link }}" target="_blank" href="https://secure.video.ibm.com/channel/23637008/video/131281370">Admin debugging tips</a></li>
+		</ul>
+			
+		
+		<div class="b mt5 mb3">Latest campaigns</div>
 				
+		<table {{ templateHelpers.html.tableWidget.sortOnly|safe }} data-fixed-header="false" data-ordering="false">
+			<thead>
+				<tr>
+					<th class="w5">Project</th>
+					<th class="w5">Survey</th>
+					<th class="w3">Responses</th>
+					<th class="w3">Visitors</th>
+					<th>Last response</th>
+				</tr>
+			</thead>
+			<tbody>
 				{% for campaign in latestCampaigns %}
-					<div class="pa3 bg-near-white mb4">
-						<div><span class="b"><a class="{{ templateHelpers.classes.link }}" href="{% url 'survey:admin_campaign_list' %}?filter={{ campaign.uid|truncatechars:8 }}">{{ campaign.project.name }} - {{ campaign.survey.name }}</a></div>
-						<div class="flex mt2">
-							<div><a class="{{ templateHelpers.classes.link }}" href="{% url 'survey:campaign_responses_list' %}?uid={{ campaign.uid }}" target="_blank">Responses</a><span class="gray f6 ml1">({{ campaign.response_count }})</span></div>
-							{% if campaign.response_campaign.count > 0 %}<div class="ml3-ns"><strong>Last</strong>: {{ campaign.latest_response_date }}</div>{% endif %}
-							
-						</div>
-					</div>
+					{% include 'survey/partials/home_item.html' with campaign=campaign %}
 				{% endfor %}
-			</div>
-			
-			<div class="w-33-l mr4-l">
-				<div class="b mb4">Most active campaigns</div>
+			</tbody>
+		</table>
+		
+		<div class="b mt5 mb3">Campaigns with most responses</div>
 				
+		<table {{ templateHelpers.html.tableWidget.sortOnly|safe }} data-fixed-header="false" data-ordering="false">
+			<thead>
+				<tr>
+					<th class="w5">Project</th>
+					<th class="w5">Survey</th>
+					<th class="w3">Responses</th>
+					<th class="w3">Visitors</th>
+					<th>Last response</th>
+				</tr>
+			</thead>
+			<tbody>
 				{% for campaign in mostActiveCampaigns %}
-					<div class="pa3 bg-near-white mb4">
-						<div><span class="b"><a class="{{ templateHelpers.classes.link }}" href="{% url 'survey:admin_campaign_list' %}?filter={{ campaign.uid|truncatechars:8 }}" target="_blank">{{ campaign.project.name }} - {{ campaign.survey.name }}</a></div>
-						<div class="flex mt2">
-							<div><a class="{{ templateHelpers.classes.link }}" href="{% url 'survey:campaign_responses_list' %}?uid={{ campaign.uid }}" target="_blank">Responses</a><span class="gray f6 ml1">({{ campaign.response_count }})</span></div>
-							<div class="ml3-ns"><strong>Last</strong>: {{ campaign.latest_response_date }}</div>
-							
-						</div>
-					</div>
+					{% include 'survey/partials/home_item.html' with campaign=campaign %}
 				{% endfor %}
-			</div>
-			
-			<div class="w-33-l">
-				<div class="b mb4">Most recent responses</div>
+			</tbody>
+		</table>
 				
-				{% for response in mostRecentResponses %}
-					<div class="pa3 bg-near-white mb4">
-						<div><span class="b"><a class="{{ templateHelpers.classes.link }}" href="{% url 'survey:admin_campaign_list' %}?filter={{ response.campaign.uid|truncatechars:8 }}" target="_blank">{{ response.campaign.project.name }} - {{ response.campaign.survey.name }}</a></div>
-						<div class="flex mt2">
-							<div><a class="{{ templateHelpers.classes.link }}" href="{% url 'survey:campaign_responses_list' %}?uid={{ response.campaign.uid }}" target="_blank">Responses</a><span class="gray f6 ml1">({{ response.campaign.response_campaign.count }})</span></div>
-							<div class="ml3-ns"><strong>Last</strong>: {{ response.created_at }}</div>
-						</div>
-					</div>
-				{% endfor %}
-			</div>
 			
-		</div>
-	
+		<div class="b mt5 mb3">Most recent responses</div>
+				
+		<table {{ templateHelpers.html.tableWidget.sortOnly|safe }} data-fixed-header="false" data-ordering="false">
+			<thead>
+				<tr>
+					<th class="w5">Project</th>
+					<th class="w5">Survey</th>
+					<th class="w3">Responses</th>
+					<th class="w3">Visitors</th>
+					<th>Last response</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for response in mostRecentResponses %}
+					{% include 'survey/partials/home_item.html' with campaign=response.campaign %}
+				{% endfor %}
+			</tbody>
+		</table>
+
 	</div>
 
 {% endblock %}

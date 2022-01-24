@@ -213,14 +213,15 @@ def admin_home(request):
 			'campaigns': Campaign.objects.count(),
 			'domains': Domain.objects.count(),
 			'languages': Language.objects.count(),
+			'pages': Page.objects.count(),
 			'projects': Project.objects.count(),
+			'questionOrders': QuestionOrder.objects.count(),
 			'questions': Question.objects.count(),
 			'releaseNotes': ReleaseNote.objects.count(),
 			'surveyInvites': SurveyInvite.objects.count(),
-			'surveys': Survey.objects.count(),
-			'pages': Page.objects.count(),
-			'questionOrders': QuestionOrder.objects.count(),
 			'surveyThankyous': SurveyThankyou.objects.count(),
+			'surveys': Survey.objects.count(),
+			'translations': Translation.objects.count(),
 		},
 		
 	}
@@ -1295,3 +1296,42 @@ def admin_surveybuilder_edit(request, id):
 def admin_surveybuilder_delete(request):
 	return doCommonDeleteView(request, QuestionOrder)
 
+
+
+##
+##	/survey/admin/translation/
+##
+@user_passes_test(helpers.hasAdminAccess)
+def admin_translation_list(request):
+	thisModel = Translation
+	listItems = thisModel.objects.all().annotate(surveyCount=Count('language__survey_language'))
+	return doCommonListView(request, thisModel, listItems)
+
+
+##
+##	/translation/admin/translation/add/
+##
+@user_passes_test(helpers.hasAdminAccess)
+def admin_translation_add(request):
+	thisModel = Translation
+	return doCommonAddItemView(request, thisModel, viewTemplate='survey/admin_translation_add.html')
+
+
+##
+##	/translation/admin/translation/edit/<id>
+##
+@user_passes_test(helpers.hasAdminAccess)
+def admin_translation_edit(request, id):
+	thisModel = Translation
+	return doCommonEditItemView(request, thisModel, id, 'language', viewTemplate='survey/admin_translation_edit.html', allowDelete=True)
+
+
+##
+##	/button/admin/button/delete/
+##
+@user_passes_test(helpers.hasAdminAccess)
+def admin_translation_delete(request):
+	return doCommonDeleteView(request, Translation)
+
+
+##

@@ -176,10 +176,15 @@ STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 CDN_FILES_URL = ''
 
 # 1 year session cookie TTL.
+# 'None' allows cross-domain/cross-site usage. Requires secure
 SESSION_COOKIE_AGE = 31536000
-SESSION_COOKIE_SAMESITE = False
+SESSION_COOKIE_SAMESITE = 'None' 
 SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = False
 
+# 'None' allows cross-domain/cross-site usage. Requires secure.
+CSRF_COOKIE_SAMESITE = 'None'
+CSRF_COOKIE_SECURE = True
 
 ## Note: No custom sign-in/out URL go here. All done via normal app URL and views.
 
@@ -227,7 +232,7 @@ LOGIN_URL = '/survey/signin/'
 # Redirected after hijacking a user.
 LOGIN_REDIRECT_URL = '/'
 
-#X_FRAME_OPTIONS = 'SAMEORIGIN'
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 #SECURE_REFERRER_POLICY = 'unsafe-url' # Default: 'same-origin'
 
 DEFAULT_AUTO_FIELD='django.db.models.AutoField'

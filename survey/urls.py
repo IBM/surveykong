@@ -120,6 +120,11 @@ urlpatterns = [
 	url(r'^admin/surveythankyou/edit/(?P<id>[\w-]+)/$', admin_surveythankyou_edit, name='admin_surveythankyou_edit'),
 	url(r'^admin/surveythankyou/delete/$', admin_surveythankyou_delete, name='admin_surveythankyou_delete'),
 
+	url(r'^admin/translation/$', admin_translation_list, name='admin_translation_list'),
+	url(r'^admin/translation/add/$', admin_translation_add, name='admin_translation_add'),
+	url(r'^admin/translation/edit/(?P<id>[\w-]+)/$', admin_translation_edit, name='admin_translation_edit'),
+	url(r'^admin/translation/delete/$', admin_translation_delete, name='admin_translation_delete'),
+	
 
 	## Sign in/out.
 	url(r'^signin/$', signin, name='signin'),

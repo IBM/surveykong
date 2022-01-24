@@ -1,0 +1,8 @@
+<tr>
+	<td><a class="{{ templateHelpers.classes.link }}" href="{% url 'survey:admin_campaign_list' %}?filter={{ campaign.uid|truncatechars:8 }}">{{ campaign.project.name }}</a>
+	</td>
+	<td>{{ campaign.survey.name }}</td>
+	<td class="tr"><a class="{{ templateHelpers.classes.link }}" href="{% url 'survey:campaign_responses_list' %}?uid={{ campaign.uid }}" target="_blank">{{ campaign.response_count }}</a></td>
+	<td class="w3 tr">{{ campaign.unique_visitor_count }}</td>
+	<td>{% if campaign.response_campaign.count > 0 %}{{ campaign.latest_response_date }}{% else %}N/A{% endif %}</td>
+</tr>
