@@ -238,7 +238,7 @@ class Project(models.Model):
 			match = False
 			
 			for urlMatchCampaign in campaigns:
-				url = url.replace('http://','')
+				url = url.replace('https://','')
 				stringToMatch = urlMatchCampaign.url_match_string.replace('https://','')
 				
 				if urlMatchCampaign.url_match_regex:
