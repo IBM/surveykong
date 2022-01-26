@@ -302,7 +302,7 @@ def api_campaign_take_later(request):
 	
 	
 ##
-##	/survey/removetakelater/
+##	/survey/api/removetakelater/
 ##
 @login_exempt
 @csrf_exempt
@@ -312,16 +312,23 @@ def api_campaign_remove_take_later(request):
 	'''
 	try:
 		campaign = Campaign.objects.get(uid=request.POST.get('cuid'))
-		campaign.setUserStatus(request.session['uuid'], 'remove_take_later')
-	except Exception as ex:
+	except:
+		campaign = None
+	
+	uuid = request.session['uuid'] if request.session['uuid'] else 'none'
+	
+	if campaign:
 		try:
-			userInfo, created = campaign.getCreateUserInfo(request)
-			campaign.setUserStatus(request.session['uuid'], 'intercept_shown')
+			campaign.setUserStatus(uuid, 'remove_take_later')
 		except Exception as ex:
-			cuid = campaign.uid if campaign else 'none'
-			uuid = request.session['uuid'] if request.session['uuid'] else 'none'
-			print(f'Error: api_campaign_remove_take_later failed - CUID:{cuid}:, UID :{uuid}: - {ex}')
-
+			try:
+				userInfo, created = campaign.getCreateUserInfo(request)
+				campaign.setUserStatus(uuid, 'intercept_shown')
+			except Exception as ex:
+				print(f'Error: api_campaign_remove_take_later failed - CUID:{campaign.uid}:, UID :{uuid}: - {ex}')
+	else:
+		print(f"Error: api_campaign_remove_take_later failed, no campaign found - CUID:{request.POST.get('cuid')}:, UID :{request.session['uuid']}:")
+	
 	response = JsonResponse({'results': {'message': 'Success.'}}, status=200)
 	try:
 		reqDomain = request.META['HTTP_ORIGIN']
@@ -330,7 +337,8 @@ def api_campaign_remove_take_later(request):
 	response['Access-Control-Allow-Origin'] = reqDomain
 	response['Access-Control-Allow-Credentials'] = 'true'
 	return response
-	
+
+
 ##
 ##	/survey/api/setactivestates/
 ##
