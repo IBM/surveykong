@@ -230,6 +230,11 @@
 			{% csrf_token %}
 			
 			{% if thisModelItem.id %}
+				<div class="mb2"><strong>To add custom data to a survey</strong></div>
+				<div class="mb3 ml4 mw7 lh-copy">The page calls <code class="ml1 f6 dark-red">SK.addCustomFormData()</code> and passes it a 1-level JSON object - No nested objects or arrays just regular name:value pairs. The name:value pairs get converted to hidden form fields with name=value. Example:
+					<pre class="ml2 f6 dark-red">SK.addCustomFormData({<br>&nbsp; &nbsp; primaryProduct: 63,<br>&nbsp; &nbsp; pageId: 'about'<br>});</pre>
+				</div>
+				
 				<div class="b">To manually trigger this {{ thisModelItem.survey_trigger_type }} campaign</div>
 				
 				{% if thisModelItem.survey_trigger_type == 'intercept' %}

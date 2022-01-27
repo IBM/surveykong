@@ -117,6 +117,18 @@ If there is a feedback/button survey to show, the JS injects a button (survey tr
 
 When either of those events happen or the button is clicked, the JS injects an iframe on the page in a modal window. The iframe is the survey. The iframe survey posts to itself via the API and then shows the "thank you" message.
 
+# To add custom data to a survey
+If a page wants to pass custom form data to be submitted with the survey, they can call an API and send an object with name/value pairs. This can be called at any time before the survey is submitted.
+
+The page calls `SK.addCustomFormData()` and passes it a 1-level JSON object - No nested objects or arrays just regular name:value pairs. The name:value pairs get converted to hidden form fields with name=value. Example:
+```
+SK.addCustomFormData({
+	primaryProduct: 63,
+	pageId: 'about'
+});
+```
+**How it works**: When the user submits the survey, the JS will look for any data object set in `addCustomFormData`, and it will create a hidden form field for each name:value pair in the JSON, and then post the form to BeeHeard.
+
 
 # Debugging
 First thing first: Ensure the page has the proper project ID in their script tag, and ensure the page has implemented it properly. Here's how:  Open the browser console (hit F12) and go to the "network" tab. Reload the page and once it's complete, filter the list on "beeheard" and you should see two JS file requests with the project's ID as the file name. If you don't then the page doesn't have BeeHeard on the page (properly).
